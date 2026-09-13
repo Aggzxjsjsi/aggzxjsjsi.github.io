@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator Pengukur Ruangan AI Profesional</title>
-    <!-- TensorFlow.js & COCO-SSD Model (Lite version untuk kecepatan maksimal) -->
+    <!-- TensorFlow.js & COCO-SSD Model -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
     
@@ -315,12 +315,12 @@
         const canvas = document.getElementById('measCanvas');
         const ctx = canvas.getContext('2d');
         let img = new Image();
+        let isImageLoaded = false;
         let isLiveCamera = false;
         
-        // Struktur data garis: Berisi array of array (bisa banyak garis/segmen terpisah)
         let lines = [[]]; 
         let currentLineIndex = 0;
-        let interactionMode = 'draw'; // 'draw' atau 'split'
+        let interactionMode = 'draw'; 
         let currentUnitKey = 'cm';
 
         cocoSsd.load({ base: 'lite_mobilenet_v2' }).then(model => {
@@ -389,16 +389,18 @@
             const stream = video.srcObject;
             if (stream) stream.getTracks().forEach(track => track.stop());
 
-            // Ubah data video ke objek gambar statis agar tidak hitam
+            // Muat gambar secara aman dengan callback onload
+            img.onload = function() {
+                isImageLoaded = true;
+                redrawCanvas();
+                runSuperFastAiDetection();
+            };
             img.src = canvas.toDataURL('image/png');
 
             video.style.display = 'none';
             canvas.style.display = 'block';
             document.getElementById('captureBtn').style.display = 'none';
             isLiveCamera = false;
-            
-            redrawCanvas();
-            runSuperFastAiDetection();
         }
 
         function handleMedia(event) {
@@ -414,6 +416,7 @@
                 img.onload = function() {
                     canvas.width = img.width;
                     canvas.height = img.height;
+                    isImageLoaded = true;
                     video.style.display = 'none';
                     canvas.style.display = 'block';
                     document.getElementById('workspace').style.display = 'block';
@@ -489,14 +492,13 @@
         function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Gambar ulang foto latar belakang secara permanen
-            if (img.src) {
+            // Render ulang foto latar belakang jika sudah siap
+            if (isImageLoaded && img.src) {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
 
             let totalPxAll = 0;
 
-            // Loop semua garis/segmen
             for (let l = 0; l < lines.length; l++) {
                 let pts = lines[l];
                 if (pts.length > 0) {
@@ -504,7 +506,7 @@
                         const p1 = pts[i];
                         const p2 = pts[i+1];
 
-                        // Garis Kuning
+                        // Gambar Garis
                         ctx.beginPath();
                         ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(p2.x, p2.y);
@@ -517,7 +519,7 @@
                         const distPx = Math.sqrt(dx*dx + dy*dy);
                         totalPxAll += distPx;
 
-                        // Label Teks Ukuran di tengah ruas garis
+                        // Label Teks Ukuran
                         const midX = (p1.x + p2.x) / 2;
                         const midY = (p1.y + p2.y) / 2;
                         
@@ -531,14 +533,14 @@
                         ctx.fillText(formatVal(distPx), midX, midY);
                     }
 
-                    // Gambar Titik Sudut
+                    // Gambar Titik Sudut/Lingkaran
                     for (let i = 0; i < pts.length; i++) {
                         ctx.fillStyle = (l === currentLineIndex) ? '#ffcc00' : '#ff9500';
                         ctx.beginPath(); 
-                        ctx.arc(pts[i].x, pts[i].y, 5, 0, Math.PI * 2); 
+                        ctx.arc(pts[i].x, pts[i].y, 6, 0, Math.PI * 2); 
                         ctx.fill();
                         ctx.strokeStyle = '#000000';
-                        ctx.lineWidth = 1.5;
+                        ctx.lineWidth = 2;
                         ctx.stroke();
                     }
                 }
@@ -559,9 +561,8 @@
             };
         }
 
-        // Fungsi mengecek jarak titik ke garis (untuk menyisipkan titik di tengah garis)
         function handleCanvasClick(e) {
-            if (isLiveCamera || !img.src) return;
+            if (isLiveCamera || !isImageLoaded) return;
             const pos = getMousePos(e);
 
             if (interactionMode === 'draw') {
@@ -569,7 +570,6 @@
                 lines[currentLineIndex].push(pos);
                 redrawCanvas();
             } else if (interactionMode === 'split') {
-                // Cari ruas garis terdekat untuk disisipkan titik baru di tengahnya
                 let inserted = false;
                 for (let l = 0; l < lines.length; l++) {
                     let pts = lines[l];
@@ -577,10 +577,8 @@
                         let p1 = pts[i];
                         let p2 = pts[i+1];
                         
-                        // Hitung jarak klik ke segmen garis (p1 ke p2)
                         let dist = distToSegment(pos, p1, p2);
-                        if (dist < 20) { // Toleransi klik 20 pixel
-                            // Sisipkan titik di antara i dan i+1
+                        if (dist < 25) { // Toleransi klik 25 pixel
                             pts.splice(i + 1, 0, pos);
                             inserted = true;
                             break;
@@ -590,17 +588,16 @@
                 }
                 if (inserted) {
                     redrawCanvas();
-                    setMode('draw'); // Kembali otomatis ke mode gambar setelah titik disisipkan
+                    setMode('draw'); 
                 } else {
                     alert("Ketuk lebih dekat ke garis kuning untuk menyisipkan titik.");
                 }
             }
         }
 
-        // Rumus matematika jarak titik ke garis segmen
         function distToSegment(p, p1, p2) {
             let l2 = (p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y);
-            if (l2 ===.0) return Math.hypot(p.x - p1.x, p.y - p1.y);
+            if (l2 === 0) return Math.hypot(p.x - p1.x, p.y - p1.y);
             let t = ((p.x - p1.x)*(p2.x - p1.x) + (p.y - p1.y)*(p2.y - p1.y)) / l2;
             t = Math.max(0, Math.min(1, t));
             return Math.hypot(p.x - (p1.x + t * (p2.x - p1.x)), p.y - (p1.y + t * (p2.y - p1.y)));
