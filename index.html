@@ -133,7 +133,6 @@
         }
         input:focus { border-color: #38bdf8; }
 
-        /* Style khusus layout plus tangan kanan + kiri */
         .arm-flex-container {
             display: flex;
             align-items: center;
@@ -203,8 +202,8 @@
 <body>
 
     <div class="title-container">
-        <h1>Kalkulator Jengkal Lengan</h1>
-        <p class="subtitle">Deteksi AI & Ukur Panjang Lengan Akurat Tanpa Berat Badan</p>
+        <h1>Kalkulator Tinggi Badan</h1>
+        <p class="subtitle">Deteksi AI & Estimasi Tinggi Badan Berdasarkan Jengkal</p>
     </div>
 
     <div class="card">
@@ -228,10 +227,10 @@
 
         <div class="input-group">
             <label>Hasil Deteksi Ukuran 1 Jengkal (cm)</label>
-            <input type="number" id="jengkal-cm" value="18" placeholder="Otomatis / sesuaikan jika perlu" step="0.5">
+            <input type="text" id="jengkal-cm" value="18" placeholder="Otomatis / sesuaikan">
         </div>
         <div class="info-box">
-            💡 <i>AI membaca jarak jempol ke kelingking. Ubah manual jika dirasa kurang pas.</i>
+            💡 <i>Sistem otomatis mengonversi koma (,) menjadi titik (.) agar akurat.</i>
         </div>
 
         <div class="card-header" style="margin-top: 15px;">2. Masukkan Jumlah Jengkal Lengan</div>
@@ -239,23 +238,23 @@
         <div class="input-group">
             <label>Jumlah Jengkal Lengan (Kanan + Kiri)</label>
             <div class="arm-flex-container">
-                <input type="number" id="jengkal-right" placeholder="Kanan" step="0.5" oninput="syncLeftArm(this.value)">
+                <input type="text" id="jengkal-right" placeholder="Kanan" oninput="syncLeftArm(this.value)">
                 <span class="plus-sign">+</span>
-                <input type="number" id="jengkal-left" placeholder="Kiri" step="0.5">
+                <input type="text" id="jengkal-left" placeholder="Kiri">
             </div>
         </div>
 
         <div class="input-group">
             <label>Jumlah jengkal Dada (Tambahan lebar bahu/dada)</label>
-            <input type="number" id="jengkal-chest" placeholder="Contoh: 2" step="0.5">
+            <input type="text" id="jengkal-chest" placeholder="Contoh: 1.4">
         </div>
 
-        <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Panjang Lengan</button>
+        <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Tinggi Badan</button>
     </div>
 
     <div id="result-container">
         <div class="card result-box">
-            <div class="card-header" style="margin-bottom: 12px;">Hasil Pengukuran Jengkal</div>
+            <div class="card-header" style="margin-bottom: 12px;">Hasil Kalkulasi Tinggi Badan</div>
             
             <div class="stat-row">
                 <div class="stat-label">Total Jengkal Keseluruhan</div>
@@ -264,6 +263,10 @@
             <div class="stat-row">
                 <div class="stat-label">Panjang Lengan Kanan</div>
                 <div class="stat-value" id="res-right-arm">0 cm</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">Panjang Lengan Kiri</div>
+                <div class="stat-value" id="res-left-arm">0 cm</div>
             </div>
             <div class="stat-row">
                 <div class="stat-label">Estimasi Tinggi Badan / Bentang</div>
@@ -275,7 +278,13 @@
     <div class="footer">Created by_aggx</div>
 
     <script>
-        // Fitur pintar: otomatis menyamakan kiri jika kanan diisi karena lengan manusia sama panjang 🤣
+        function parseVal(id) {
+            let val = document.getElementById(id).value;
+            if (!val) return 0;
+            val = val.replace(',', '.');
+            return parseFloat(val) || 0;
+        }
+
         function syncLeftArm(val) {
             document.getElementById('jengkal-left').value = val;
         }
@@ -356,10 +365,10 @@
         }
 
         function calculateJengkalSystem() {
-            const jengkalCm = parseFloat(document.getElementById('jengkal-cm').value);
-            const rArm = parseFloat(document.getElementById('jengkal-right').value) || 0;
-            const lArm = parseFloat(document.getElementById('jengkal-left').value) || 0;
-            const chest = parseFloat(document.getElementById('jengkal-chest').value) || 0;
+            const jengkalCm = parseVal('jengkal-cm');
+            const rArm = parseVal('jengkal-right');
+            const lArm = parseVal('jengkal-left');
+            const chest = parseVal('jengkal-chest');
 
             if (!jengkalCm || jengkalCm <= 0) {
                 alert("Masukkan panjang 1 jengkal dengan benar!");
@@ -373,12 +382,13 @@
             const totalJengkal = rArm + lArm + chest;
             const totalSpanCm = totalJengkal * jengkalCm;
             
-            // Hitung panjang lengan kanan dalam cm (berdasarkan jengkal lengan kanan * ukuran jengkal cm)
             const rightArmCm = rArm * jengkalCm;
+            const leftArmCm = lArm * jengkalCm;
 
             document.getElementById('result-container').style.display = 'block';
             document.getElementById('res-jengkal').innerText = totalJengkal + " Jengkal";
             document.getElementById('res-right-arm').innerText = rightArmCm.toFixed(1) + " cm";
+            document.getElementById('res-left-arm').innerText = leftArmCm.toFixed(1) + " cm";
             document.getElementById('res-height').innerText = totalSpanCm.toFixed(0) + " cm";
         }
     </script>
