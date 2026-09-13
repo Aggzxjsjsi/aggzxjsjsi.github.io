@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Ruangan AI Akurat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kalkulator Pengukur Ruangan AI Profesional</title>
     <!-- TensorFlow.js & COCO-SSD Model -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
@@ -25,27 +25,31 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 10px;
+            padding: 0;
+            overflow: hidden;
         }
 
         .calc-container {
-            width: 100%;
-            max-width: 400px;
+            width: 100vw;
+            height: 100vh;
             background: #181818;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
         }
 
         .calc-header {
             display: flex;
             align-items: center;
-            padding: 16px 20px;
-            background: #181818;
+            padding: 12px 16px;
+            background: rgba(24, 24, 24, 0.9);
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 10;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
         }
 
         .back-icon {
@@ -56,7 +60,7 @@
         }
 
         .calc-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
             color: #e0e0e0;
             flex-grow: 1;
@@ -73,21 +77,32 @@
             gap: 5px;
         }
 
-        .calc-display {
-            padding: 20px;
-            text-align: right;
-            background: #181818;
-            min-height: 100px;
-            display: flex;
+        /* Tampilan Panel Hasil & Kontrol (Awalnya Disembunyikan sebelum ada foto) */
+        .bottom-ui-panel {
+            display: none;
             flex-direction: column;
-            justify-content: flex-end;
+            background: #181818;
+            z-index: 10;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
+        }
+
+        .calc-display {
+            padding: 12px 20px;
+            text-align: right;
+            background: transparent;
         }
 
         .result-value-display {
-            font-size: 2rem;
+            font-size: 1.6rem;
             color: #ffffff;
             font-weight: 400;
-            margin-top: 5px;
+            margin-top: 2px;
         }
 
         .action-grid {
@@ -101,8 +116,8 @@
             background: #1e1e1e;
             border: none;
             color: #ffcc00;
-            padding: 14px;
-            font-size: 0.85rem;
+            padding: 12px;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             text-align: center;
@@ -116,59 +131,96 @@
             display: none;
         }
 
+        /* Workspace Full Layar */
         .workspace {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background: #000;
-            width: 100%;
-            height: 380px;
-            display: none;
+            display: block;
             overflow: hidden;
-            border-top: 1px solid #2c2c2e;
-            border-bottom: 1px solid #2c2c2e;
             touch-action: none;
         }
 
         video, canvas {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Menggunakan contain agar seluruh gambar proporsional & tidak terpotong */
+            object-fit: cover;
             display: block;
         }
 
+        /* Tombol Ambil Foto Melayang di Atas Kamera */
         .capture-live-btn {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
             background: #ff453a;
             color: white;
             border: none;
-            width: 100%;
-            padding: 14px;
-            font-weight: 500;
+            border-radius: 30px;
+            width: 80px;
+            height: 80px;
+            font-size: 1.5rem;
+            font-weight: bold;
             cursor: pointer;
-            display: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255,69,58,0.5);
+            z-index: 20;
         }
 
+        /* Tombol Alternatif Pilih File saat awal */
+        .upload-initial-btn {
+            position: absolute;
+            bottom: 40px;
+            left: 20px;
+            background: #2c2c2e;
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            border-radius: 20px;
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .upload-initial-btn input { display: none; }
+
         .ai-status-banner {
-            background: rgba(48, 209, 88, 0.15);
-            color: #30d158;
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(48, 209, 88, 0.85);
+            color: #fff;
             font-size: 0.75rem;
-            padding: 8px 15px;
+            padding: 6px 14px;
+            border-radius: 20px;
             text-align: center;
-            border-bottom: 1px solid rgba(48, 209, 88, 0.3);
+            z-index: 30;
             display: none;
         }
 
         .control-panel {
-            padding: 15px 20px;
+            padding: 12px 16px;
             background: #181818;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .control-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #8e8e93;
         }
 
@@ -176,17 +228,17 @@
             background: #2c2c2e;
             border: none;
             color: #fff;
-            padding: 8px 12px;
-            border-radius: 8px;
-            width: 90px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            width: 80px;
             text-align: right;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
         }
 
         .btn-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
@@ -215,29 +267,28 @@
             border: none;
             padding: 8px 12px;
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             cursor: pointer;
             font-weight: 500;
         }
 
         .unit-popup {
             position: absolute;
-            top: 60px;
-            left: 15px;
-            width: 240px;
-            max-height: 350px;
+            top: 55px;
+            right: 15px;
+            width: 200px;
             background: #2c2c2e;
-            border-radius: 16px;
+            border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.7);
             overflow-y: auto;
             display: none;
             z-index: 100;
-            padding: 8px 0;
+            padding: 6px 0;
         }
 
         .unit-item {
-            padding: 12px 20px;
-            font-size: 0.9rem;
+            padding: 10px 16px;
+            font-size: 0.85rem;
             color: #e0e0e0;
             cursor: pointer;
             display: flex;
@@ -253,7 +304,7 @@
 
     <div class="calc-container">
         <div class="calc-header">
-            <span class="back-icon">←</span>
+            <span class="back-icon" onclick="resetToCamera()">↺</span>
             <span class="calc-title">Pengukur Ruangan AI</span>
             <button class="unit-dropdown-btn" onclick="toggleUnitMenu()">
                 <span id="currentUnitLabel">cm</span> ▾
@@ -267,44 +318,51 @@
             <div class="unit-item" onclick="selectUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="calc-display">
-            <div style="font-size: 0.8rem; color: #8e8e93;">Total Panjang Garis:</div>
-            <div class="result-value-display" id="resultDisplay">0 cm</div>
-        </div>
+        <div class="ai-status-banner" id="aiBanner">⚡ Memuat Model AI...</div>
 
-        <div class="action-grid">
-            <button class="action-btn" onclick="startLiveCamera()">📷 Buka Kamera</button>
-            <label class="action-btn">
-                📁 Pilih Foto
-                <input type="file" accept="image/*" onchange="handleMedia(event)">
-            </label>
-        </div>
-
-        <div class="ai-status-banner" id="aiBanner">⚡ Memuat Model Cepat...</div>
-
+        <!-- Workspace Full Layar -->
         <div class="workspace" id="workspace">
             <video id="videoElement" autoplay playsinline muted></video>
             <canvas id="measCanvas"></canvas>
         </div>
-        <button class="capture-live-btn" id="captureBtn" onclick="captureLiveFrame()">📸 Ambil Foto Sekarang</button>
 
-        <div class="control-panel">
-            <div class="control-row">
-                <span>Skala (cm/100px):</span>
-                <input type="number" id="scaleFactor" value="10" oninput="redrawCanvas()">
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn-tool active" id="btnModeDraw" onclick="setMode('draw')">✏️ Buat Titik/Garis</button>
-                <button class="btn-tool" id="btnModeSplit" onclick="setMode('split')">➕ Sisip Titik di Garis</button>
+        <!-- Tombol Awal (Full Camera View) -->
+        <button class="capture-live-btn" id="captureBtn" onclick="captureLiveFrame()">📷</button>
+        <label class="upload-initial-btn" id="uploadInitialBtn">
+            📁 Galeri
+            <input type="file" accept="image/*" onchange="handleMedia(event)">
+        </label>
+
+        <!-- Panel Perhitungan & Kontrol Bawah (Muncul SETELAH foto ada) -->
+        <div class="bottom-ui-panel" id="bottomUiPanel">
+            <div class="calc-display">
+                <div style="font-size: 0.75rem; color: #8e8e93;">Total Panjang Garis:</div>
+                <div class="result-value-display" id="resultDisplay">0 cm</div>
             </div>
 
-            <div class="control-row">
-                <button class="btn-tool" onclick="addNewLineSegment()" style="background:#2c2c2e; color:#ffcc00; border:1px solid #ffcc00;">➕ Tambah Garis Baru</button>
-                <button class="btn-clear" onclick="clearPoints()">🗑️ Hapus Semua</button>
+            <div class="action-grid">
+                <button class="action-btn" onclick="resetToCamera()">📷 Buka Kamera Lagi</button>
+                <label class="action-btn">
+                    📁 Ganti Foto
+                    <input type="file" accept="image/*" onchange="handleMedia(event)">
+                </label>
             </div>
-            <div style="font-size: 0.65rem; color: #8e8e93; text-align: center;" id="helperText">
-                Ketuk layar pada foto untuk membuat titik dan garis.
+
+            <div class="control-panel">
+                <div class="control-row">
+                    <span>Skala (cm/100px):</span>
+                    <input type="number" id="scaleFactor" value="10" oninput="redrawCanvas()">
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-tool active" id="btnModeDraw" onclick="setMode('draw')">✏️ Buat Titik</button>
+                    <button class="btn-tool" id="btnModeSplit" onclick="setMode('split')">➕ Sisip Titik</button>
+                </div>
+
+                <div class="control-row">
+                    <button class="btn-tool" onclick="addNewLineSegment()" style="background:#2c2c2e; color:#ffcc00; border:1px solid #ffcc00;">➕ Tambah Garis Baru</button>
+                    <button class="btn-clear" onclick="clearPoints()">🗑️ Hapus Semua</button>
+                </div>
             </div>
         </div>
     </div>
@@ -316,12 +374,17 @@
         const ctx = canvas.getContext('2d');
         let img = new Image();
         let isImageLoaded = false;
-        let isLiveCamera = false;
+        let isLiveCamera = true;
         
         let lines = [[]]; 
         let currentLineIndex = 0;
         let interactionMode = 'draw'; 
         let currentUnitKey = 'cm';
+
+        // Inisialisasi kamera full saat pertama kali dibuka
+        window.addEventListener('DOMContentLoaded', () => {
+            startLiveCamera();
+        });
 
         cocoSsd.load({ base: 'lite_mobilenet_v2' }).then(model => {
             aiModel = model;
@@ -349,38 +412,42 @@
             interactionMode = mode;
             document.getElementById('btnModeDraw').classList.toggle('active', mode === 'draw');
             document.getElementById('btnModeSplit').classList.toggle('active', mode === 'split');
-            
-            const helper = document.getElementById('helperText');
-            if(mode === 'draw') {
-                helper.innerText = "Ketuk layar untuk menambah titik pada garis aktif.";
-            } else {
-                helper.innerText = "Ketuk tepat di atas garis kuning untuk menyisipkan titik baru di tengahnya.";
-            }
         }
 
         async function startLiveCamera() {
+            isLiveCamera = true;
+            isImageLoaded = false;
+            lines = [[]];
+            currentLineIndex = 0;
+
+            // Sembunyikan panel kalkulator/menu bawah, tampilkan tombol ambil foto & galeri
+            document.getElementById('bottomUiPanel').style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'flex';
+            document.getElementById('uploadInitialBtn').style.display = 'flex';
+            canvas.style.display = 'none';
+            video.style.display = 'block';
+
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
                 });
                 video.srcObject = stream;
                 video.onloadedmetadata = () => { video.play(); };
-                
-                video.style.display = 'block';
-                canvas.style.display = 'none';
-                document.getElementById('workspace').style.display = 'block';
-                document.getElementById('captureBtn').style.display = 'block';
-                document.getElementById('aiBanner').style.display = 'none';
-                isLiveCamera = true;
             } catch (err) {
-                alert("Kamera tidak dapat diakses. Pastikan izin kamera aktif.");
+                console.log("Kamera otomatis dibatasi/izin ditolak, silakan gunakan tombol galeri.");
             }
         }
 
+        function resetToCamera() {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            startLiveCamera();
+        }
+
         function captureLiveFrame() {
-            if (!isLiveCamera) return;
-            const w = video.videoWidth || 1280;
-            const h = video.videoHeight || 720;
+            const w = video.videoWidth || window.innerWidth;
+            const h = video.videoHeight || window.innerHeight;
             canvas.width = w;
             canvas.height = h;
             
@@ -391,15 +458,19 @@
 
             img.onload = function() {
                 isImageLoaded = true;
+                isLiveCamera = false;
+                
+                // Sembunyikan tombol kamera, tampilkan menu kalkulator di bawah
+                video.style.display = 'none';
+                canvas.style.display = 'block';
+                document.getElementById('captureBtn').style.display = 'none';
+                document.getElementById('uploadInitialBtn').style.display = 'none';
+                document.getElementById('bottomUiPanel').style.display = 'flex';
+                
                 redrawCanvas();
                 runSuperFastAiDetection();
             };
             img.src = canvas.toDataURL('image/png');
-
-            video.style.display = 'none';
-            canvas.style.display = 'block';
-            document.getElementById('captureBtn').style.display = 'none';
-            isLiveCamera = false;
         }
 
         function handleMedia(event) {
@@ -416,11 +487,14 @@
                     canvas.width = img.width;
                     canvas.height = img.height;
                     isImageLoaded = true;
+                    isLiveCamera = false;
+
                     video.style.display = 'none';
                     canvas.style.display = 'block';
-                    document.getElementById('workspace').style.display = 'block';
                     document.getElementById('captureBtn').style.display = 'none';
-                    isLiveCamera = false;
+                    document.getElementById('uploadInitialBtn').style.display = 'none';
+                    document.getElementById('bottomUiPanel').style.display = 'flex';
+
                     redrawCanvas();
                     runSuperFastAiDetection();
                 }
@@ -448,7 +522,7 @@
                     if (standardSizes[p.class]) {
                         const calculatedScale = (standardSizes[p.class] / p.bbox[2]) * 100;
                         document.getElementById('scaleFactor').value = calculatedScale.toFixed(2);
-                        banner.innerText = `✨ Ketemu (${p.class})! Skala dikalibrasi instan.`;
+                        banner.innerText = `✨ Ketemu (${p.class})! Skala dikalibrasi.`;
                         found = true;
                         redrawCanvas();
                         break;
@@ -458,13 +532,14 @@
                 if (!found) {
                     banner.innerText = "⚡ Pemindaian selesai.";
                 }
-                setTimeout(() => { banner.style.display = 'none'; }, 3000);
+                setTimeout(() => { banner.style.display = 'none'; }, 2500);
             } catch (err) {
                 banner.style.display = 'none';
             }
         }
 
         function addNewLineSegment() {
+            // Menambah baris garis baru yang langsung aktif tanpa eror
             lines.push([]);
             currentLineIndex = lines.length - 1;
             setMode('draw');
@@ -499,7 +574,7 @@
 
             for (let l = 0; l < lines.length; l++) {
                 let pts = lines[l];
-                if (pts.length > 0) {
+                if (pts && pts.length > 0) {
                     for (let i = 0; i < pts.length - 1; i++) {
                         const p1 = pts[i];
                         const p2 = pts[i+1];
@@ -544,7 +619,6 @@
             document.getElementById('resultDisplay').innerText = formatVal(totalPxAll);
         }
 
-        // Perhitungan akurat koordinat sentuhan dengan object-fit: contain
         function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -576,26 +650,29 @@
             if (isLiveCamera || !isImageLoaded) return;
             const pos = getMousePos(e);
 
-            // Batasi klik agar tidak di luar area gambar asli canvas
             if (pos.x < 0 || pos.y < 0 || pos.x > canvas.width || pos.y > canvas.height) return;
 
             if (interactionMode === 'draw') {
-                if (!lines[currentLineIndex]) lines[currentLineIndex] = [];
+                if (!lines[currentLineIndex]) {
+                    lines[currentLineIndex] = [];
+                }
                 lines[currentLineIndex].push(pos);
                 redrawCanvas();
             } else if (interactionMode === 'split') {
                 let inserted = false;
                 for (let l = 0; l < lines.length; l++) {
                     let pts = lines[l];
-                    for (let i = 0; i < pts.length - 1; i++) {
-                        let p1 = pts[i];
-                        let p2 = pts[i+1];
-                        
-                        let dist = distToSegment(pos, p1, p2);
-                        if (dist < 30) { 
-                            pts.splice(i + 1, 0, pos);
-                            inserted = true;
-                            break;
+                    if (pts) {
+                        for (let i = 0; i < pts.length - 1; i++) {
+                            let p1 = pts[i];
+                            let p2 = pts[i+1];
+                            
+                            let dist = distToSegment(pos, p1, p2);
+                            if (dist < 35) { 
+                                pts.splice(i + 1, 0, pos);
+                                inserted = true;
+                                break;
+                            }
                         }
                     }
                     if (inserted) break;
