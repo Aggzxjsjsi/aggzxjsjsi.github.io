@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Ruangan AI Luas</title>
+    <title>Kalkulator Pengukur Ruangan AI Profesional</title>
     <!-- TensorFlow.js & COCO-SSD Model (Lite version untuk kecepatan maksimal) -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
@@ -116,7 +116,6 @@
             display: none;
         }
 
-        /* Workspace dibuat lebih tinggi dan luas agar kamera tidak terpotong hitam */
         .workspace {
             position: relative;
             background: #000;
@@ -129,7 +128,6 @@
             touch-action: none;
         }
 
-        /* object-fit: cover membuat video melebar luas memenuhi area tanpa hitam di pinggir */
         video, canvas {
             width: 100%;
             height: 100%;
@@ -184,6 +182,31 @@
             text-align: right;
             font-size: 0.9rem;
             outline: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-tool {
+            background: #2c2c2e;
+            color: #ffcc00;
+            border: 1px solid #3a3a3c;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-tool.active {
+            background: #ffcc00;
+            color: #121212;
+            border-color: #ffcc00;
         }
 
         .btn-clear {
@@ -270,11 +293,18 @@
                 <span>Skala (cm/100px):</span>
                 <input type="number" id="scaleFactor" value="10" oninput="redrawCanvas()">
             </div>
+            
+            <div class="btn-group">
+                <button class="btn-tool active" id="btnModeDraw" onclick="setMode('draw')">✏️ Buat Titik/Garis</button>
+                <button class="btn-tool" id="btnModeSplit" onclick="setMode('split')">➕ Sisip Titik di Garis</button>
+            </div>
+
             <div class="control-row">
-                <button class="btn-clear" onclick="clearPoints()">🗑️ Hapus Semua Garis</button>
-                <div style="font-size: 0.65rem; color: #8e8e93; text-align: right;">
-                    Ketuk layar untuk buat titik sambung
-                </div>
+                <button class="btn-tool" onclick="addNewLineSegment()" style="background:#2c2c2e; color:#ffcc00; border:1px solid #ffcc00;">➕ Tambah Garis Baru</button>
+                <button class="btn-clear" onclick="clearPoints()">🗑️ Hapus Semua</button>
+            </div>
+            <div style="font-size: 0.65rem; color: #8e8e93; text-align: center;" id="helperText">
+                Ketuk layar untuk membuat titik dan garis bersambung.
             </div>
         </div>
     </div>
@@ -286,7 +316,11 @@
         const ctx = canvas.getContext('2d');
         let img = new Image();
         let isLiveCamera = false;
-        let points = []; 
+        
+        // Struktur data garis: Berisi array of array (bisa banyak garis/segmen terpisah)
+        let lines = [[]]; 
+        let currentLineIndex = 0;
+        let interactionMode = 'draw'; // 'draw' atau 'split'
         let currentUnitKey = 'cm';
 
         cocoSsd.load({ base: 'lite_mobilenet_v2' }).then(model => {
@@ -311,18 +345,26 @@
             redrawCanvas();
         }
 
+        function setMode(mode) {
+            interactionMode = mode;
+            document.getElementById('btnModeDraw').classList.toggle('active', mode === 'draw');
+            document.getElementById('btnModeSplit').classList.toggle('active', mode === 'split');
+            
+            const helper = document.getElementById('helperText');
+            if(mode === 'draw') {
+                helper.innerText = "Ketuk layar untuk menambah titik pada garis aktif.";
+            } else {
+                helper.innerText = "Ketuk tepat di atas garis kuning untuk menyisipkan titik baru di tengahnya.";
+            }
+        }
+
         async function startLiveCamera() {
             try {
-                // Meminta resolusi kamera belakang secara luas
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
                 });
                 video.srcObject = stream;
-                
-                // Menunggu metadata video siap agar ukuran dan tampilannya langsung luas tanpa hitam
-                video.onloadedmetadata = () => {
-                    video.play();
-                };
+                video.onloadedmetadata = () => { video.play(); };
                 
                 video.style.display = 'block';
                 canvas.style.display = 'none';
@@ -331,7 +373,7 @@
                 document.getElementById('aiBanner').style.display = 'none';
                 isLiveCamera = true;
             } catch (err) {
-                alert("Kamera tidak dapat diakses. Pastikan izin kamera aktif dan buka lewat HTTPS/Localhost.");
+                alert("Kamera tidak dapat diakses. Pastikan izin kamera aktif.");
             }
         }
 
@@ -347,12 +389,14 @@
             const stream = video.srcObject;
             if (stream) stream.getTracks().forEach(track => track.stop());
 
+            // Ubah data video ke objek gambar statis agar tidak hitam
+            img.src = canvas.toDataURL('image/png');
+
             video.style.display = 'none';
             canvas.style.display = 'block';
             document.getElementById('captureBtn').style.display = 'none';
             isLiveCamera = false;
             
-            img.src = canvas.toDataURL();
             redrawCanvas();
             runSuperFastAiDetection();
         }
@@ -412,15 +456,22 @@
                 if (!found) {
                     banner.innerText = "⚡ Pemindaian selesai.";
                 }
-                
                 setTimeout(() => { banner.style.display = 'none'; }, 3000);
             } catch (err) {
                 banner.style.display = 'none';
             }
         }
 
+        function addNewLineSegment() {
+            lines.push([]);
+            currentLineIndex = lines.length - 1;
+            setMode('draw');
+            redrawCanvas();
+        }
+
         function clearPoints() {
-            points = [];
+            lines = [[]];
+            currentLineIndex = 0;
             redrawCanvas();
         }
 
@@ -437,56 +488,62 @@
 
         function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (!isLiveCamera && img.src) {
-                ctx.drawImage(img, 0, 0);
-            }
-
-            if (points.length > 0) {
-                for (let i = 0; i < points.length - 1; i++) {
-                    const p1 = points[i];
-                    const p2 = points[i+1];
-
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = '#ffcc00';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-
-                    const dx = p2.x - p1.x;
-                    const dy = p2.y - p1.y;
-                    const distPx = Math.sqrt(dx*dx + dy*dy);
-
-                    const midX = (p1.x + p2.x) / 2;
-                    const midY = (p1.y + p2.y) / 2;
-                    
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                    ctx.fillRect(midX - 25, midY - 12, 50, 24);
-
-                    ctx.fillStyle = '#ffcc00';
-                    ctx.font = 'bold 12px Roboto';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(formatVal(distPx), midX, midY);
-                }
-
-                for (let i = 0; i < points.length; i++) {
-                    ctx.fillStyle = '#ffcc00';
-                    ctx.beginPath(); 
-                    ctx.arc(points[i].x, points[i].y, 5, 0, Math.PI * 2); 
-                    ctx.fill();
-                    ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 1.5;
-                    ctx.stroke();
-                }
+            
+            // Gambar ulang foto latar belakang secara permanen
+            if (img.src) {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
 
             let totalPxAll = 0;
-            for (let i = 0; i < points.length - 1; i++) {
-                const dx = points[i+1].x - points[i].x;
-                const dy = points[i+1].y - points[i].y;
-                totalPxAll += Math.sqrt(dx*dx + dy*dy);
+
+            // Loop semua garis/segmen
+            for (let l = 0; l < lines.length; l++) {
+                let pts = lines[l];
+                if (pts.length > 0) {
+                    for (let i = 0; i < pts.length - 1; i++) {
+                        const p1 = pts[i];
+                        const p2 = pts[i+1];
+
+                        // Garis Kuning
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = (l === currentLineIndex) ? '#ffcc00' : '#ff9500';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const distPx = Math.sqrt(dx*dx + dy*dy);
+                        totalPxAll += distPx;
+
+                        // Label Teks Ukuran di tengah ruas garis
+                        const midX = (p1.x + p2.x) / 2;
+                        const midY = (p1.y + p2.y) / 2;
+                        
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                        ctx.fillRect(midX - 28, midY - 12, 56, 24);
+
+                        ctx.fillStyle = '#ffcc00';
+                        ctx.font = 'bold 11px Roboto';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(formatVal(distPx), midX, midY);
+                    }
+
+                    // Gambar Titik Sudut
+                    for (let i = 0; i < pts.length; i++) {
+                        ctx.fillStyle = (l === currentLineIndex) ? '#ffcc00' : '#ff9500';
+                        ctx.beginPath(); 
+                        ctx.arc(pts[i].x, pts[i].y, 5, 0, Math.PI * 2); 
+                        ctx.fill();
+                        ctx.strokeStyle = '#000000';
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    }
+                }
             }
+
             document.getElementById('resultDisplay').innerText = formatVal(totalPxAll);
         }
 
@@ -502,13 +559,54 @@
             };
         }
 
-        canvas.addEventListener('click', (e) => {
-            if (isLiveCamera) return;
+        // Fungsi mengecek jarak titik ke garis (untuk menyisipkan titik di tengah garis)
+        function handleCanvasClick(e) {
+            if (isLiveCamera || !img.src) return;
             const pos = getMousePos(e);
-            points.push(pos);
-            redrawCanvas();
-        });
 
+            if (interactionMode === 'draw') {
+                if (!lines[currentLineIndex]) lines[currentLineIndex] = [];
+                lines[currentLineIndex].push(pos);
+                redrawCanvas();
+            } else if (interactionMode === 'split') {
+                // Cari ruas garis terdekat untuk disisipkan titik baru di tengahnya
+                let inserted = false;
+                for (let l = 0; l < lines.length; l++) {
+                    let pts = lines[l];
+                    for (let i = 0; i < pts.length - 1; i++) {
+                        let p1 = pts[i];
+                        let p2 = pts[i+1];
+                        
+                        // Hitung jarak klik ke segmen garis (p1 ke p2)
+                        let dist = distToSegment(pos, p1, p2);
+                        if (dist < 20) { // Toleransi klik 20 pixel
+                            // Sisipkan titik di antara i dan i+1
+                            pts.splice(i + 1, 0, pos);
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if (inserted) break;
+                }
+                if (inserted) {
+                    redrawCanvas();
+                    setMode('draw'); // Kembali otomatis ke mode gambar setelah titik disisipkan
+                } else {
+                    alert("Ketuk lebih dekat ke garis kuning untuk menyisipkan titik.");
+                }
+            }
+        }
+
+        // Rumus matematika jarak titik ke garis segmen
+        function distToSegment(p, p1, p2) {
+            let l2 = (p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y);
+            if (l2 ===.0) return Math.hypot(p.x - p1.x, p.y - p1.y);
+            let t = ((p.x - p1.x)*(p2.x - p1.x) + (p.y - p1.y)*(p2.y - p1.y)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            return Math.hypot(p.x - (p1.x + t * (p2.x - p1.x)), p.y - (p1.y + t * (p2.y - p1.y)));
+        }
+
+        canvas.addEventListener('click', handleCanvasClick);
         canvas.addEventListener('touchend', (e) => {
             if (isLiveCamera) return;
             e.preventDefault();
