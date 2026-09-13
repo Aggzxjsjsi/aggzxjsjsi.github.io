@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Estimasi Tubuh (Wingspan)</title>
+    <title>Estimasi Tubuh Tanpa Alat</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -25,14 +25,14 @@
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
-        .title-container { text-align: center; margin: 30px 0; }
+        .title-container { text-align: center; margin: 30px 0 20px 0; }
         h1 {
             font-size: 2.2rem;
             color: #38bdf8;
             text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
             margin-bottom: 10px;
         }
-        .subtitle { color: #cbd5e1; font-size: 0.95rem; }
+        .subtitle { color: #cbd5e1; font-size: 0.95rem; line-height: 1.4; max-width: 400px; margin: 0 auto; }
 
         .card {
             background: #111827;
@@ -50,15 +50,64 @@
             font-size: 0.85rem;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-transform: uppercase;
+        }
+
+        /* Perbaikan Layout Tombol Kamera & Galeri agar tidak tumpang tindih */
+        .btn-upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .action-btn-upload {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .action-btn-upload:hover {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        .action-btn-upload input {
+            display: none;
+        }
+
+        #preview-container {
+            display: none;
+            margin-bottom: 15px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+        }
+
+        #preview-img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .input-group label { font-size: 0.85rem; color: #94a3b8; }
         
@@ -76,32 +125,7 @@
         input:focus, select:focus { border-color: #38bdf8; }
         select option { background: #111827; color: white; }
 
-        .file-upload-box {
-            border: 2px dashed #374151;
-            padding: 20px;
-            text-align: center;
-            border-radius: 12px;
-            cursor: pointer;
-            margin-bottom: 15px;
-            transition: border 0.3s;
-        }
-        .file-upload-box:hover { border-color: #38bdf8; }
-        .file-upload-box input { display: none; }
-        .upload-text { font-size: 0.9rem; color: #94a3b8; }
-
-        #preview-container {
-            display: none;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        #preview-img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 10px;
-            border: 1px solid #374151;
-        }
-
-        button {
+        button.submit-btn {
             width: 100%;
             padding: 16px;
             border: none;
@@ -113,8 +137,9 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: opacity 0.2s;
+            margin-top: 5px;
         }
-        button:hover { opacity: 0.9; }
+        button.submit-btn:hover { opacity: 0.9; }
 
         #result-container { display: none; width: 100%; max-width: 450px; }
         
@@ -144,28 +169,37 @@
 
     <div class="title-container">
         <h1>Estimasi Tubuh Tanpa Alat</h1>
-        <p class="subtitle">Gunakan foto rentang tangan (wingspan) untuk memperkirakan tinggi & berat badan</p>
+        <p class="subtitle">Ambil foto atau upload gambar rentang tangan untuk memperkirakan ukuran tubuh</p>
     </div>
 
     <div class="card">
-        <div class="card-header">Upload & Pengukuran Rentang Tangan</div>
+        <div class="card-header">1. AMBIL / UPLOAD FOTO RENTANG TANGAN</div>
         
-        <label class="file-upload-box" id="drop-zone">
-            <span class="upload-text" id="upload-label">📷 Klik untuk upload foto rentang tangan</span>
-            <input type="file" id="photo-input" accept="image/*" onchange="previewImage(event)">
-        </label>
+        <!-- Tombol Terpisah untuk Kamera dan Galeri (Mencegah Tumpang Tindih Error) -->
+        <div class="btn-upload-grid">
+            <label class="action-btn-upload">
+                📸 Buka Kamera
+                <input type="file" accept="image/*" capture="environment" onchange="previewImage(event)">
+            </label>
+            <label class="action-btn-upload">
+                🖼️ Pilih Galeri
+                <input type="file" accept="image/*" onchange="previewImage(event)">
+            </label>
+        </div>
 
         <div id="preview-container">
             <img id="preview-img" src="" alt="Preview Foto">
         </div>
 
+        <div class="card-header" style="margin-top: 20px;">2. MASUKKAN DATA PENGUKURAN</div>
+
         <div class="input-group">
-            <label>Estimasi Panjang Rentang Tangan / Wingspan (cm)</label>
-            <input type="number" id="wingspan" placeholder="Contoh: 170 (Ukur pakai tali/penggaris)">
+            <label>Rentang Tangan / Wingspan (cm)</label>
+            <input type="number" id="wingspan" placeholder="Contoh: 170 (Ukur pakai tali)">
         </div>
 
         <div class="input-group">
-            <label>Jenis Kelamin (Untuk rumus berat ideal)</label>
+            <label>Jenis Kelamin</label>
             <select id="gender">
                 <option value="" disabled selected>Pilih jenis kelamin...</option>
                 <option value="male">Pria</option>
@@ -173,7 +207,7 @@
             </select>
         </div>
 
-        <button onclick="calculateEstimation()">Estimasi Tinggi & Berat</button>
+        <button class="submit-btn" onclick="calculateEstimation()">Estimasi Tinggi & Berat</button>
     </div>
 
     <div id="result-container">
@@ -205,7 +239,6 @@
                 reader.onload = function(e) {
                     document.getElementById('preview-img').src = e.target.result;
                     document.getElementById('preview-container').style.display = 'block';
-                    document.getElementById('upload-label').innerText = "Ganti Foto Rentang Tangan";
                 }
                 reader.readAsDataURL(file);
             }
@@ -224,10 +257,8 @@
                 return;
             }
 
-            // 1. Tinggi badan diasumsikan setara dengan rentang tangan (Wingspan $\approx$ Height)
             const estimatedHeight = wingspan;
 
-            // 2. Hitung Berat Badan Ideal menggunakan rumus Broca
             let idealWeight = 0;
             if (gender === 'male') {
                 idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.1);
@@ -235,7 +266,6 @@
                 idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.15);
             }
 
-            // 3. Hitung BMI berdasarkan tinggi dan berat ideal perkiraan
             const heightM = estimatedHeight / 100;
             const bmi = idealWeight / (heightM * heightM);
 
@@ -243,7 +273,6 @@
             if (bmi < 18.5) bmiStatus = "Kurus (Underweight)";
             else if (bmi > 24.9) bmiStatus = "Kelebihan Berat Badan";
 
-            // Tampilkan hasil ke UI
             document.getElementById('result-container').style.display = 'block';
             document.getElementById('res-height').innerText = estimatedHeight.toFixed(0) + " cm";
             document.getElementById('res-weight').innerText = idealWeight.toFixed(1) + " kg";
