@@ -50,7 +50,6 @@
             top: 0;
             left: 0;
             right: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
         .header-title {
@@ -93,7 +92,6 @@
             gap: 8px;
             z-index: 60;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .result-label {
@@ -108,35 +106,12 @@
             font-weight: 700;
         }
 
-        /* Tombol Melayang untuk Sembunyikan/Tampilkan UI */
-        .floating-eye-btn {
-            position: absolute;
-            top: 110px;
-            right: 16px;
-            background: rgba(15, 15, 20, 0.75);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            color: #38bdf8;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            cursor: pointer;
-            z-index: 90;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            transition: transform 0.2s ease;
-        }
-        .floating-eye-btn:active { transform: scale(0.9); }
-
-        /* Panel Samping Kiri (Drawer Pengaturan & Riwayat Undo/Redo) */
+        /* Panel Samping Kiri (Drawer Pengaturan & Kontrol Penuh) */
         .left-drawer {
             position: absolute;
             top: 0;
             left: -100%;
-            width: 280px;
+            width: 300px;
             height: 100vh;
             background: rgba(15, 15, 20, 0.95);
             backdrop-filter: blur(20px);
@@ -291,7 +266,7 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah (Dilengkapi Tombol Geser/Tinggikan & Turunkan) */
+        /* Panel Kontrol Bawah Ringkas */
         .bottom-panel {
             display: none;
             flex-direction: column;
@@ -312,59 +287,32 @@
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Handle Bar & Tombol Geser Posisi Panel (Tinggikan / Turunkan) */
         .panel-handle-bar {
             width: 100%;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 2px 4px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 6px;
-        }
-
-        .panel-shift-btns {
-            display: flex;
-            gap: 6px;
-        }
-
-        .btn-shift {
-            background: rgba(56, 189, 248, 0.15);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            color: #38bdf8;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-        .btn-shift:active { background: rgba(56, 189, 248, 0.4); }
-
-        .handle-center-info {
-            display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 2px 4px 6px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             cursor: pointer;
         }
+
         .handle-pill {
             width: 32px;
             height: 4px;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 2px;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
         .handle-text {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             color: #9ca3af;
             font-weight: 500;
         }
 
-        /* Tingkatan Posisi Panel (Level 0: Collapsed, Level 1: Normal, Level 2: Naik/Tinggi, Level 3: Lebih Tinggi) */
+        /* Tingkatan Posisi Panel */
         .bottom-panel.level-0 {
-            transform: translateY(calc(100% - 32px));
+            transform: translateY(calc(100% - 28px));
         }
         .bottom-panel.level-0 .panel-content-wrap {
             opacity: 0;
@@ -390,23 +338,9 @@
             transition: opacity 0.2s ease;
         }
 
-        /* Kelas untuk menyembunyikan UI saat mode Full View */
-        .ui-hidden .app-header,
-        .ui-hidden .bottom-panel,
-        .ui-hidden .top-result-badge,
-        .ui-hidden .info-banner {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(20px);
-        }
-        .ui-hidden .floating-eye-btn {
-            background: rgba(56, 189, 248, 0.25);
-            border-color: #38bdf8;
-        }
-
         .action-row {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 6px;
         }
 
@@ -483,7 +417,7 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            padding: 6px 10px;
+            padding: 8px 10px;
             display: flex;
             flex-direction: column;
             gap: 4px;
@@ -602,28 +536,77 @@
             </button>
         </div>
 
-        <!-- Badge Hasil Ukur di Atas (Agar tidak menutupi tombol bawah) -->
+        <!-- Badge Hasil Ukur di Atas -->
         <div class="top-result-badge" id="topResultBadge">
             <span class="result-label">Hasil:</span>
             <span class="result-value" id="resultValue">0 cm</span>
         </div>
 
-        <!-- Tombol Melayang untuk Sembunyikan/Tampilkan UI -->
-        <button class="floating-eye-btn" id="eyeBtn" onclick="toggleUI()" title="Sembunyikan/Tampilkan Tombol">👁️</button>
-
-        <!-- Panel Samping Kiri (Drawer Pengaturan, Kalibrasi, & Riwayat Undo/Redo) -->
+        <!-- Panel Samping Kiri (Drawer Pengaturan, D-Pad, Undo/Redo, Hapus, & Panel Height Controls) -->
         <div class="left-drawer" id="leftDrawer">
             <div class="drawer-header">
-                <span class="drawer-title">⚙️ Pengaturan & Menu</span>
+                <span class="drawer-title">⚙️ Menu & Pengaturan</span>
                 <button class="drawer-close" onclick="toggleDrawer()">✕</button>
             </div>
 
-            <!-- Riwayat Aksi (Undo & Redo) -->
+            <!-- Kontrol Posisi Tinggi Panel (Tinggikan & Turunkan) -->
+            <div class="setting-group">
+                <span>Atur Ketinggian Panel:</span>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <button class="btn-action" onclick="shiftPanelHeight(1)">▲ Tinggikan</button>
+                    <button class="btn-action" onclick="shiftPanelHeight(-1)">▼ Turunkan</button>
+                </div>
+            </div>
+
+            <!-- Riwayat Aksi (Undo / Redo) -->
             <div class="setting-group">
                 <span>Riwayat Aksi (Undo / Redo):</span>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
                     <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
                     <button class="btn-action" onclick="redoAction()">↪️ Redo</button>
+                </div>
+            </div>
+
+            <!-- Tombol Hapus -->
+            <div class="setting-group">
+                <span>Hapus Objek / Titik:</span>
+                <button class="btn-action danger" 
+                    onpointerdown="startDeletePress()" 
+                    onpointerup="endDeletePress()" 
+                    onpointercancel="endDeletePress()"
+                    title="Tekan 1x untuk hapus titik terakhir. Tahan untuk hapus semua.">
+                    🗑️ Hapus (Tap/Tahan)
+                </button>
+            </div>
+
+            <!-- Panel D-Pad Kontrol Arah -->
+            <div class="setting-group">
+                <div class="dpad-container">
+                    <div class="dpad-header">
+                        <span>Tombol Arah (D-Pad):</span>
+                        <div style="display: flex; gap: 3px;">
+                            <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px; font-size: 0.62rem;">📍 Titik</button>
+                            <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px; font-size: 0.62rem;">🖼️ Gambar</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
+                            <div style="display: flex; gap: 2px;">
+                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
+                                <button class="preset-chip active" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
+                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(15)">15</button>
+                            </div>
+                        </div>
+                        <div class="dpad-grid">
+                            <div></div>
+                            <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
+                            <div></div>
+                            <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
+                            <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
+                            <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -644,11 +627,6 @@
                     <button class="btn-action primary" style="padding: 6px 10px;" onclick="calibrateWithRealSize()">Atur</button>
                 </div>
             </div>
-
-            <div class="setting-group" style="display:none;">
-                <span>Skala:</span>
-                <input type="number" id="scaleInput" value="10" oninput="redraw()">
-            </div>
         </div>
 
         <!-- Popup Satuan -->
@@ -659,7 +637,7 @@
             <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="info-banner" id="infoBanner">💡 Tap Menu (⚙️) di kiri atas untuk pengaturan kalibrasi!</div>
+        <div class="info-banner" id="infoBanner">💡 Tap Menu (⚙️) di kiri atas untuk pengaturan kalibrasi & tombol kontrol!</div>
 
         <!-- Lensa Pembesar (Magnifier) -->
         <div class="magnifier" id="magnifier">
@@ -681,66 +659,17 @@
             <button class="capture-btn" onclick="capturePhoto()">📷</button>
         </div>
 
-        <!-- Panel Kontrol Bawah dengan Tombol Tinggikan / Turunkan Panel -->
+        <!-- Panel Kontrol Bawah (Ringkas) -->
         <div class="bottom-panel level-1" id="bottomPanel">
-            <!-- Handle bar lengkap dengan Tombol Tinggikan (▲) dan Turunkan (▼) -->
-            <div class="panel-handle-bar">
-                <button class="btn-shift" onclick="shiftPanelHeight(1)" title="Tinggikan Panel">▲ Tinggikan</button>
-                
-                <div class="handle-center-info" onclick="toggleCollapsePanel()">
-                    <div class="handle-pill"></div>
-                    <span class="handle-text" id="handleText">Panel Standar</span>
-                </div>
-
-                <button class="btn-shift" onclick="shiftPanelHeight(-1)" title="Turunkan Panel">▼ Turunkan</button>
+            <div class="panel-handle-bar" onclick="toggleCollapsePanel()">
+                <div class="handle-pill"></div>
+                <span class="handle-text" id="handleText">Panel Kontrol Utama (Tap untuk Lipat)</span>
             </div>
 
             <div class="panel-content-wrap">
-                <!-- Tombol Menu Utama (Garis, Titik, Hapus dengan fitur Tap & Hold) -->
                 <div class="action-row">
-                    <button class="btn-action primary" onclick="addNewLine()">➕ Garis</button>
-                    <button class="btn-action" onclick="addPointToCurrentLine()">➕ Titik</button>
-                    
-                    <!-- Tombol Hapus: Tap = Hapus Terbaru | Tahan (Hold) = Konfirmasi Hapus Semua -->
-                    <button class="btn-action danger" 
-                        onpointerdown="startDeletePress()" 
-                        onpointerup="endDeletePress()" 
-                        onpointercancel="endDeletePress()"
-                        title="Tekan 1x untuk hapus titik terakhir. Tahan untuk hapus semua.">
-                        🗑️ Hapus
-                    </button>
-                </div>
-
-                <!-- Panel D-Pad Kontrol Arah -->
-                <div class="dpad-container">
-                    <div class="dpad-header">
-                        <span>Tombol Arah (Analog/D-Pad):</span>
-                        <div style="display: flex; gap: 3px;">
-                            <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px; font-size: 0.62rem;">📍 Titik</button>
-                            <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px; font-size: 0.62rem;">🖼️ Gambar</button>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <!-- Langkah / Step Selector -->
-                        <div style="display: flex; flex-direction: column; gap: 2px;">
-                            <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
-                            <div style="display: flex; gap: 2px;">
-                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
-                                <button class="preset-chip active" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(15)">15</button>
-                            </div>
-                        </div>
-
-                        <!-- Tombol Arah Atas Bawah Kiri Kanan -->
-                        <div class="dpad-grid">
-                            <div></div>
-                            <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
-                            <div></div>
-                            <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
-                            <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
-                            <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
-                        </div>
-                    </div>
+                    <button class="btn-action primary" onclick="addNewLine()">➕ Tambah Garis</button>
+                    <button class="btn-action" onclick="addPointToCurrentLine()">➕ Tambah Titik</button>
                 </div>
             </div>
         </div>
@@ -770,10 +699,8 @@
         let img = new Image();
         let isImageLoaded = false;
         let currentUnit = 'cm';
-        let isUiHidden = false;
         let isDrawerOpen = false;
         
-        // Level Tinggi Panel (0 = Collapsed, 1 = Standar, 2 = Naik Sedikit, 3 = Paling Tinggi)
         let currentPanelLevel = 1;
         
         let lines = [[]];
@@ -801,7 +728,6 @@
             startCamera();
         });
 
-        // Fungsi untuk Mengatur Ketinggian Panel secara Bertahap (Tinggikan / Turunkan)
         function shiftPanelHeight(direction) {
             currentPanelLevel += direction;
             if (currentPanelLevel > 3) currentPanelLevel = 3;
@@ -883,22 +809,7 @@
             let b = document.getElementById('infoBanner');
             b.innerText = text;
             b.style.display = 'block';
-            setTimeout(() => { if(!isUiHidden) b.style.display = 'none'; }, duration);
-        }
-
-        function toggleUI() {
-            isUiHidden = !isUiHidden;
-            let container = document.getElementById('appContainer');
-            let eyeBtn = document.getElementById('eyeBtn');
-            if (isUiHidden) {
-                container.classList.add('ui-hidden');
-                eyeBtn.innerText = '👁️‍🗨️';
-                document.getElementById('leftDrawer').classList.remove('open');
-                isDrawerOpen = false;
-            } else {
-                container.classList.remove('ui-hidden');
-                eyeBtn.innerText = '👁️';
-            }
+            setTimeout(() => { b.style.display = 'none'; }, duration);
         }
 
         function toggleDrawer() {
@@ -1036,7 +947,7 @@
                 activePointIndex = 1;
 
                 redraw();
-                showBanner("✨ Foto siap! Gunakan tombol ▲/▼ di atas panel untuk mengatur tinggi panel.");
+                showBanner("✨ Foto siap! Buka Menu (⚙️) untuk pengaturan tinggi panel & kontrol.");
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -1073,7 +984,7 @@
                     activePointIndex = 1;
 
                     redraw();
-                    showBanner("✨ Gambar dimuat! Gunakan tombol ▲/▼ di atas panel untuk mengatur tinggi panel.");
+                    showBanner("✨ Gambar dimuat! Buka Menu (⚙️) untuk pengaturan tinggi panel & kontrol.");
                 }
                 img.src = event.target.result;
             }
@@ -1162,7 +1073,7 @@
         }
 
         function formatDistance(pxDist) {
-            let scale = parseFloat(document.getElementById('scaleInput').value) || 10;
+            let scale = 10;
             let valCm = (pxDist / 100) * scale;
 
             if (currentUnit === 'm') valCm /= 100;
@@ -1198,7 +1109,7 @@
             }
             if (pxDist === 0) return;
 
-            let currentScale = parseFloat(document.getElementById('scaleInput').value) || 10;
+            let currentScale = 10;
             let currentCm = (pxDist / 100) * currentScale;
             
             let targetCm = actualCm;
@@ -1207,7 +1118,6 @@
             if (currentUnit === 'in') targetCm *= 2.54;
 
             let newScale = currentScale * (targetCm / currentCm);
-            document.getElementById('scaleInput').value = newScale.toFixed(2);
             redraw();
             showBanner(`✅ Dikalibrasi ke ${actualCm} cm!`);
             toggleDrawer();
