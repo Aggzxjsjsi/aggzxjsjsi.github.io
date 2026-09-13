@@ -61,7 +61,7 @@
             text-transform: uppercase;
         }
 
-        .btn-header-action, .unit-btn, .ui-toggle-btn {
+        .btn-header-action, .unit-btn {
             background: rgba(56, 189, 248, 0.15);
             border: 1px solid rgba(56, 189, 248, 0.3);
             color: #38bdf8;
@@ -77,22 +77,53 @@
         }
         .btn-header-action:active, .unit-btn:active { background: rgba(56, 189, 248, 0.4); }
 
+        /* Badge Hasil Ukur di Atas (Agar tidak menutupi tombol bawah) */
+        .top-result-badge {
+            position: absolute;
+            top: 62px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 15, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 60;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .result-label {
+            font-size: 0.68rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 1rem;
+            color: #38bdf8;
+            font-weight: 700;
+        }
+
         /* Tombol Melayang untuk Sembunyikan/Tampilkan UI */
         .floating-eye-btn {
             position: absolute;
-            top: 70px;
+            top: 110px;
             right: 16px;
             background: rgba(15, 15, 20, 0.75);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(56, 189, 248, 0.4);
             color: #38bdf8;
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
             z-index: 90;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
@@ -100,7 +131,7 @@
         }
         .floating-eye-btn:active { transform: scale(0.9); }
 
-        /* Panel Samping Kiri (Drawer Pengaturan & Kalibrasi) */
+        /* Panel Samping Kiri (Drawer Pengaturan, Kalibrasi, Undo/Redo) */
         .left-drawer {
             position: absolute;
             top: 0;
@@ -117,6 +148,7 @@
             padding: 20px 16px;
             gap: 16px;
             transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
         }
         .left-drawer.open {
             left: 0;
@@ -242,7 +274,7 @@
         /* Banner Informasi */
         .info-banner {
             position: absolute;
-            top: 65px;
+            top: 110px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(56, 189, 248, 0.9);
@@ -259,11 +291,11 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah Utama (Ringkas & Inti) */
+        /* Panel Kontrol Bawah Utama (Bisa Ditarik/Ditekan Naik-Turun) */
         .bottom-panel {
             display: none;
             flex-direction: column;
-            background: rgba(15, 15, 20, 0.85);
+            background: rgba(15, 15, 20, 0.9);
             backdrop-filter: blur(16px);
             z-index: 50;
             position: absolute;
@@ -274,17 +306,54 @@
             border-top-right-radius: 20px;
             border-top: 1px solid rgba(56, 189, 248, 0.2);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
-            padding: 10px 14px;
-            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            padding: 8px 14px;
+            padding-bottom: max(14px, env(safe-area-inset-bottom));
             gap: 8px;
-            max-height: 52vh;
-            overflow-y: auto;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+
+        /* Handle Bar untuk Tarik ke Atas / Dorong ke Bawah */
+        .panel-handle-bar {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 4px 0;
+            gap: 3px;
+        }
+        .handle-pill {
+            width: 36px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+        .handle-text {
+            font-size: 0.62rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        /* Status Collapsed / Disembunyikan ke Bawah */
+        .bottom-panel.collapsed {
+            transform: translateY(calc(100% - 32px));
+        }
+        .bottom-panel.collapsed .panel-content-wrap {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .panel-content-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: opacity 0.2s ease;
         }
 
         /* Kelas untuk menyembunyikan UI saat mode Full View */
         .ui-hidden .app-header,
         .ui-hidden .bottom-panel,
+        .ui-hidden .top-result-badge,
         .ui-hidden .info-banner {
             opacity: 0;
             pointer-events: none;
@@ -295,49 +364,28 @@
             border-color: #38bdf8;
         }
 
-        .result-box {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(56, 189, 248, 0.08);
-            padding: 8px 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-        }
-
-        .result-label {
-            font-size: 0.7rem;
-            color: #9ca3af;
-            font-weight: 500;
-        }
-
-        .result-value {
-            font-size: 1.1rem;
-            color: #38bdf8;
-            font-weight: 700;
-        }
-
         .action-row {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-            position: relative;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
         }
 
         .btn-action {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: #f3f4f6;
-            padding: 6px 2px;
+            padding: 8px 4px;
             border-radius: 8px;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 2px;
+            gap: 4px;
+            user-select: none;
+            -webkit-user-select: none;
         }
         .btn-action:active { background: rgba(56, 189, 248, 0.25); }
         .btn-action.primary {
@@ -350,34 +398,6 @@
             color: #f43f5e;
             border-color: rgba(244, 63, 94, 0.4);
         }
-
-        /* Dropdown Opsi Hapus */
-        .delete-dropdown {
-            position: absolute;
-            bottom: 45px;
-            right: 0;
-            width: 170px;
-            background: rgba(24, 24, 28, 0.95);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(244, 63, 94, 0.3);
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-            display: none;
-            z-index: 120;
-            overflow: hidden;
-            flex-direction: column;
-        }
-        .delete-option {
-            padding: 8px 12px;
-            font-size: 0.72rem;
-            color: #d1d5db;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .delete-option:hover { background: rgba(244, 63, 94, 0.15); color: #f43f5e; }
 
         /* Preset & Pengaturan di Drawer */
         .preset-grid {
@@ -439,8 +459,8 @@
 
         .dpad-grid {
             display: grid;
-            grid-template-columns: 40px 40px 40px;
-            grid-template-rows: 32px 32px;
+            grid-template-columns: 42px 42px 42px;
+            grid-template-rows: 34px 34px;
             gap: 3px;
             justify-content: center;
         }
@@ -450,7 +470,7 @@
             border: 1px solid rgba(56, 189, 248, 0.35);
             color: #38bdf8;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -542,17 +562,32 @@
             </button>
         </div>
 
+        <!-- Badge Hasil Ukur di Atas -->
+        <div class="top-result-badge" id="topResultBadge">
+            <span class="result-label">Hasil:</span>
+            <span class="result-value" id="resultValue">0 cm</span>
+        </div>
+
         <!-- Tombol Melayang untuk Sembunyikan/Tampilkan UI -->
         <button class="floating-eye-btn" id="eyeBtn" onclick="toggleUI()" title="Sembunyikan/Tampilkan Tombol">👁️</button>
 
-        <!-- Panel Samping Kiri (Drawer untuk Sisa Pengaturan & Kalibrasi) -->
+        <!-- Panel Samping Kiri (Drawer Pengaturan, Kalibrasi, & Riwayat Undo/Redo) -->
         <div class="left-drawer" id="leftDrawer">
             <div class="drawer-header">
-                <span class="drawer-title">⚙️ Pengaturan & Kalibrasi</span>
+                <span class="drawer-title">⚙️ Pengaturan & Menu</span>
                 <button class="drawer-close" onclick="toggleDrawer()">✕</button>
             </div>
 
+            <!-- Riwayat Aksi (Undo & Redo dipindah ke sini) -->
             <div class="setting-group">
+                <span>Riwayat Aksi (Undo / Redo):</span>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
+                    <button class="btn-action" onclick="redoAction()">↪️ Redo</button>
+                </div>
+            </div>
+
+            <div class="setting-group" style="margin-top: 4px;">
                 <span>Preset Kalibrasi Instan:</span>
                 <div class="preset-grid">
                     <div class="preset-chip" onclick="applyPreset(18)">✋ Jengkal (18 cm)</div>
@@ -562,7 +597,7 @@
                 </div>
             </div>
 
-            <div class="setting-group" style="margin-top: 6px;">
+            <div class="setting-group" style="margin-top: 4px;">
                 <span>Ukuran Asli Objek (cm):</span>
                 <div style="display: flex; gap: 5px; align-items: center;">
                     <input type="number" id="actualSizeInput" placeholder="Mis: 18">
@@ -606,59 +641,59 @@
             <button class="capture-btn" onclick="capturePhoto()">📷</button>
         </div>
 
-        <!-- Panel Perhitungan & Kontrol Bawah Utama -->
+        <!-- Panel Kontrol Bawah (Bisa ditarik ke atas / ditekan ke bawah) -->
         <div class="bottom-panel" id="bottomPanel">
-            <div class="result-box">
-                <span class="result-label">Hasil Ukur:</span>
-                <span class="result-value" id="resultValue">0 cm</span>
+            <!-- Handle bar untuk tarik ke atas atau dorong ke bawah -->
+            <div class="panel-handle-bar" onclick="toggleBottomPanel()">
+                <div class="handle-pill"></div>
+                <span class="handle-text" id="handleText">Tutup Panel ▾</span>
             </div>
 
-            <!-- Tombol Menu Utama (Garis, Titik, Undo, Redo, Hapus) -->
-            <div class="action-row">
-                <button class="btn-action primary" onclick="addNewLine()">➕ Garis</button>
-                <button class="btn-action" onclick="addPointToCurrentLine()">➕ Titik</button>
-                <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
-                <button class="btn-action" onclick="redoAction()">↪️ Redo</button>
-                
-                <!-- Tombol Hapus dengan Sub-Menu -->
-                <div style="position: relative;">
-                    <button class="btn-action danger" style="width: 100%; height: 100%;" onclick="toggleDeleteMenu()">🗑️ Hapus</button>
-                    <!-- Dropdown Pilihan Hapus -->
-                    <div class="delete-dropdown" id="deleteDropdown">
-                        <div class="delete-option" onclick="deleteLatestItem()">↩️ Hapus Terbaru</div>
-                        <div class="delete-option" onclick="confirmClearAll()">🗑️ Hapus Semua</div>
-                    </div>
+            <div class="panel-content-wrap">
+                <!-- Tombol Menu Utama (Garis, Titik, Hapus dengan fitur Tap & Hold) -->
+                <div class="action-row">
+                    <button class="btn-action primary" onclick="addNewLine()">➕ Garis</button>
+                    <button class="btn-action" onclick="addPointToCurrentLine()">➕ Titik</button>
+                    
+                    <!-- Tombol Hapus: Tap = Hapus Terbaru | Tahan (Hold) = Konfirmasi Hapus Semua -->
+                    <button class="btn-action danger" 
+                        onpointerdown="startDeletePress()" 
+                        onpointerup="endDeletePress()" 
+                        onpointercancel="endDeletePress()"
+                        title="Tekan 1x untuk hapus titik terakhir. Tahan untuk hapus semua.">
+                        🗑️ Hapus
+                    </button>
                 </div>
-            </div>
 
-            <!-- Panel D-Pad Kontrol Arah -->
-            <div class="dpad-container">
-                <div class="dpad-header">
-                    <span>Tombol Arah (Analog/D-Pad):</span>
-                    <div style="display: flex; gap: 3px;">
-                        <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px; font-size: 0.62rem;">📍 Titik</button>
-                        <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px; font-size: 0.62rem;">🖼️ Gambar</button>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <!-- Langkah / Step Selector -->
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
-                        <div style="display: flex; gap: 2px;">
-                            <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
-                            <button class="preset-chip active" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                            <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(15)">15</button>
+                <!-- Panel D-Pad Kontrol Arah -->
+                <div class="dpad-container">
+                    <div class="dpad-header">
+                        <span>Tombol Arah (Analog/D-Pad):</span>
+                        <div style="display: flex; gap: 3px;">
+                            <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px; font-size: 0.62rem;">📍 Titik</button>
+                            <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px; font-size: 0.62rem;">🖼️ Gambar</button>
                         </div>
                     </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <!-- Langkah / Step Selector -->
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
+                            <div style="display: flex; gap: 2px;">
+                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
+                                <button class="preset-chip active" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
+                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(15)">15</button>
+                            </div>
+                        </div>
 
-                    <!-- Tombol Arah Atas Bawah Kiri Kanan -->
-                    <div class="dpad-grid">
-                        <div></div>
-                        <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
-                        <div></div>
-                        <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
-                        <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
-                        <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
+                        <!-- Tombol Arah Atas Bawah Kiri Kanan -->
+                        <div class="dpad-grid">
+                            <div></div>
+                            <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
+                            <div></div>
+                            <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
+                            <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
+                            <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -668,8 +703,8 @@
     <!-- Modal Konfirmasi Hapus Semua -->
     <div class="modal-overlay" id="confirmModal">
         <div class="modal-box">
-            <div class="modal-title">Konfirmasi Hapus</div>
-            <div class="modal-text">Yakin ingin hapus semua titik dan garis?</div>
+            <div class="modal-title">Konfirmasi Hapus Semua</div>
+            <div class="modal-text">Yakin ingin menghapus seluruh titik dan garis yang ada?</div>
             <div class="modal-actions">
                 <button class="btn-action" onclick="closeModal()">Batal</button>
                 <button class="btn-action danger" onclick="executeClearAll()">Ya, Hapus Semua</button>
@@ -691,6 +726,7 @@
         let currentUnit = 'cm';
         let isUiHidden = false;
         let isDrawerOpen = false;
+        let isPanelCollapsed = false;
         
         let lines = [[]];
         let activeLineIndex = 0;
@@ -711,6 +747,10 @@
         let grabOffsetX = 0;
         let grabOffsetY = 0;
 
+        // Variabel untuk fitur Tap & Hold tombol Hapus
+        let deletePressTimer = null;
+        let isLongPressTriggered = false;
+
         window.addEventListener('DOMContentLoaded', () => {
             startCamera();
         });
@@ -718,8 +758,8 @@
         function saveState() {
             let snapshot = JSON.parse(JSON.stringify(lines));
             historyStack.push(snapshot);
-            if (historyStack.length > 30) historyStack.shift(); // Batasi histori maksimal 30 aksi
-            redoStack = []; // Kosongkan redo jika ada aksi baru
+            if (historyStack.length > 30) historyStack.shift();
+            redoStack = [];
         }
 
         function undoAction() {
@@ -790,16 +830,39 @@
             }
         }
 
-        function toggleDeleteMenu() {
-            let m = document.getElementById('deleteDropdown');
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+        function toggleBottomPanel() {
+            isPanelCollapsed = !isPanelCollapsed;
+            let panel = document.getElementById('bottomPanel');
+            let handleText = document.getElementById('handleText');
+            if (isPanelCollapsed) {
+                panel.classList.add('collapsed');
+                handleText.innerText = 'Buka Panel ▴';
+            } else {
+                panel.classList.remove('collapsed');
+                handleText.innerText = 'Tutup Panel ▾';
+            }
+        }
+
+        // Logika Tombol Hapus: Tap Sekali = Hapus Terbaru | Tahan (Hold 600ms) = Konfirmasi Hapus Semua
+        function startDeletePress() {
+            isLongPressTriggered = false;
+            deletePressTimer = setTimeout(() => {
+                isLongPressTriggered = true;
+                confirmClearAll();
+            }, 600);
+        }
+
+        function endDeletePress() {
+            clearTimeout(deletePressTimer);
+            if (!isLongPressTriggered) {
+                deleteLatestItem();
+            }
         }
 
         function deleteLatestItem() {
-            document.getElementById('deleteDropdown').style.display = 'none';
             if (!lines || lines.length === 0) return;
 
-            saveState(); // Simpan histori sebelum hapus
+            saveState();
 
             let currentLine = lines[activeLineIndex];
             if (currentLine && currentLine.length > 0) {
@@ -825,7 +888,6 @@
         }
 
         function confirmClearAll() {
-            document.getElementById('deleteDropdown').style.display = 'none';
             document.getElementById('confirmModal').style.display = 'flex';
         }
 
@@ -835,12 +897,12 @@
 
         function executeClearAll() {
             closeModal();
-            saveState(); // Simpan histori sebelum hapus semua
+            saveState();
             lines = [[]];
             activeLineIndex = 0;
             activePointIndex = 0;
             redraw();
-            showBanner("🗑️ Semua titik dan garis dihapus.");
+            showBanner("🗑️ Semua titik dan garis berhasil dihapus.");
         }
 
         async function startCamera() {
@@ -952,7 +1014,7 @@
         }
 
         function addNewLine() {
-            saveState(); // Simpan histori sebelum tambah garis
+            saveState();
             lines.push([]);
             activeLineIndex = lines.length - 1;
             let cx = canvas.width / 2;
@@ -963,7 +1025,7 @@
         }
 
         function addPointToCurrentLine() {
-            saveState(); // Simpan histori sebelum tambah titik
+            saveState();
             if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
             let pts = lines[activeLineIndex];
             let last = pts[pts.length - 1] || {x: canvas.width/2, y: canvas.height/2};
@@ -1008,7 +1070,7 @@
         }
 
         function moveDirection(dirX, dirY) {
-            saveState(); // Simpan histori sebelum pergeseran D-Pad
+            saveState();
             let dx = dirX * moveStep;
             let dy = dirY * moveStep;
 
@@ -1179,7 +1241,7 @@
                     let pt = lines[l][p];
                     let dist = Math.hypot(pos.x - pt.x, pos.y - pt.y);
                     if (dist < 50) { 
-                        saveState(); // Simpan histori sebelum mulai menggeser titik
+                        saveState();
                         isDragging = true;
                         draggedLineIdx = l;
                         draggedPointIdx = p;
@@ -1195,7 +1257,7 @@
             }
 
             if (!found) {
-                saveState(); // Simpan histori sebelum menambah/memindahkan titik terdekat
+                saveState();
                 if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
                 let pts = lines[activeLineIndex];
                 if (pts.length > 0) {
@@ -1271,9 +1333,6 @@
         window.addEventListener('click', (e) => {
             if (!e.target.closest('.unit-btn') && !e.target.closest('.unit-popup')) {
                 document.getElementById('unitPopup').style.display = 'none';
-            }
-            if (!e.target.closest('.btn-action.danger') && !e.target.closest('.delete-dropdown')) {
-                document.getElementById('deleteDropdown').style.display = 'none';
             }
         });
     </script>
