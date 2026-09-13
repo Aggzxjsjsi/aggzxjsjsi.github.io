@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estimasi Tubuh Tanpa Alat</title>
+    <title>Kalkulator Anatomi Metode Kilan - Aggx</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -27,12 +27,12 @@
 
         .title-container { text-align: center; margin: 30px 0 20px 0; }
         h1 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             color: #38bdf8;
             text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .subtitle { color: #cbd5e1; font-size: 0.95rem; line-height: 1.4; max-width: 400px; margin: 0 auto; }
+        .subtitle { color: #cbd5e1; font-size: 0.9rem; line-height: 1.4; max-width: 400px; margin: 0 auto; }
 
         .card {
             background: #111827;
@@ -54,7 +54,6 @@
             text-transform: uppercase;
         }
 
-        /* Perbaikan Layout Tombol Kamera & Galeri agar tidak tumpang tindih */
         .btn-upload-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -68,24 +67,18 @@
             color: #38bdf8;
             padding: 12px;
             border-radius: 12px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             text-align: center;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s;
         }
-
-        .action-btn-upload:hover {
-            background: rgba(56, 189, 248, 0.2);
-        }
-
-        .action-btn-upload input {
-            display: none;
-        }
+        .action-btn-upload:hover { background: rgba(56, 189, 248, 0.2); }
+        .action-btn-upload input { display: none; }
 
         #preview-container {
             display: none;
@@ -96,17 +89,12 @@
             border-radius: 12px;
             border: 1px solid #374151;
         }
-
-        #preview-img {
-            max-width: 100%;
-            max-height: 180px;
-            border-radius: 8px;
-        }
+        #preview-img { max-width: 100%; max-height: 160px; border-radius: 8px; }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 15px;
         }
         .input-group label { font-size: 0.85rem; color: #94a3b8; }
@@ -124,6 +112,17 @@
         }
         input:focus, select:focus { border-color: #38bdf8; }
         select option { background: #111827; color: white; }
+
+        .info-box {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed #374151;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
 
         button.submit-btn {
             width: 100%;
@@ -159,8 +158,8 @@
             border-radius: 10px;
             margin-bottom: 10px;
         }
-        .stat-label { color: #cbd5e1; font-size: 0.9rem; }
-        .stat-value { font-size: 1.2rem; font-weight: 700; color: #38bdf8; }
+        .stat-label { color: #cbd5e1; font-size: 0.85rem; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; color: #38bdf8; }
 
         .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; }
     </style>
@@ -168,34 +167,51 @@
 <body>
 
     <div class="title-container">
-        <h1>Estimasi Tubuh Tanpa Alat</h1>
-        <p class="subtitle">Ambil foto atau upload gambar rentang tangan untuk memperkirakan ukuran tubuh</p>
+        <h1>Metode Kilan Anatomi</h1>
+        <p class="subtitle">Ukur tubuh tanpa alat dengan menjumlahkan rentang kilan tanganmu</p>
     </div>
 
     <div class="card">
-        <div class="card-header">1. AMBIL / UPLOAD FOTO RENTANG TANGAN</div>
+        <div class="card-header">1. Foto & Kalibrasi Kilan</div>
         
-        <!-- Tombol Terpisah untuk Kamera dan Galeri (Mencegah Tumpang Tindih Error) -->
         <div class="btn-upload-grid">
             <label class="action-btn-upload">
-                📸 Buka Kamera
+                📸 Foto Kilan
                 <input type="file" accept="image/*" capture="environment" onchange="previewImage(event)">
             </label>
             <label class="action-btn-upload">
-                🖼️ Pilih Galeri
+                🖼️ Dari Galeri
                 <input type="file" accept="image/*" onchange="previewImage(event)">
             </label>
         </div>
 
         <div id="preview-container">
-            <img id="preview-img" src="" alt="Preview Foto">
+            <img id="preview-img" src="" alt="Preview Kilan">
         </div>
 
-        <div class="card-header" style="margin-top: 20px;">2. MASUKKAN DATA PENGUKURAN</div>
+        <div class="input-group">
+            <label>Berapa cm perkiraan panjang 1 kilan tanganmu?</label>
+            <input type="number" id="kilan-cm" value="18" placeholder="Rata-rata dewasa 17-20 cm" step="0.5">
+        </div>
+        <div class="info-box">
+            💡 <i>Tips: Ukur 1 kilan (jempol ke kelingking) sekali saja pakai penggaris biasa, masukkan angkanya di atas (biasanya 15-20 cm).</i>
+        </div>
+
+        <div class="card-header" style="margin-top: 15px;">2. Hitung Jumlah Kilan Tubuh</div>
 
         <div class="input-group">
-            <label>Rentang Tangan / Wingspan (cm)</label>
-            <input type="number" id="wingspan" placeholder="Contoh: 170 (Ukur pakai tali)">
+            <label>Jumlah kilan Tangan Kanan (Ujung jari ke bahu)</label>
+            <input type="number" id="kilan-right" placeholder="Contoh: 4.5" step="0.5">
+        </div>
+
+        <div class="input-group">
+            <label>Jumlah kilan Tangan Kiri (Ujung jari ke bahu)</label>
+            <input type="number" id="kilan-left" placeholder="Contoh: 4.5" step="0.5">
+        </div>
+
+        <div class="input-group">
+            <label>Jumlah kilan Dada (Pangkal kanan ke pangkal kiri)</label>
+            <input type="number" id="kilan-chest" placeholder="Contoh: 2" step="0.5">
         </div>
 
         <div class="input-group">
@@ -207,23 +223,27 @@
             </select>
         </div>
 
-        <button class="submit-btn" onclick="calculateEstimation()">Estimasi Tinggi & Berat</button>
+        <button class="submit-btn" onclick="calculateKilanSystem()">Hitung Otomatis</button>
     </div>
 
     <div id="result-container">
         <div class="card result-box">
-            <div class="card-header" style="margin-bottom: 15px;">Hasil Estimasi Anatomi</div>
+            <div class="card-header" style="margin-bottom: 15px;">Hasil Kalkulasi Metode Kilan</div>
             
+            <div class="stat-row">
+                <div class="stat-label">Total Kilan</div>
+                <div class="stat-value" id="res-kilan">0 Kilan</div>
+            </div>
             <div class="stat-row">
                 <div class="stat-label">Estimasi Tinggi Badan</div>
                 <div class="stat-value" id="res-height">0 cm</div>
             </div>
             <div class="stat-row">
-                <div class="stat-label">Perkiraan Berat Ideal (Broca)</div>
+                <div class="stat-label">Perkiraan Berat Ideal</div>
                 <div class="stat-value" id="res-weight" style="color: #f87171;">0 kg</div>
             </div>
             <div class="stat-row">
-                <div class="stat-label">Status BMI Estimasi</div>
+                <div class="stat-label">Status BMI</div>
                 <div class="stat-value" id="res-bmi" style="color: #22c55e;">Normal</div>
             </div>
         </div>
@@ -244,12 +264,19 @@
             }
         }
 
-        function calculateEstimation() {
-            const wingspan = parseFloat(document.getElementById('wingspan').value);
+        function calculateKilanSystem() {
+            const kilanCm = parseFloat(document.getElementById('kilan-cm').value);
+            const rArm = parseFloat(document.getElementById('kilan-right').value) || 0;
+            const lArm = parseFloat(document.getElementById('kilan-left').value) || 0;
+            const chest = parseFloat(document.getElementById('kilan-chest').value) || 0;
             const gender = document.getElementById('gender').value;
 
-            if (!wingspan || wingspan <= 0) {
-                alert("Harap masukkan angka panjang rentang tangan (wingspan) terlebih dahulu!");
+            if (!kilanCm || kilanCm <= 0) {
+                alert("Masukkan panjang 1 kilan dengan benar!");
+                return;
+            }
+            if (rArm <= 0 || lArm <= 0) {
+                alert("Masukkan jumlah kilan tangan kanan dan kiri!");
                 return;
             }
             if (!gender) {
@@ -257,8 +284,14 @@
                 return;
             }
 
-            const estimatedHeight = wingspan;
+            // Jumlahkan total kilan
+            const totalKilan = rArm + lArm + chest;
+            
+            // Konversi total kilan ke cm (Wingspan)
+            const totalWingspanCm = totalKilan * kilanCm;
+            const estimatedHeight = totalWingspanCm; // Tinggi diasumsikan setara wingspan
 
+            // Hitung Berat Badan Ideal (Broca)
             let idealWeight = 0;
             if (gender === 'male') {
                 idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.1);
@@ -266,6 +299,7 @@
                 idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.15);
             }
 
+            // Hitung BMI
             const heightM = estimatedHeight / 100;
             const bmi = idealWeight / (heightM * heightM);
 
@@ -273,7 +307,9 @@
             if (bmi < 18.5) bmiStatus = "Kurus (Underweight)";
             else if (bmi > 24.9) bmiStatus = "Kelebihan Berat Badan";
 
+            // Tampilkan hasil
             document.getElementById('result-container').style.display = 'block';
+            document.getElementById('res-kilan').innerText = totalKilan + " Kilan";
             document.getElementById('res-height').innerText = estimatedHeight.toFixed(0) + " cm";
             document.getElementById('res-weight').innerText = idealWeight.toFixed(1) + " kg";
             document.getElementById('res-bmi').innerText = bmiStatus;
