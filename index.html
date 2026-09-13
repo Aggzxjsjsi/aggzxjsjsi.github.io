@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Room Ruler Pro - Advanced HUD</title>
+    <title>Kalkulator Tinggi & Panjang Pro - Light HUD</title>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -95,7 +95,7 @@
             display: block;
         }
 
-        /* Lensa Pembesar (Magnifier Loupe) saat Drag */
+        /* Lensa Pembesar (Magnifier Loupe) saat Drag Titik */
         .magnifier {
             position: absolute;
             width: 110px;
@@ -131,7 +131,7 @@
         /* Tombol Awal Kamera/Galeri */
         .initial-actions {
             position: absolute;
-            bottom: 50px;
+            bottom: 60px;
             left: 0;
             right: 0;
             display: flex;
@@ -143,7 +143,7 @@
 
         .capture-btn {
             background: linear-gradient(135deg, #38bdf8, #0284c7);
-            color: #0b0b0f;
+            color: #070709;
             border: none;
             border-radius: 50%;
             width: 76px;
@@ -189,9 +189,11 @@
             z-index: 60;
             display: none;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            text-align: center;
+            white-space: nowrap;
         }
 
-        /* Panel Kontrol & Perhitungan Bawah */
+        /* Panel Kontrol Bawah */
         .bottom-panel {
             display: none;
             flex-direction: column;
@@ -206,7 +208,7 @@
             border-top-right-radius: 24px;
             border-top: 1px solid rgba(56, 189, 248, 0.2);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.7);
-            padding: 16px 16px 36px 16px;
+            padding: 16px 16px 40px 16px;
             gap: 10px;
         }
 
@@ -342,7 +344,7 @@
         <!-- Header -->
         <div class="app-header">
             <button class="refresh-btn" onclick="refreshApp()">🔄 Refresh</button>
-            <div class="header-title">Ruler Pro HUD</div>
+            <div class="header-title">Kalkulator Tinggi Pro</div>
             <button class="unit-btn" onclick="toggleUnitMenu()">
                 <span id="unitLabel">cm</span> ▾
             </button>
@@ -356,14 +358,14 @@
             <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="info-banner" id="infoBanner">🔍 Tahan & geser titik untuk mengaktifkan Lensa Pembesar Presisi!</div>
+        <div class="info-banner" id="infoBanner">💡 Tips: Foto jengkal tangan Anda untuk kalibrasi, lalu ukur tinggi badan!</div>
 
-        <!-- Lensa Pembesar -->
+        <!-- Lensa Pembesar (Magnifier) -->
         <div class="magnifier" id="magnifier">
             <canvas id="magCanvas" width="330" height="330"></canvas>
         </div>
 
-        <!-- Workspace Full Layar -->
+        <!-- Workspace Kamera & Canvas -->
         <div class="workspace" id="workspace">
             <video id="videoElement" autoplay playsinline muted></video>
             <canvas id="measCanvas"></canvas>
@@ -381,7 +383,7 @@
         <!-- Panel Perhitungan & Kontrol Bawah -->
         <div class="bottom-panel" id="bottomPanel">
             <div class="result-box">
-                <span class="result-label">Total Panjang Garis:</span>
+                <span class="result-label">Hasil Ukur (Tinggi/Panjang):</span>
                 <span class="result-value" id="resultValue">0 cm</span>
             </div>
 
@@ -392,22 +394,22 @@
                 <button class="btn-action danger" onclick="clearAllLines()">🗑️ Hapus</button>
             </div>
 
-            <!-- Preset Kalibrasi Instan -->
+            <!-- Preset Kalibrasi (Termasuk Jengkal Tangan) -->
             <div class="setting-group" style="flex-direction: column; align-items: flex-start; gap: 4px;">
                 <span>Preset Kalibrasi Instan (Pilih acuan di garis aktif):</span>
                 <div class="preset-row">
+                    <div class="preset-chip" onclick="applyPreset(18)">✋ Jengkal Tangan (18 cm)</div>
                     <div class="preset-chip" onclick="applyPreset(8.56)">💳 KTP / ATM (8.5 cm)</div>
                     <div class="preset-chip" onclick="applyPreset(15.1)">💵 Uang 50rb (15 cm)</div>
                     <div class="preset-chip" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
-                    <div class="preset-chip" onclick="applyPreset(10)">📏 Standar 10 cm</div>
                 </div>
             </div>
 
             <!-- Kalibrasi Manual -->
             <div class="setting-group">
-                <span>Atau Ketik Ukuran Asli:</span>
+                <span>Atau Ketik Ukuran Asli (cm):</span>
                 <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="number" id="actualSizeInput" placeholder="Mis: 30">
+                    <input type="number" id="actualSizeInput" placeholder="Mis: 18">
                     <button class="btn-action primary" style="padding: 5px 10px;" onclick="calibrateWithRealSize()">Sesuaikan</button>
                 </div>
             </div>
@@ -447,7 +449,6 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             startCamera();
-            showBanner("💡 Jepret foto & gunakan Lensa Pembesar untuk presisi tinggi!");
         });
 
         function showBanner(text, duration = 3500) {
@@ -510,6 +511,7 @@
                 activeLineIndex = 0;
 
                 redraw();
+                showBanner("✨ Foto siap! Tarik garis pada jengkal lalu klik preset Jengkal.");
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -539,6 +541,7 @@
                     activeLineIndex = 0;
 
                     redraw();
+                    showBanner("✨ Gambar dimuat! Sesuaikan garis dengan acuan jengkal.");
                 }
                 img.src = event.target.result;
             }
@@ -638,7 +641,7 @@
             let newScale = currentScale * (targetCm / currentCm);
             document.getElementById('scaleInput').value = newScale.toFixed(2);
             redraw();
-            showBanner(`✅ Berhasil! Skala disesuaikan ke ${actualCm} cm.`);
+            showBanner(`✅ Berhasil dikalibrasi ke ${actualCm} cm!`);
         }
 
         function redraw() {
@@ -780,7 +783,6 @@
             lines[draggedLineIdx][draggedPointIdx] = {x: pos.x, y: pos.y};
             redraw();
 
-            // Tampilkan & update lensa pembesar mengikuti jari
             magDiv.style.display = 'block';
             magDiv.style.left = pos.clientX + 'px';
             magDiv.style.top = pos.clientY + 'px';
@@ -790,7 +792,7 @@
         function updateMagnifier(pos) {
             magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
             magCtx.save();
-            magCtx.imageSmoothingEnabled = false; // Supaya piksel terlihat jelas untuk presisi
+            magCtx.imageSmoothingEnabled = false;
             
             let zoom = 3;
             let sWidth = magCanvas.width / zoom;
