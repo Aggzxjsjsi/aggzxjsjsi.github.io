@@ -146,6 +146,31 @@
             margin: 10px 0 12px 0;
             text-transform: uppercase;
         }
+
+        /* Kotak Instruksi Peringatan & Petunjuk Cara Ukur */
+        .instruction-box {
+            background: rgba(56, 189, 248, 0.05);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-left: 4px solid #38bdf8;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        .instruction-box strong {
+            color: #38bdf8;
+        }
+        .instruction-box ul {
+            margin-top: 6px;
+            padding-left: 18px;
+            list-style-type: disc;
+        }
+        .instruction-box li {
+            margin-bottom: 3px;
+        }
+
         .input-grid {
             display: grid;
             grid-template-columns: 1fr 1.2fr 1fr;
@@ -421,7 +446,12 @@
                 <h2>Kalkulator Tinggi Badan (Jengkal & AI)</h2>
             </div>
             <div class="card-content">
+                <!-- NOMOR 1 -->
                 <div class="inner-header">1. FOTO JENGKAL UNTUK KALIBRASI AI</div>
+                <div class="instruction-box">
+                    📸 <strong>Petunjuk Foto Jengkal:</strong><br>
+                    Pastikan posisi HP/kamera <strong>tegak lurus</strong> berhadapan dengan telapak tangan dan <strong>hasil foto terlihat jelas</strong> (tidak buram). Rentangkan tangan selebar-lebarnya dari ujung jempol sampai ujung kelingking.
+                </div>
                 <div class="btn-upload-grid">
                     <label class="action-btn-upload">📸 Buka Kamera<input type="file" accept="image/*" capture="environment" onchange="processImage(event)"></label>
                     <label class="action-btn-upload">🖼️ Pilih Galeri<input type="file" accept="image/*" onchange="processImage(event)"></label>
@@ -435,20 +465,46 @@
                     <input type="text" id="jengkal-cm" inputmode="decimal" value="18">
                 </div>
 
-                <div class="inner-header" style="margin-top: 15px;">2. JUMLAH JENGKAL LENGAN</div>
+                <!-- NOMOR 2 -->
+                <div class="inner-header" style="margin-top: 20px;">2. JUMLAH JENGKAL LENGAN</div>
+                <div class="instruction-box">
+                    ⚠️ <strong>Cara Mengukur:</strong><br>
+                    Rapatkan lengan ke perut atau samping badan. <strong>Mulai mengukur jengkal dari lengan paling atas (ujung pundak/bahu) turun sampai ke ujung jari tengah.</strong><br><br>
+                    📝 <strong>Contoh Penulisan Desimal (Gunakan Titik):</strong>
+                    <ul>
+                        <li><strong>3 Jengkal Pas</strong> &rarr; Tulis <code>3</code></li>
+                        <li><strong>3 Jengkal Lebih Sedikit Sekali</strong> &rarr; Tulis <code>3.1</code> atau <code>3.2</code></li>
+                        <li><strong>3 Jengkal Lebih Sedikit</strong> &rarr; Tulis <code>3.3</code> atau <code>3.4</code></li>
+                        <li><strong>3 Jengkal Lebih Setengah</strong> &rarr; Tulis <code>3.5</code></li>
+                        <li><strong>3 Jengkal Lebih Banyak</strong> &rarr; Tulis <code>3.6</code> atau <code>3.7</code></li>
+                        <li><strong>3 Jengkal Lebih Banyak Sekali</strong> (Hampir 4 Jengkal) &rarr; Tulis <code>3.8</code> atau <code>3.9</code></li>
+                    </ul>
+                </div>
                 <div class="input-group">
                     <label>Jumlah Jengkal Lengan (Kanan + Kiri)</label>
                     <div class="arm-flex-container">
-                        <input type="text" id="jengkal-right" inputmode="decimal" value="2" placeholder="Kanan" oninput="syncLeftArm(this.value)">
+                        <input type="text" id="jengkal-right" inputmode="decimal" value="3.5" placeholder="Kanan" oninput="syncLeftArm(this.value)">
                         <span class="plus-sign">+</span>
-                        <input type="text" id="jengkal-left" inputmode="decimal" value="2" placeholder="Kiri">
+                        <input type="text" id="jengkal-left" inputmode="decimal" value="3.5" placeholder="Kiri">
                     </div>
                 </div>
 
-                <div class="inner-header" style="margin-top: 15px;">3. JUMLAH JENGKAL BAHU / DADA</div>
+                <!-- NOMOR 3 -->
+                <div class="inner-header" style="margin-top: 20px;">3. JUMLAH JENGKAL BAHU / DADA</div>
+                <div class="instruction-box">
+                    ⚠️ <strong>Cara Mengukur:</strong><br>
+                    Ukur lebar dada/bahu dari ujung bahu kanan ke ujung bahu kiri.<br><br>
+                    📝 <strong>Contoh Penulisan Desimal (Gunakan Titik):</strong>
+                    <ul>
+                        <li><strong>2 Jengkal Pas</strong> &rarr; Tulis <code>2</code></li>
+                        <li><strong>2 Jengkal Lebih Sedikit Sekali</strong> &rarr; Tulis <code>2.1</code> atau <code>2.2</code></li>
+                        <li><strong>2 Jengkal Lebih Setengah</strong> &rarr; Tulis <code>2.5</code></li>
+                        <li><strong>2 Jengkal Lebih Banyak Sekali</strong> (Hampir 3 Jengkal) &rarr; Tulis <code>2.8</code> atau <code>2.9</code></li>
+                    </ul>
+                </div>
                 <div class="input-group">
                     <label>Jumlah Jengkal Bahu / Dada</label>
-                    <input type="text" id="jengkal-chest" inputmode="decimal" value="2" placeholder="Contoh: 1.3">
+                    <input type="text" id="jengkal-chest" inputmode="decimal" value="2" placeholder="Contoh: 2 atau 2.5">
                 </div>
 
                 <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Tinggi Badan</button>
