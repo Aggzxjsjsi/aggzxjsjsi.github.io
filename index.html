@@ -3,103 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Umur</title>
+    <title>Kalkulator Umur & Zodiak Modern</title>
     <style>
+        /* Desain Modern Dark Mode */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,800;1,400&display=swap');
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            overflow-x: hidden;
         }
-        .card {
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            width: 300px;
-            text-align: center;
+
+        /* Waktu & Tanggal Pojok Kanan Atas (Sejajar / Tidak Ditumpuk) */
+        .datetime-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-style: italic;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            z-index: 10;
         }
-        input, button {
-            width: 90%;
-            padding: 10px;
-            margin: 8px 0;
+        .datetime-container #current-time {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px;
             border-radius: 5px;
-            border: none;
         }
-        input {
-            background: #2a2a2a;
+
+        /* Efek Teks RGB / Pelangi */
+        .rgb-text {
+            background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rgbAnim 5s ease infinite;
+            font-weight: 800;
+        }
+        @keyframes rgbAnim {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Kotak Kalkulator / Glassmorphism */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            margin-bottom: 50px;
+            margin-top: 50px; /* Jaga jarak dari area jam */
+        }
+
+        h1 { margin-top: 0; font-size: 1.8rem; }
+
+        /* Input Terpisah (Kolom) */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            outline: none;
+        }
+        input:focus, select:focus {
+            border-color: #38bdf8;
+        }
+        select option {
+            background: #1e293b;
             color: #fff;
         }
+
+        /* Tombol */
         button {
-            background: #00adb5;
-            color: #fff;
-            font-weight: bold;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #0284c7, #38bdf8);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
         }
         button:hover {
-            background: #008f95;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Hasil Umur Live */
+        .live-age {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .live-age span {
+            color: #38bdf8;
+            font-weight: bold;
+        }
+
+        /* Animasi Zodiak */
+        .zodiac-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .zodiac-icon {
+            font-size: 4rem;
+            animation: pulseFade 3s ease-in-out infinite;
+        }
+        @keyframes pulseFade {
+            0% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+            100% { opacity: 0.3; transform: scale(0.9); }
+        }
+        .zodiac-name { font-size: 1.2rem; font-weight: bold; margin: 5px 0; color: #facc15; }
+        .zodiac-traits { font-size: 0.85rem; font-style: italic; color: #cbd5e1; }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 15px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
         }
     </style>
-    
-    <!-- SCRIPT IKLAN ADSTERRA POPUNDER (Harus di sini) -->
+
+    <!-- SCRIPT IKLAN ADSTERRA POPUNDER -->
     <script src="https://pl31316420.profitableratecpmnetwork.com/0f/c2/0f/0fc20ff4da59ea128cf0dfb67cff8d47.js"></script>
 
 </head>
 <body>
 
-    <div class="card" id="result-card">
-        <h2>Kalkulator Umur</h2>
-        <input type="number" id="birth-day" placeholder="Tanggal Lahir (DD)" min="1" max="31">
-        <input type="number" id="birth-month" placeholder="Bulan Lahir (MM)" min="1" max="12">
-        <input type="number" id="birth-year" placeholder="Tahun Lahir (YYYY)" min="1900" max="2026">
-        <button onclick="calculateAge()">Hitung Umur</button>
-        <h3 id="res-years"></h3>
+    <!-- Widget Jam & Tanggal Sejajar -->
+    <div class="datetime-container">
+        <div id="current-date">Memuat Tanggal...</div>
+        <div id="current-time">00:00:00</div>
     </div>
 
+    <!-- Kotak Utama -->
+    <div class="card">
+        <h1 class="rgb-text">Kalkulator Umur</h1>
+        
+        <div class="input-group">
+            <input type="number" id="birth-day" placeholder="Hari (Tgl)" min="1" max="31">
+            <select id="birth-month">
+                <option value="" disabled selected>Bulan</option>
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+            </select>
+            <input type="number" id="birth-year" placeholder="Tahun" min="1900" max="2100">
+        </div>
+
+        <button onclick="startCalculator()">Hitung Umur & Zodiak</button>
+
+        <div id="result-area" style="display: none;">
+            <div class="live-age" id="age-text">
+                <!-- Umur akan muncul disini secara live -->
+            </div>
+            
+            <div class="zodiac-box">
+                <div id="z-icon" class="zodiac-icon"></div>
+                <div id="z-name" class="zodiac-name"></div>
+                <div id="z-traits" class="zodiac-traits"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer RGB -->
+    <div class="footer rgb-text">created by_aggx</div>
+
     <script>
-        function calculateAge() {
-            const day = parseInt(document.getElementById('birth-day').value);
-            const month = parseInt(document.getElementById('birth-month').value);
-            const year = parseInt(document.getElementById('birth-year').value);
-
-            if (!day || !month || !year) {
-                alert('Silakan lengkapi tanggal, bulan, dan tahun lahirmu terlebih dahulu!');
-                return;
-            }
-
+        // JAM DAN TANGGAL POJOK KANAN (Real-time & Sejajar)
+        setInterval(() => {
             const now = new Date();
-            const birthDate = new Date(year, month - 1, day);
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            
+            let h = now.getHours().toString().padStart(2, '0');
+            let m = now.getMinutes().toString().padStart(2, '0');
+            let s = now.getSeconds().toString().padStart(2, '0');
+            
+            document.getElementById('current-time').innerText = `${h}:${m}:${s}`;
+            document.getElementById('current-date').innerText = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} |`;
+        }, 1000);
 
-            if (birthDate > now) {
-                alert('Tanggal lahir tidak boleh lebih dari waktu sekarang!');
+        // DATA ZODIAK & SIFATNYA
+        const zodiacData = [
+            { sign: 'Capricorn (Kambing Laut)', emoji: '🐐', traits: '"Disiplin, ambisius, sabar, dan sangat praktis."', start: [1, 1], end: [1, 19] },
+            { sign: 'Aquarius (Pembawa Air)', emoji: '🌊', traits: '"Mandiri, unik, inovatif, dan pemikir keras."', start: [1, 20], end: [2, 18] },
+            { sign: 'Pisces (Ikan)', emoji: '🐟', traits: '"Penuh empati, artistik, intuitif, dan penyayang."', start: [2, 19], end: [3, 20] },
+            { sign: 'Aries (Domba Jantan)', emoji: '🐏', traits: '"Pemberani, energik, kompetitif, dan pantang menyerah."', start: [3, 21], end: [4, 19] },
+            { sign: 'Taurus (Banteng)', emoji: '🐂', traits: '"Sabar, dapat diandalkan, romantis, tapi sedikit keras kepala."', start: [4, 20], end: [5, 20] },
+            { sign: 'Gemini (Si Kembar)', emoji: '👯', traits: '"Adaptif, komunikatif, cerdas, dan selalu ingin tahu."', start: [5, 21], end: [6, 20] },
+            { sign: 'Cancer (Kepiting)', emoji: '🦀', traits: '"Sensitif, protektif, sangat setia, dan penuh kasih sayang."', start: [6, 21], end: [7, 22] },
+            { sign: 'Leo (Singa)', emoji: '🦁', traits: '"Percaya diri, karismatik, murah hati, dan berjiwa pemimpin sejati."', start: [7, 23], end: [8, 22] },
+            { sign: 'Virgo (Gadis)', emoji: '👱‍♀️', traits: '"Perfeksionis, analitis, pekerja keras, dan suka kebersihan."', start: [8, 23], end: [9, 22] },
+            { sign: 'Libra (Timbangan)', emoji: '⚖️', traits: '"Diplomatis, menyukai keharmonisan, sosial, dan pemaaf."', start: [9, 23], end: [10, 22] },
+            { sign: 'Scorpio (Kalajengking)', emoji: '🦂', traits: '"Misterius, bersemangat tinggi, setia, dan punya insting tajam."', start: [10, 23], end: [11, 21] },
+            { sign: 'Sagittarius (Pemanah)', emoji: '🏹', traits: '"Petualang, optimis, jujur, dan sangat mencintai kebebasan."', start: [11, 22], end: [12, 21] },
+            { sign: 'Capricorn (Kambing Laut)', emoji: '🐐', traits: '"Disiplin, ambisius, sabar, dan sangat praktis."', start: [12, 22], end: [12, 31] }
+        ];
+
+        let ageInterval;
+
+        function startCalculator() {
+            const d = parseInt(document.getElementById('birth-day').value);
+            const m = parseInt(document.getElementById('birth-month').value);
+            const y = parseInt(document.getElementById('birth-year').value);
+
+            if (!d || !m || !y) {
+                alert('Tolong isi Hari, Bulan, dan Tahun lahirmu dengan lengkap ya!');
                 return;
             }
 
-            let years = now.getFullYear() - birthDate.getFullYear();
-            let months = now.getMonth() - birthDate.getMonth();
-            let days = now.getDate() - birthDate.getDate();
+            document.getElementById('result-area').style.display = 'block';
 
+            // Tentukan Zodiak
+            let zodiac = zodiacData.find(z => {
+                if (m === 12 && d >= 22) return z.sign.includes('Capricorn');
+                if (m === 1 && d <= 19) return z.sign.includes('Capricorn');
+                return (m === z.start[0] && d >= z.start[1]) || (m === z.end[0] && d <= z.end[1]);
+            });
+
+            if(zodiac) {
+                document.getElementById('z-icon').innerText = zodiac.emoji;
+                document.getElementById('z-name').innerText = zodiac.sign;
+                document.getElementById('z-traits').innerText = zodiac.traits;
+            }
+
+            // Hitung Umur Live
+            clearInterval(ageInterval);
+            calculateLiveAge(d, m, y);
+            ageInterval = setInterval(() => calculateLiveAge(d, m, y), 1000);
+        }
+
+        function calculateLiveAge(d, m, y) {
+            const now = new Date();
+            const birthDate = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds()); 
+            
+            // Perhitungan selisih absolut untuk menghindari bug tanggal
+            let years = now.getFullYear() - y;
+            let months = now.getMonth() - (m - 1);
+            let days = now.getDate() - d;
+            
             if (days < 0) {
                 months--;
                 let prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
                 days += prevMonth.getDate();
             }
-
             if (months < 0) {
                 years--;
                 months += 12;
             }
 
-            document.getElementById('res-years').innerText = `Umur kamu: ${years} Tahun, ${months} Bulan, ${days} Hari`;
+            let weeks = Math.floor(days / 7);
+            let remainingDays = days % 7;
+            
+            // Hitung sisa waktu harian
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const msToday = now - startOfDay;
+            const hours = Math.floor(msToday / 3600000);
+            const minutes = Math.floor((msToday % 3600000) / 60000);
+            const seconds = Math.floor((msToday % 60000) / 1000);
+
+            document.getElementById('age-text').innerHTML = `
+                Umurmu saat ini adalah:<br>
+                <span>${years}</span> Tahun, <span>${months}</span> Bulan<br>
+                <span>${weeks}</span> Minggu, <span>${remainingDays}</span> Hari<br>
+                <span>${hours}</span> Jam, <span>${minutes}</span> Menit, <span>${seconds}</span> Detik
+            `;
         }
     </script>
 
     <!-- SCRIPT IKLAN ADSTERRA LAINNYA -->
     <script src="https://pl31316421.profitableratecpmnetwork.com/74/bb/70/74bb704fc94d0ac5fc75c7aae9081643.js"></script>
-    
+
 </body>
 </html>
