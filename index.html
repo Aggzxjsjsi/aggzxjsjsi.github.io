@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Umur</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            width: 300px;
+            text-align: center;
+        }
+        input, button {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: none;
+        }
+        input {
+            background: #2a2a2a;
+            color: #fff;
+        }
+        button {
+            background: #00adb5;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #008f95;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="result-card">
+        <h2>Kalkulator Umur</h2>
+        <input type="number" id="birth-day" placeholder="Tanggal Lahir (DD)" min="1" max="31">
+        <input type="number" id="birth-month" placeholder="Bulan Lahir (MM)" min="1" max="12">
+        <input type="number" id="birth-year" placeholder="Tahun Lahir (YYYY)" min="1900" max="2026">
+        <button onclick="calculateAge()">Hitung Umur</button>
+        <h3 id="res-years"></h3>
+    </div>
+
+    <script>
+        function calculateAge() {
+            const day = parseInt(document.getElementById('birth-day').value);
+            const month = parseInt(document.getElementById('birth-month').value);
+            const year = parseInt(document.getElementById('birth-year').value);
+
+            if (!day || !month || !year) {
+                alert('Silakan lengkapi tanggal, bulan, dan tahun lahirmu terlebih dahulu!');
+                return;
+            }
+
+            const now = new Date();
+            const birthDate = new Date(year, month - 1, day);
+
+            if (birthDate > now) {
+                alert('Tanggal lahir tidak boleh lebih dari waktu sekarang!');
+                return;
+            }
+
+            let years = now.getFullYear() - birthDate.getFullYear();
+            let months = now.getMonth() - birthDate.getMonth();
+            let days = now.getDate() - birthDate.getDate();
+
+            if (days < 0) {
+                months--;
+                let prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            document.getElementById('res-years').innerText = `Umur kamu: ${years} Tahun, ${months} Bulan, ${days} Hari`;
+        }
+    </script>
+
+    <!-- KODE SCRIPT IKLAN ADSTERRA -->
+    <script src="//pl31215921.profitableratecnetnetwork.com/ff/c2/0f/ffc20ffd5a9ea128c0fdffebff8f7.js"></script>
+    <script src="//pl31215922.profitableratecnetnetwork.com/74/bb/70/74bb70fc940ac5fc757case9081643.js"></script>
+</body>
+</html>
