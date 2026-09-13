@@ -173,6 +173,30 @@
         }
         button.submit-btn:hover { opacity: 0.9; }
 
+        /* Tombol Kembali ke Menu */
+        button.back-menu-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button.back-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-color: #4b5563;
+        }
+
         /* About Section */
         .about-box {
             background: rgba(255, 255, 255, 0.02);
@@ -453,6 +477,11 @@
                         <strong>Cara Pakai:</strong> Masukkan tanggal, pilih bulan, dan ketik tahun lahir, lalu klik tombol hitung.
                     </p>
                 </div>
+
+                <!-- Tombol Kembali ke Menu Pilihan Kalkulator -->
+                <button class="back-menu-btn" onclick="toggleBox('box-age')">
+                    ⬅️ Kembali ke Pilih Kalkulator
+                </button>
             </div>
         </div>
 
@@ -543,6 +572,11 @@
                         <strong>Cara Pakai:</strong> Unggah foto jengkal tangan untuk mendeteksi skala sentimeter, lalu masukkan data jengkal lengan dan bahu Anda.
                     </p>
                 </div>
+
+                <!-- Tombol Kembali ke Menu Pilihan Kalkulator -->
+                <button class="back-menu-btn" onclick="toggleBox('box-height')">
+                    ⬅️ Kembali ke Pilih Kalkulator
+                </button>
             </div>
         </div>
 
