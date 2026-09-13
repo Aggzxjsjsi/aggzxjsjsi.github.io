@@ -71,11 +71,6 @@
             gap: 15px;
         }
 
-        /* Sembunyikan menu lain saat salah satu aktif */
-        .main-container.active-mode .card-box:not(.active) {
-            display: none;
-        }
-
         .card-box {
             background: #111827;
             border: 1px solid #1f2937;
@@ -392,11 +387,11 @@
         <p class="subtitle">Ketuk salah satu kotak menu di bawah untuk mulai</p>
     </div>
 
-    <div class="main-container" id="mainContainer">
+    <div class="main-container">
 
         <!-- ==================== KOTAK 1: KALKULATOR UMUR ==================== -->
         <div class="card-box" id="box-age">
-            <div class="card-toggle-header" onclick="openBox('box-age')">
+            <div class="card-toggle-header" onclick="toggleBox('box-age')">
                 <h2>📅 Kalkulator Umur & Zodiak</h2>
                 <span class="toggle-icon">▼</span>
             </div>
@@ -484,7 +479,7 @@
                 </div>
 
                 <!-- Tombol Kembali ke Menu Pilihan Kalkulator -->
-                <button class="back-menu-btn" onclick="closeBox('box-age')">
+                <button class="back-menu-btn" onclick="toggleBox('box-age')">
                     ⬅️ Kembali ke Pilih Kalkulator
                 </button>
             </div>
@@ -492,7 +487,7 @@
 
         <!-- ==================== KOTAK 2: KALKULATOR TINGGI BADAN ==================== -->
         <div class="card-box" id="box-height">
-            <div class="card-toggle-header" onclick="openBox('box-height')">
+            <div class="card-toggle-header" onclick="toggleBox('box-height')">
                 <h2>📏 Kalkulator Tinggi Badan (Jengkal & AI)</h2>
                 <span class="toggle-icon">▼</span>
             </div>
@@ -579,7 +574,7 @@
                 </div>
 
                 <!-- Tombol Kembali ke Menu Pilihan Kalkulator -->
-                <button class="back-menu-btn" onclick="closeBox('box-height')">
+                <button class="back-menu-btn" onclick="toggleBox('box-height')">
                     ⬅️ Kembali ke Pilih Kalkulator
                 </button>
             </div>
@@ -590,22 +585,10 @@
     <div class="footer">Created by_aggx</div>
 
     <script>
-        // Fungsi Buka Menu Kotak Tertentu (Menyembunyikan Kotak Lain)
-        function openBox(boxId) {
-            const container = document.getElementById('mainContainer');
+        // Fungsi Toggle Kotak Accordion
+        function toggleBox(boxId) {
             const box = document.getElementById(boxId);
-            
-            container.classList.add('active-mode');
-            box.classList.add('active');
-        }
-
-        // Fungsi Tutup Menu / Kembali ke Pilihan Menu Utama
-        function closeBox(boxId) {
-            const container = document.getElementById('mainContainer');
-            const box = document.getElementById(boxId);
-            
-            box.classList.remove('active');
-            container.classList.remove('active-mode');
+            box.classList.toggle('active');
         }
 
         // --- Logika Kalkulator Umur ---
