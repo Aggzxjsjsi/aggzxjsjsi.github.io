@@ -36,6 +36,11 @@
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
+        /* Sembunyikan judul utama saat mode kalkulator aktif */
+        body.in-calculator .title-container {
+            display: none;
+        }
+
         .top-badge {
             position: absolute;
             top: 15px;
@@ -68,6 +73,7 @@
             gap: 15px;
         }
 
+        /* Sembunyikan kotak menu lain saat salah satu aktif */
         .main-container.active-mode .card-box:not(.active) {
             display: none;
         }
@@ -97,15 +103,6 @@
             align-items: center;
             gap: 10px;
         }
-        .toggle-icon {
-            font-size: 1.2rem;
-            color: #94a3b8;
-            transition: transform 0.3s ease;
-        }
-        .card-box.active .toggle-icon {
-            transform: rotate(180deg);
-            color: #38bdf8;
-        }
 
         .card-content {
             display: none;
@@ -115,6 +112,33 @@
         }
         .card-box.active .card-content {
             display: block;
+        }
+
+        /* Styling Tombol Kembali */
+        button.back-menu-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #38bdf8;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button.back-menu-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: #38bdf8;
+            color: white;
+        }
+        .top-back-btn {
+            margin-top: 15px;
+            margin-bottom: 5px;
         }
 
         .inner-header {
@@ -166,22 +190,16 @@
             margin-top: 5px;
         }
 
-        button.back-menu-btn {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #374151;
-            border-radius: 12px;
-            background: transparent;
-            color: #94a3b8;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+        .about-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed #374151;
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 20px;
         }
+        .about-title { color: #38bdf8; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .about-text { color: #94a3b8; font-size: 0.85rem; line-height: 1.5; }
+        .about-text strong { color: #cbd5e1; }
 
         .zodiac-header { color: #f87171; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; margin: 20px 0 12px 0; }
         
@@ -314,9 +332,13 @@
         <div class="card-box" id="box-age">
             <div class="card-toggle-header" onclick="openBox('box-age')">
                 <h2>📅 Kalkulator Umur & Zodiak</h2>
-                <span class="toggle-icon">▼</span>
             </div>
             <div class="card-content">
+                <!-- Tombol Kembali ke Menu Utama di Atas -->
+                <button class="back-menu-btn top-back-btn" onclick="closeBox('box-age')">
+                    ⬅️ Kembali ke Menu Utama
+                </button>
+
                 <div class="inner-header">MASUKKAN TANGGAL LAHIRMU</div>
                 <div class="input-grid">
                     <div class="input-group" style="margin-bottom:0;">
@@ -369,7 +391,18 @@
                         <div class="live-indicator"><span class="blink-dot">●</span> Berdetak secara real-time</div>
                     </div>
                 </div>
-                <button class="back-menu-btn" onclick="closeBox('box-age')">⬅️ Kembali ke Menu Utama</button>
+
+                <div class="about-box">
+                    <div class="about-title">TENTANG KALKULATOR UMUR & ZODIAK</div>
+                    <p class="about-text">
+                        Kalkulator ini menghitung durasi usia Anda secara akurat hingga tingkat detik terkecil secara real-time. Sistem juga mendeteksi zodiak Anda beserta karakteristik kepribadiannya secara otomatis.
+                    </p>
+                </div>
+
+                <!-- Tombol Kembali ke Menu Utama di Bawah -->
+                <button class="back-menu-btn" style="margin-top: 15px;" onclick="closeBox('box-age')">
+                    ⬅️ Kembali ke Menu Utama
+                </button>
             </div>
         </div>
 
@@ -377,9 +410,13 @@
         <div class="card-box" id="box-height">
             <div class="card-toggle-header" onclick="openBox('box-height')">
                 <h2>📏 Kalkulator Tinggi Badan (Jengkal & AI)</h2>
-                <span class="toggle-icon">▼</span>
             </div>
             <div class="card-content">
+                <!-- Tombol Kembali ke Menu Utama di Atas -->
+                <button class="back-menu-btn top-back-btn" onclick="closeBox('box-height')">
+                    ⬅️ Kembali ke Menu Utama
+                </button>
+
                 <div class="inner-header">1. Foto Jengkal untuk Kalibrasi AI</div>
                 <div class="btn-upload-grid">
                     <label class="action-btn-upload">📸 Buka Kamera<input type="file" accept="image/*" capture="environment" onchange="processImage(event)"></label>
@@ -421,7 +458,18 @@
                         <div class="stat-row"><div class="stat-label">Estimasi Tinggi Badan</div><div class="stat-value" id="res-height" style="color: #22c55e;">0 cm</div></div>
                     </div>
                 </div>
-                <button class="back-menu-btn" onclick="closeBox('box-height')">⬅️ Kembali ke Menu Utama</button>
+
+                <div class="about-box">
+                    <div class="about-title">TENTANG KALKULATOR TINGGI BADAN</div>
+                    <p class="about-text">
+                        Kalkulator ini memperkirakan tinggi atau rentang tubuh menggunakan metode pengukuran jengkal tradisional yang dikalibrasi secara otomatis menggunakan teknologi AI computer vision (MediaPipe Hands).
+                    </p>
+                </div>
+
+                <!-- Tombol Kembali ke Menu Utama di Bawah -->
+                <button class="back-menu-btn" style="margin-top: 15px;" onclick="closeBox('box-height')">
+                    ⬅️ Kembali ke Menu Utama
+                </button>
             </div>
         </div>
 
@@ -432,12 +480,15 @@
     <script>
         function openBox(boxId) {
             document.getElementById('mainContainer').classList.add('active-mode');
+            document.body.classList.add('in-calculator');
             document.getElementById(boxId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function closeBox(boxId) {
             document.getElementById(boxId).classList.remove('active');
             document.getElementById('mainContainer').classList.remove('active-mode');
+            document.body.classList.remove('in-calculator');
         }
 
         const zodiacs = [
