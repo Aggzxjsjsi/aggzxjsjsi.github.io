@@ -73,8 +73,8 @@
             gap: 15px;
         }
 
-        /* Sembunyikan kotak menu lain saat salah satu aktif */
-        .main-container.active-mode .card-box:not(.active) {
+        /* Hanya sembunyikan kotak menu utama (direct child >) yang tidak aktif */
+        .main-container.active-mode > .card-box:not(.active) {
             display: none !important;
         }
 
@@ -212,19 +212,19 @@
             margin-bottom: 12px;
         }
         .z-left h3 { color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px; }
-        .z-left h2 { font-size: 1.2rem; margin-bottom: 8px; color: white; }
-        .z-left p { color: #94a3b8; font-size: 0.75rem; font-style: italic; max-width: 190px; }
+        .z-left h2 { font-size: 1.15rem; margin-bottom: 8px; color: white; }
+        .z-left p { color: #cbd5e1; font-size: 0.78rem; font-style: italic; max-width: 230px; line-height: 1.4; }
         
-        /* Animasi Zodiak */
+        /* Animasi Redup-Muncul (Fade Glow Pulse) Zodiak */
         .z-right {
             font-size: 3.8rem;
             display: inline-block;
-            animation: floatZodiac 2.5s ease-in-out infinite;
+            animation: fadeGlowZodiac 3s ease-in-out infinite;
         }
-        @keyframes floatZodiac {
-            0% { transform: translateY(0px) scale(1); filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.2)); }
-            50% { transform: translateY(-8px) scale(1.1); filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.8)); }
-            100% { transform: translateY(0px) scale(1); filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.2)); }
+        @keyframes fadeGlowZodiac {
+            0% { opacity: 0.15; transform: scale(0.92); filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.1)); }
+            50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.9)); }
+            100% { opacity: 0.15; transform: scale(0.92); filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.1)); }
         }
 
         .stat-row {
@@ -410,7 +410,6 @@
                     </ol>
                 </div>
 
-                <!-- Tombol Kembali ke Menu Utama di Bawah -->
                 <button class="back-menu-btn" style="margin-top: 20px;" onclick="closeBox('box-age')">
                     ⬅️ Kembali ke Menu Utama
                 </button>
@@ -456,7 +455,7 @@
                 <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Tinggi Badan</button>
 
                 <div id="result-container-height" style="display: none; margin-top: 15px;">
-                    <div class="card-box" style="padding: 16px; background: #111827;">
+                    <div style="padding: 16px; background: #111827; border: 1px solid #1f2937; border-radius: 14px;">
                         <div class="inner-header" style="margin: 0 0 10px 0;">Hasil Kalkulasi Tinggi Badan</div>
                         <div class="stat-row"><div class="stat-label">Total Jengkal Keseluruhan</div><div class="stat-value" id="res-jengkal">0 Jengkal</div></div>
                         <div class="stat-row"><div class="stat-label">Panjang Lengan</div><div class="stat-value" id="res-total-arm">0 cm</div></div>
@@ -480,7 +479,6 @@
                     </ol>
                 </div>
 
-                <!-- Tombol Kembali ke Menu Utama di Bawah -->
                 <button class="back-menu-btn" style="margin-top: 20px;" onclick="closeBox('box-height')">
                     ⬅️ Kembali ke Menu Utama
                 </button>
@@ -506,19 +504,19 @@
         }
 
         const zodiacs = [
-            { name: "Capricorn", emoji: "🐐", desc: "Disiplin, tangguh, sabar.", start: [1,1], end: [1,19] },
-            { name: "Aquarius", emoji: "🌊", desc: "Mandiri, unik, inovatif.", start: [1,20], end: [2,18] },
-            { name: "Pisces", emoji: "🐟", desc: "Penuh empati, artistik.", start: [2,19], end: [3,20] },
-            { name: "Aries", emoji: "🐏", desc: "Pemberani, energik.", start: [3,21], end: [4,19] },
-            { name: "Taurus", emoji: "🐂", desc: "Setia, sabar, tekun.", start: [4,20], end: [5,20] },
-            { name: "Gemini", emoji: "👯", desc: "Adaptif, komunikatif.", start: [5,21], end: [6,20] },
-            { name: "Cancer", emoji: "🦀", desc: "Sensitif, protektif.", start: [6,21], end: [7,22] },
-            { name: "Leo", emoji: "🦁", desc: "Percaya diri, karismatik.", start: [7,23], end: [8,22] },
-            { name: "Virgo", emoji: "👱‍♀️", desc: "Perfeksionis, analitis.", start: [8,23], end: [9,22] },
-            { name: "Libra", emoji: "⚖️", desc: "Diplomatis, harmonis.", start: [9,23], end: [10,22] },
-            { name: "Scorpio", emoji: "🦂", desc: "Misterius, intens.", start: [10,23], end: [11,21] },
-            { name: "Sagittarius", emoji: "🏹", desc: "Petualang, optimis.", start: [11,22], end: [12,21] },
-            { name: "Capricorn", emoji: "🐐", desc: "Disiplin, tangguh, sabar.", start: [12,22], end: [12,31] }
+            { name: "Capricorn (Kambing Gunung)", emoji: "🐐", desc: "Sangat disiplin, pekerja keras, berorientasi target, bertanggung jawab, sabar, dan memiliki jiwa kepemimpinan yang tenang.", start: [1,1], end: [1,19] },
+            { name: "Aquarius (Pembawa Air)", emoji: "🌊", desc: "Mandiri, inovatif, berpemikiran terbuka, humanis, sangat menyukai kebebasan, kreatif, dan unik.", start: [1,20], end: [2,18] },
+            { name: "Pisces (Ikan)", emoji: "🐟", desc: "Sangat empati, intuitif, artistik, penuh kasih sayang, imajinatif, serta pemimpi yang memiliki ketulusan hati tinggi.", start: [2,19], end: [3,20] },
+            { name: "Aries (Domba Jantan)", emoji: "🐏", desc: "Pemberani, energik, berjiwa pemimpin, penuh semangat, percaya diri, kompetitif, dan pantang menyerah.", start: [3,21], end: [4,19] },
+            { name: "Taurus (Banteng)", emoji: "🐂", desc: "Setia, teguh pada pendirian, sabar, dapat diandalkan, menyukai kenyamanan, tekun, dan realistis.", start: [4,20], end: [5,20] },
+            { name: "Gemini (Si Kembar)", emoji: "👯", desc: "Komunikatif, adaptif, cepat belajar, serba bisa, cerdas, humoris, dan penuh rasa ingin tahu.", start: [5,21], end: [6,20] },
+            { name: "Cancer (Kepiting)", emoji: "🦀", desc: "Protektif, setia, berjiwa pengasuh, intuitif, sangat menyayangi keluarga, empati tinggi, dan peka.", start: [6,21], end: [7,22] },
+            { name: "Leo (Singa)", emoji: "🦁", desc: "Percaya diri, karismatik, pemurah, berjiwa pemimpin kuat, optimis, penuh energi, serta suka menjadi pusat perhatian.", start: [7,23], end: [8,22] },
+            { name: "Virgo (Gadis)", emoji: "👱‍♀️", desc: "Perfeksionis, analitis, teliti, rapi, pekerja keras, sangat peduli detail, dan suka membantu orang lain.", start: [8,23], end: [9,22] },
+            { name: "Libra (Timbangan)", emoji: "⚖️", desc: "Diplomatis, adil, menyukai keharmonisan, menawan, romantis, bijaksana dalam mengambil keputusan tengah.", start: [9,23], end: [10,22] },
+            { name: "Scorpio (Kalajengking)", emoji: "🦂", desc: "Intens, misterius, memiliki intuisi tajam, sangat setia, bersemangat tinggi, fokus, dan tangguh.", start: [10,23], end: [11,21] },
+            { name: "Sagittarius (Pemanah)", emoji: "🏹", desc: "Petualang sejati, optimis, jujur, berjiwa bebas, antusias, filosofis, dan menyukai wawasan baru.", start: [11,22], end: [12,21] },
+            { name: "Capricorn (Kambing Gunung)", emoji: "🐐", desc: "Sangat disiplin, pekerja keras, berorientasi target, bertanggung jawab, sabar, dan memiliki jiwa kepemimpinan yang tenang.", start: [12,22], end: [12,31] }
         ];
 
         function formatNum(num) { return num.toLocaleString('id-ID'); }
@@ -598,7 +596,6 @@
             document.getElementById('val-second').innerText = formatNum(totalSeconds);
         }
 
-        /* Fungsi parseVal dilindungi agar terhindar dari error null input */
         function parseVal(id) {
             const el = document.getElementById(id);
             if (!el || !el.value) return 0;
@@ -694,7 +691,6 @@
             }
         }
 
-        /* Fungsi perhitungan dibungkus dengan try catch agar tak berhenti (eror) saat diketuk */
         function calculateJengkalSystem() {
             try {
                 const jengkalCm = parseVal('jengkal-cm');
@@ -703,7 +699,7 @@
                 const chest = parseVal('jengkal-chest');
 
                 if (jengkalCm <= 0) {
-                    alert("Masukkan panjang 1 jengkal dengan benar (misal: 20)!");
+                    alert("Masukkan panjang 1 jengkal dengan benar!");
                     return;
                 }
 
@@ -731,7 +727,7 @@
                     resContainerHeight.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             } catch (err) {
-                alert("Terjadi masalah saat menghitung: Pastikan seluruh input berupa angka.");
+                alert("Terjadi masalah saat menghitung.");
             }
         }
     </script>
