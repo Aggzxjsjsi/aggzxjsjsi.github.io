@@ -266,6 +266,10 @@
                 <div class="stat-value" id="res-total-arm">0 cm</div>
             </div>
             <div class="stat-row">
+                <div class="stat-label">Lebar Dada</div>
+                <div class="stat-value" id="res-total-chest">0 cm</div>
+            </div>
+            <div class="stat-row">
                 <div class="stat-label">Estimasi Tinggi Badan / Bentang</div>
                 <div class="stat-value" id="res-height" style="color: #22c55e;">0 cm</div>
             </div>
@@ -380,10 +384,12 @@
             const totalSpanCm = totalJengkal * jengkalCm;
             
             const totalArmCm = (rArm + lArm) * jengkalCm;
+            const totalChestCm = chest * jengkalCm;
 
             document.getElementById('result-container').style.display = 'block';
-            document.getElementById('res-jengkal').innerText = totalJengkal + " Jengkal";
+            document.getElementById('res-jengkal').innerText = totalJengkal.toFixed(1) + " Jengkal";
             document.getElementById('res-total-arm').innerText = totalArmCm.toFixed(1) + " cm";
+            document.getElementById('res-total-chest').innerText = totalChestCm.toFixed(1) + " cm";
             document.getElementById('res-height').innerText = totalSpanCm.toFixed(0) + " cm";
         }
     </script>
