@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator Pengukur Panjang AI Otomatis</title>
-    <!-- TensorFlow.js & COCO-SSD Model untuk Deteksi Objek Pintar -->
+    <!-- TensorFlow.js & COCO-SSD Model -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@coco-ssd@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
@@ -260,7 +260,7 @@
             </label>
         </div>
 
-        <div class="ai-status-banner" id="aiBanner">🤖 AI sedang menganalisis objek...</div>
+        <div class="ai-status-banner" id="aiBanner">🤖 AI sedang memuat model...</div>
 
         <div class="workspace" id="workspace">
             <video id="videoElement" autoplay playsinline style="display:none;"></video>
@@ -274,7 +274,7 @@
                 <input type="number" id="scaleFactor" value="5" oninput="calculateLength()">
             </div>
             <div style="font-size: 0.7rem; color: #636366; text-align: center;">
-                AI mendeteksi objek otomatis & kalibrasi skala instan!
+                AI mendeteksi objek standar & kalibrasi skala instan!
             </div>
         </div>
     </div>
@@ -292,11 +292,12 @@
         let hasDrawn = false;
         let currentUnitKey = 'cm';
 
-        // Load AI model saat halaman dibuka
-        cocoSdfLoaded = false;
-        cocoSdd.load().then(model => {
+        // Load AI model dengan benar menggunakan cocoSsd
+        cocoSsd.load().then(model => {
             aiModel = model;
             console.log("Model AI Berhasil Dimuat!");
+        }).catch(err => {
+            console.error("Gagal memuat AI:", err);
         });
 
         function toggleUnitMenu() {
@@ -325,7 +326,7 @@
                 isLiveCamera = true;
                 hasDrawn = false;
             } catch (err) {
-                alert("Tidak dapat mengakses kamera.");
+                alert("Tidak dapat mengakses kamera. Pastikan Anda menggunakan Live Server atau HTTPS.");
             }
         }
 
@@ -385,7 +386,6 @@
 
             try {
                 const predictions = await aiModel.detect(canvas);
-                // Ukuran standar referensi dunia nyata (dalam cm) untuk beberapa objek umum
                 const standardSizes = {
                     'cell phone': 7.5, 
                     'laptop': 32.0,
@@ -399,10 +399,9 @@
                 let detected = false;
                 for (let p of predictions) {
                     if (standardSizes[p.class]) {
-                        const objWidthPx = p.bbox[2]; // Lebar objek terdeteksi dalam piksel
+                        const objWidthPx = p.bbox[2]; 
                         const realSizeCm = standardSizes[p.class];
                         
-                        // Hitung otomatis skala (cm per 100px)
                         const calculatedScale = (realSizeCm / objWidthPx) * 100;
                         document.getElementById('scaleFactor').value = calculatedScale.toFixed(2);
                         
