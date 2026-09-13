@@ -53,7 +53,7 @@
         }
 
         .header-title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #38bdf8;
             letter-spacing: 0.5px;
@@ -85,7 +85,7 @@
             background: #000;
             display: block;
             touch-action: none;
-            transition: width 0.1s ease, height 0.1s ease, transform 0.1s ease;
+            transition: width 0.1s ease, height 0.1s ease;
         }
 
         video, canvas {
@@ -208,8 +208,10 @@
             border-top-right-radius: 24px;
             border-top: 1px solid rgba(56, 189, 248, 0.2);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.7);
-            padding: 16px 16px 40px 16px;
+            padding: 14px 16px 36px 16px;
             gap: 10px;
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
         .result-box {
@@ -229,7 +231,7 @@
         }
 
         .result-value {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             color: #38bdf8;
             font-weight: 700;
         }
@@ -244,7 +246,7 @@
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #f3f4f6;
-            padding: 10px;
+            padding: 9px;
             border-radius: 10px;
             font-size: 0.75rem;
             font-weight: 600;
@@ -255,6 +257,7 @@
             justify-content: center;
             gap: 5px;
         }
+        .btn-action:active { background: rgba(56, 189, 248, 0.2); }
         .btn-action.primary {
             background: #38bdf8;
             color: #070709;
@@ -283,7 +286,7 @@
             cursor: pointer;
             white-space: nowrap;
         }
-        .preset-chip:active { background: #38bdf8; color: #070709; }
+        .preset-chip.active { background: #38bdf8; color: #070709; border-color: #38bdf8; font-weight: 600; }
 
         .setting-group {
             display: flex;
@@ -306,10 +309,46 @@
             outline: none;
         }
 
-        .setting-group input[type="range"] {
-            width: 130px;
-            accent-color: #38bdf8;
+        /* Panel D-Pad Kontrol Arah */
+        .dpad-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
+
+        .dpad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: #9ca3af;
+        }
+
+        .dpad-grid {
+            display: grid;
+            grid-template-columns: 46px 46px 46px;
+            grid-template-rows: 36px 36px;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .dpad-btn {
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dpad-btn:active { background: rgba(56, 189, 248, 0.4); }
 
         /* Popup Satuan */
         .unit-popup {
@@ -343,7 +382,7 @@
     <div class="app-container">
         <!-- Header -->
         <div class="app-header">
-            <button class="refresh-btn" onclick="refreshApp()">🔄 Refresh</button>
+            <button class="refresh-btn" onclick="refreshApp()">🔄 Ulang</button>
             <div class="header-title">Kalkulator Tinggi Pro</div>
             <button class="unit-btn" onclick="toggleUnitMenu()">
                 <span id="unitLabel">cm</span> ▾
@@ -358,7 +397,7 @@
             <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="info-banner" id="infoBanner">💡 Tips: Foto jengkal tangan Anda untuk kalibrasi, lalu ukur tinggi badan!</div>
+        <div class="info-banner" id="infoBanner">💡 Tips: Foto jengkal tangan, lalu gunakan tombol D-Pad untuk presisi titik!</div>
 
         <!-- Lensa Pembesar (Magnifier) -->
         <div class="magnifier" id="magnifier">
@@ -383,45 +422,71 @@
         <!-- Panel Perhitungan & Kontrol Bawah -->
         <div class="bottom-panel" id="bottomPanel">
             <div class="result-box">
-                <span class="result-label">Hasil Ukur (Tinggi/Panjang):</span>
+                <span class="result-label">Hasil Ukur:</span>
                 <span class="result-value" id="resultValue">0 cm</span>
             </div>
 
             <!-- Tombol Menu Utama -->
             <div class="action-row">
-                <button class="btn-action primary" onclick="addNewLine()">➕ Garis Baru</button>
+                <button class="btn-action primary" onclick="addNewLine()">➕ Garis</button>
                 <button class="btn-action" onclick="addPointToCurrentLine()">➕ Titik</button>
                 <button class="btn-action danger" onclick="clearAllLines()">🗑️ Hapus</button>
             </div>
 
-            <!-- Preset Kalibrasi (Termasuk Jengkal Tangan) -->
+            <!-- Panel D-Pad Atas Bawah Kiri Kanan -->
+            <div class="dpad-container">
+                <div class="dpad-header">
+                    <span>Tombol Arah (D-Pad):</span>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')">📍 Titik</button>
+                        <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')">🖼️ Gambar</button>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <!-- Langkah / Step Selector -->
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                        <span style="font-size: 0.65rem; color: #9ca3af;">Langkah (px):</span>
+                        <div style="display: flex; gap: 3px;">
+                            <button class="preset-chip" style="padding: 3px 6px;" onclick="setStep(1)">1</button>
+                            <button class="preset-chip active" id="step5" style="padding: 3px 6px;" onclick="setStep(5)">5</button>
+                            <button class="preset-chip" style="padding: 3px 6px;" onclick="setStep(15)">15</button>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Arah Atas Bawah Kiri Kanan -->
+                    <div class="dpad-grid">
+                        <div></div>
+                        <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
+                        <div></div>
+                        <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
+                        <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
+                        <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preset Kalibrasi -->
             <div class="setting-group" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-                <span>Preset Kalibrasi Instan (Pilih acuan di garis aktif):</span>
+                <span>Preset Kalibrasi Instan:</span>
                 <div class="preset-row">
-                    <div class="preset-chip" onclick="applyPreset(18)">✋ Jengkal Tangan (18 cm)</div>
-                    <div class="preset-chip" onclick="applyPreset(8.56)">💳 KTP / ATM (8.5 cm)</div>
-                    <div class="preset-chip" onclick="applyPreset(15.1)">💵 Uang 50rb (15 cm)</div>
+                    <div class="preset-chip" onclick="applyPreset(18)">✋ Jengkal (18 cm)</div>
+                    <div class="preset-chip" onclick="applyPreset(8.56)">💳 KTP (8.5 cm)</div>
+                    <div class="preset-chip" onclick="applyPreset(15.1)">💵 Uang (15 cm)</div>
                     <div class="preset-chip" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
                 </div>
             </div>
 
             <!-- Kalibrasi Manual -->
             <div class="setting-group">
-                <span>Atau Ketik Ukuran Asli (cm):</span>
+                <span>Ukuran Asli (cm):</span>
                 <div style="display: flex; gap: 6px; align-items: center;">
                     <input type="number" id="actualSizeInput" placeholder="Mis: 18">
-                    <button class="btn-action primary" style="padding: 5px 10px;" onclick="calibrateWithRealSize()">Sesuaikan</button>
+                    <button class="btn-action primary" style="padding: 5px 10px;" onclick="calibrateWithRealSize()">Kalibrasi</button>
                 </div>
             </div>
 
-            <!-- Pengaturan Zoom Workspace -->
-            <div class="setting-group">
-                <span>Lebar Tampilan (Zoom):</span>
-                <input type="range" id="widthSlider" min="50" max="150" value="100" oninput="changeWorkspaceWidth(this.value)">
-            </div>
-
             <div class="setting-group" style="display:none;">
-                <span>Skala Kalibrasi (cm / 100px):</span>
+                <span>Skala (cm / 100px):</span>
                 <input type="number" id="scaleInput" value="10" oninput="redraw()">
             </div>
         </div>
@@ -442,10 +507,18 @@
         
         let lines = [[]];
         let activeLineIndex = 0;
+        let activePointIndex = 0;
+
+        let imgOffsetX = 0;
+        let imgOffsetY = 0;
+        let controlMode = 'point'; // 'point' atau 'image'
+        let moveStep = 5;
 
         let isDragging = false;
         let draggedLineIdx = null;
         let draggedPointIdx = null;
+        let grabOffsetX = 0;
+        let grabOffsetY = 0;
 
         window.addEventListener('DOMContentLoaded', () => {
             startCamera();
@@ -462,6 +535,8 @@
             isImageLoaded = false;
             lines = [[]];
             activeLineIndex = 0;
+            imgOffsetX = 0;
+            imgOffsetY = 0;
 
             document.getElementById('bottomPanel').style.display = 'none';
             document.getElementById('initialActions').style.display = 'flex';
@@ -507,11 +582,14 @@
                 document.getElementById('initialActions').style.display = 'none';
                 document.getElementById('bottomPanel').style.display = 'flex';
                 
+                imgOffsetX = 0;
+                imgOffsetY = 0;
                 lines = [[ {x: w * 0.3, y: h * 0.5}, {x: w * 0.7, y: h * 0.5} ]];
                 activeLineIndex = 0;
+                activePointIndex = 1;
 
                 redraw();
-                showBanner("✨ Foto siap! Tarik garis pada jengkal lalu klik preset Jengkal.");
+                showBanner("✨ Foto siap! Gunakan tombol D-Pad untuk menggeser titik.");
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -537,23 +615,18 @@
                     document.getElementById('initialActions').style.display = 'none';
                     document.getElementById('bottomPanel').style.display = 'flex';
 
+                    imgOffsetX = 0;
+                    imgOffsetY = 0;
                     lines = [[ {x: img.width * 0.3, y: img.height * 0.5}, {x: img.width * 0.7, y: img.height * 0.5} ]];
                     activeLineIndex = 0;
+                    activePointIndex = 1;
 
                     redraw();
-                    showBanner("✨ Gambar dimuat! Sesuaikan garis dengan acuan jengkal.");
+                    showBanner("✨ Gambar dimuat! Gunakan tombol D-Pad untuk presisi.");
                 }
                 img.src = event.target.result;
             }
             reader.readAsDataURL(file);
-        }
-
-        function changeWorkspaceWidth(val) {
-            let workspace = document.getElementById('workspace');
-            workspace.style.width = val + 'vw';
-            workspace.style.height = val + 'vh';
-            workspace.style.left = (100 - val) / 2 + 'vw';
-            workspace.style.top = (100 - val) / 2 + 'vh';
         }
 
         function addNewLine() {
@@ -562,6 +635,7 @@
             let cx = canvas.width / 2;
             let cy = canvas.height / 2 + (activeLineIndex * 40);
             lines[activeLineIndex].push({x: cx - 120, y: cy}, {x: cx + 120, y: cy});
+            activePointIndex = 1;
             redraw();
         }
 
@@ -570,12 +644,14 @@
             let pts = lines[activeLineIndex];
             let last = pts[pts.length - 1] || {x: canvas.width/2, y: canvas.height/2};
             pts.push({x: last.x + 60, y: last.y + 60});
+            activePointIndex = pts.length - 1;
             redraw();
         }
 
         function clearAllLines() {
             lines = [[]];
             activeLineIndex = 0;
+            activePointIndex = 0;
             redraw();
         }
 
@@ -590,6 +666,53 @@
             document.getElementById('unitPopup').style.display = 'none';
             document.querySelectorAll('.unit-option').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
+            redraw();
+        }
+
+        function setControlMode(mode) {
+            controlMode = mode;
+            if (mode === 'point') {
+                document.getElementById('modePointBtn').classList.add('active');
+                document.getElementById('modeImgBtn').classList.remove('active');
+                showBanner("Mode: Menggeser Titik Ukur Aktif");
+            } else {
+                document.getElementById('modeImgBtn').classList.add('active');
+                document.getElementById('modePointBtn').classList.remove('active');
+                showBanner("Mode: Menggeser Posis Gambar");
+            }
+        }
+
+        function setStep(val) {
+            moveStep = val;
+            document.querySelectorAll('.dpad-container .preset-chip').forEach(el => {
+                if (el.innerText == val) el.classList.add('active');
+                else if (el.innerText == '1' || el.innerText == '5' || el.innerText == '15') el.classList.remove('active');
+            });
+        }
+
+        function moveDirection(dirX, dirY) {
+            let dx = dirX * moveStep;
+            let dy = dirY * moveStep;
+
+            if (controlMode === 'image') {
+                // Geser seluruh posisi gambar dan garis
+                imgOffsetX += dx;
+                imgOffsetY += dy;
+                for (let l = 0; l < lines.length; l++) {
+                    for (let p = 0; p < lines[l].length; p++) {
+                        lines[l][p].x += dx;
+                        lines[l][p].y += dy;
+                    }
+                }
+            } else {
+                // Geser titik aktif pada garis aktif
+                if (!lines[activeLineIndex] || lines[activeLineIndex].length === 0) return;
+                let pts = lines[activeLineIndex];
+                if (activePointIndex >= pts.length) activePointIndex = pts.length - 1;
+                
+                pts[activePointIndex].x += dx;
+                pts[activePointIndex].y += dy;
+            }
             redraw();
         }
 
@@ -647,7 +770,7 @@
         function redraw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (isImageLoaded && img.src) {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, imgOffsetX, imgOffsetY, canvas.width, canvas.height);
             }
 
             let totalPx = 0;
@@ -688,9 +811,10 @@
                 }
 
                 for (let i = 0; i < pts.length; i++) {
-                    ctx.fillStyle = (l === activeLineIndex) ? '#38bdf8' : '#f43f5e';
+                    let isActivePoint = (l === activeLineIndex && i === activePointIndex);
+                    ctx.fillStyle = isActivePoint ? '#f43f5e' : ((l === activeLineIndex) ? '#38bdf8' : '#a1a1aa');
                     ctx.beginPath();
-                    ctx.arc(pts[i].x, pts[i].y, 8, 0, Math.PI * 2);
+                    ctx.arc(pts[i].x, pts[i].y, isActivePoint ? 10 : 7, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 2;
@@ -737,11 +861,14 @@
                 for (let p = 0; p < lines[l].length; p++) {
                     let pt = lines[l][p];
                     let dist = Math.hypot(pos.x - pt.x, pos.y - pt.y);
-                    if (dist < 45) { 
+                    if (dist < 55) { 
                         isDragging = true;
                         draggedLineIdx = l;
                         draggedPointIdx = p;
                         activeLineIndex = l;
+                        activePointIndex = p;
+                        grabOffsetX = pt.x - pos.x;
+                        grabOffsetY = pt.y - pos.y;
                         found = true;
                         break;
                     }
@@ -762,9 +889,12 @@
                             closestIdx = i;
                         }
                     }
+                    grabOffsetX = 0;
+                    grabOffsetY = 0;
                     pts[closestIdx] = {x: pos.x, y: pos.y};
                     draggedLineIdx = activeLineIndex;
                     draggedPointIdx = closestIdx;
+                    activePointIndex = closestIdx;
                     isDragging = true;
                     redraw();
                 }
@@ -772,7 +902,9 @@
 
             if (isDragging) {
                 magDiv.style.display = 'block';
-                updateMagnifier(pos);
+                let targetX = pos.x + grabOffsetX;
+                let targetY = pos.y + grabOffsetY;
+                updateMagnifier(targetX, targetY, pos.clientX, pos.clientY);
             }
         });
 
@@ -780,16 +912,17 @@
             if (!isDragging || draggedLineIdx === null || draggedPointIdx === null) return;
             let pos = getCanvasPos(e);
             
-            lines[draggedLineIdx][draggedPointIdx] = {x: pos.x, y: pos.y};
+            let targetX = pos.x + grabOffsetX;
+            let targetY = pos.y + grabOffsetY;
+
+            lines[draggedLineIdx][draggedPointIdx] = {x: targetX, y: targetY};
             redraw();
 
             magDiv.style.display = 'block';
-            magDiv.style.left = pos.clientX + 'px';
-            magDiv.style.top = pos.clientY + 'px';
-            updateMagnifier(pos);
+            updateMagnifier(targetX, targetY, pos.clientX, pos.clientY);
         });
 
-        function updateMagnifier(pos) {
+        function updateMagnifier(targetX, targetY, clientX, clientY) {
             magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
             magCtx.save();
             magCtx.imageSmoothingEnabled = false;
@@ -800,10 +933,13 @@
             
             magCtx.drawImage(
                 canvas, 
-                pos.x - sWidth / 2, pos.y - sHeight / 2, sWidth, sHeight,
+                targetX - sWidth / 2, targetY - sHeight / 2, sWidth, sHeight,
                 0, 0, magCanvas.width, magCanvas.height
             );
             magCtx.restore();
+
+            magDiv.style.left = clientX + 'px';
+            magDiv.style.top = clientY + 'px';
         }
 
         canvas.addEventListener('pointerup', () => {
