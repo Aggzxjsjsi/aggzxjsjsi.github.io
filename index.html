@@ -8,7 +8,7 @@
     <!-- Skrip Iklan Adsterra 1 -->
     <script src="https://pl31316420.profitableratecpmnetwork.com/0f/c2/0f/0fc20ff4da59ea128cf0dfb67cff8d47.js"></script>
 
-    <!-- Load MediaPipe Hands Libraries untuk Kalkulator Tinggi Badan -->
+    <!-- Load MediaPipe Hands Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -36,7 +36,6 @@
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
-        /* Top Bar Date Time di Pojok Kanan Atas */
         .top-badge {
             position: absolute;
             top: 15px;
@@ -52,7 +51,6 @@
         }
         .top-badge span { color: #60a5fa; }
 
-        /* Titles */
         .title-container { text-align: center; margin-bottom: 25px; }
         h1 {
             font-size: 2rem;
@@ -62,7 +60,6 @@
         }
         .subtitle { color: #cbd5e1; font-size: 0.9rem; }
 
-        /* Accordion Box Container */
         .main-container {
             width: 100%;
             max-width: 450px;
@@ -71,7 +68,6 @@
             gap: 15px;
         }
 
-        /* Sembunyikan menu lain saat salah satu aktif */
         .main-container.active-mode .card-box:not(.active) {
             display: none;
         }
@@ -86,7 +82,6 @@
         }
         .card-box:hover { border-color: #374151; }
 
-        /* Header Kotak yang Bisa Dipencet */
         .card-toggle-header {
             padding: 20px 25px;
             display: flex;
@@ -113,7 +108,6 @@
             color: #38bdf8;
         }
 
-        /* Isi Kotak (Hidden Default) */
         .card-content {
             display: none;
             padding: 0 25px 25px 25px;
@@ -124,7 +118,6 @@
             display: block;
         }
 
-        /* Input Section Umur */
         .inner-header {
             color: #f87171;
             font-size: 0.8rem;
@@ -161,7 +154,6 @@
         input:focus, select:focus { border-color: #38bdf8; }
         select option { background: #111827; color: white; }
 
-        /* Button Utama */
         button.submit-btn {
             width: 100%;
             padding: 14px;
@@ -178,7 +170,6 @@
         }
         button.submit-btn:hover { opacity: 0.9; }
 
-        /* Tombol Kembali ke Menu Utama */
         button.back-menu-btn {
             width: 100%;
             padding: 12px;
@@ -202,7 +193,6 @@
             border-color: #4b5563;
         }
 
-        /* About Section */
         .about-box {
             background: rgba(255, 255, 255, 0.02);
             border: 1px dashed #374151;
@@ -214,7 +204,6 @@
         .about-text { color: #94a3b8; font-size: 0.85rem; line-height: 1.5; }
         .about-text strong { color: #cbd5e1; }
 
-        /* Results Section Umur */
         .zodiac-header { color: #f87171; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; margin: 20px 0 12px 0; }
         
         .zodiac-flex {
@@ -260,7 +249,6 @@
         .val-red { color: #f87171; }
         .val-white { color: #ffffff; }
 
-        /* Real-Time Seconds Card */
         .live-sec-card {
             text-align: center;
             background: #111827;
@@ -295,7 +283,6 @@
             100% { opacity: 0.2; }
         }
 
-        /* Khusus Tinggi Badan CSS */
         .btn-upload-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -375,14 +362,12 @@
             line-height: 1.4;
         }
 
-        /* Footer */
         .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; }
 
     </style>
 </head>
 <body>
 
-    <!-- Widget Waktu di Pojok Kanan Atas -->
     <div class="top-badge">
         <span id="live-date">Memuat...</span> <span id="live-time"></span>
     </div>
@@ -474,7 +459,6 @@
                     </div>
                 </div>
 
-                <!-- Penjelasan Kalkulator Umur -->
                 <div class="about-box">
                     <div class="about-title">TENTANG KALKULATOR UMUR & ZODIAK</div>
                     <p class="about-text">
@@ -483,7 +467,6 @@
                     </p>
                 </div>
 
-                <!-- Tombol Kembali ke Menu Utama -->
                 <button class="back-menu-btn" onclick="closeBox('box-age')">
                     ⬅️ Kembali ke Menu Utama
                 </button>
@@ -569,16 +552,14 @@
                     </div>
                 </div>
 
-                <!-- Penjelasan Kalkulator Tinggi Badan -->
                 <div class="about-box">
                     <div class="about-title">TENTANG KALKULATOR TINGGI BADAN</div>
                     <p class="about-text">
-                        Kalkulator ini memperkirakan tinggi atau rentang tubuh menggunakan metode pengukuran jengkal tradisional yang dikalibrasi secara otomatis menggunakan teknologi AI computer vision (MediaPipe Hands).<br><br>
+                        Kalkulator ini memperkirakan tinggi atau rentang tubuh menggunakan metode pengukuran jengkal tradisional yang dikalibrasi secara otomatis menggunakan teknologi AI computer vision.<br><br>
                         <strong>Cara Pakai:</strong> Unggah foto jengkal tangan untuk mendeteksi skala sentimeter, lalu masukkan data jengkal lengan dan bahu Anda.
                     </p>
                 </div>
 
-                <!-- Tombol Kembali ke Menu Utama -->
                 <button class="back-menu-btn" onclick="closeBox('box-height')">
                     ⬅️ Kembali ke Menu Utama
                 </button>
@@ -590,25 +571,20 @@
     <div class="footer">Created by_aggx</div>
 
     <script>
-        // Fungsi Buka Menu Kotak Tertentu (Menyembunyikan Kotak Lain)
         function openBox(boxId) {
             const container = document.getElementById('mainContainer');
             const box = document.getElementById(boxId);
-            
             container.classList.add('active-mode');
             box.classList.add('active');
         }
 
-        // Fungsi Tutup Menu / Kembali ke Menu Utama Website
         function closeBox(boxId) {
             const container = document.getElementById('mainContainer');
             const box = document.getElementById(boxId);
-            
             box.classList.remove('active');
             container.classList.remove('active-mode');
         }
 
-        // --- Logika Kalkulator Umur ---
         const zodiacs = [
             { name: "Capricorn (Kambing)", emoji: "🐐", desc: '"Disiplin, tangguh, sabar, dan sangat praktis."', start: [1,1], end: [1,19] },
             { name: "Aquarius (Air)", emoji: "🌊", desc: '"Mandiri, unik, inovatif, dan pemikir keras."', start: [1,20], end: [2,18] },
@@ -629,7 +605,6 @@
             return num.toLocaleString('id-ID');
         }
 
-        // Live Clock Header
         setInterval(() => {
             const now = new Date();
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -706,8 +681,6 @@
             document.getElementById('val-second').innerText = formatNum(totalSeconds);
         }
 
-
-        // --- Logika Kalkulator Tinggi Badan ---
         function parseVal(id) {
             let val = document.getElementById(id).value;
             if (!val) return 0;
@@ -720,38 +693,49 @@
         }
 
         const canvasElement = document.getElementById('output-canvas');
-        const canvasCtx = canvasElement.getContext('2d');
+        const canvasCtx = canvasElement ? canvasElement.getContext('2d') : null;
         const aiStatus = document.getElementById('ai-status');
 
-        const hands = new Hands({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-        });
-
-        hands.setOptions({
-            maxNumHands: 1,
-            modelComplexity: 1,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-
-        hands.onResults(onHandResults);
+        let hands = null;
+        try {
+            if (typeof Hands !== 'undefined') {
+                hands = new Hands({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                });
+                hands.setOptions({
+                    maxNumHands: 1,
+                    modelComplexity: 1,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+                hands.onResults(onHandResults);
+            }
+        } catch (e) {
+            console.log("AI MediaPipe gagal dimuat, menggunakan mode manual.");
+        }
 
         function processImage(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             document.getElementById('canvas-container').style.display = 'block';
-            aiStatus.innerText = "🤖 Memindai tangan dengan AI...";
+            if (aiStatus) aiStatus.innerText = "🤖 Memindai tangan dengan AI...";
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    canvasElement.width = img.width;
-                    canvasElement.height = img.height;
-                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                    canvasCtx.drawImage(img, 0, 0, img.width, img.height);
-                    hands.send({image: img});
+                    if (canvasElement && canvasCtx) {
+                        canvasElement.width = img.width;
+                        canvasElement.height = img.height;
+                        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                        canvasCtx.drawImage(img, 0, 0, img.width, img.height);
+                        if (hands) {
+                            hands.send({image: img});
+                        } else if (aiStatus) {
+                            aiStatus.innerText = "⚠️ Fitur AI tidak aktif, silakan isi angka jengkal secara manual.";
+                        }
+                    }
                 }
                 img.src = e.target.result;
             }
@@ -760,7 +744,7 @@
 
         function onHandResults(results) {
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                aiStatus.innerText = "✅ Tangan berhasil dideteksi AI!";
+                if (aiStatus) aiStatus.innerText = "✅ Tangan berhasil dideteksi AI!";
                 const landmarks = results.multiHandLandmarks[0];
 
                 drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#38bdf8', lineWidth: 4});
@@ -790,7 +774,7 @@
                 document.getElementById('jengkal-cm').value = estimatedCmFromPixels;
 
             } else {
-                aiStatus.innerText = "⚠️ Tangan tidak terdeteksi jelas. Pastikan foto terbuka lebar.";
+                if (aiStatus) aiStatus.innerText = "⚠️ Tangan tidak terdeteksi jelas. Pastikan foto terbuka lebar.";
             }
         }
 
