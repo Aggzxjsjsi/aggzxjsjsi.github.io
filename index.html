@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Anatomi Deteksi AI - Aggx</title>
+    <title>Kalkulator Panjang Lengan Jengkal - Aggx</title>
     <!-- Load MediaPipe Hands Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
@@ -120,7 +120,7 @@
         }
         .input-group label { font-size: 0.8rem; color: #94a3b8; }
         
-        input, select {
+        input {
             width: 100%;
             background: transparent;
             border: 1px solid #374151;
@@ -131,8 +131,23 @@
             outline: none;
             transition: border 0.3s;
         }
-        input:focus, select:focus { border-color: #38bdf8; }
-        select option { background: #111827; color: white; }
+        input:focus { border-color: #38bdf8; }
+
+        /* Style khusus layout plus tangan kanan + kiri */
+        .arm-flex-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .arm-flex-container input {
+            text-align: center;
+        }
+        .plus-sign {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38bdf8;
+            padding: 0 4px;
+        }
 
         .info-box {
             font-size: 0.75rem;
@@ -188,21 +203,21 @@
 <body>
 
     <div class="title-container">
-        <h1>AI Deteksi Jengkal</h1>
-        <p class="subtitle">Sistem otomatis mendeteksi rentang jari tangan lewat foto</p>
+        <h1>Kalkulator Jengkal Lengan</h1>
+        <p class="subtitle">Deteksi AI & Ukur Panjang Lengan Akurat Tanpa Berat Badan</p>
     </div>
 
     <div class="card">
-        <div class="card-header">1. Foto Jengkal untuk Deteksi AI</div>
+        <div class="card-header">1. Foto Jengkal untuk Kalibrasi AI</div>
         
         <div class="btn-upload-grid">
             <label class="action-btn-upload">
                 📸 Buka Kamera
-                <input type="file" accept="image/*" capture="environment" id="file-input" onchange="processImage(event)">
+                <input type="file" accept="image/*" capture="environment" onchange="processImage(event)">
             </label>
             <label class="action-btn-upload">
                 🖼️ Pilih Galeri
-                <input type="file" accept="image/*" id="file-input-2" onchange="processImage(event)">
+                <input type="file" accept="image/*" onchange="processImage(event)">
             </label>
         </div>
 
@@ -216,57 +231,43 @@
             <input type="number" id="jengkal-cm" value="18" placeholder="Otomatis / sesuaikan jika perlu" step="0.5">
         </div>
         <div class="info-box">
-            💡 <i>AI akan melacak ujung jempol dan kelingking. Jika kurang pas, kamu bisa menyesuaikan angka cm di atas secara manual.</i>
+            💡 <i>AI membaca jarak jempol ke kelingking. Ubah manual jika dirasa kurang pas.</i>
         </div>
 
-        <div class="card-header" style="margin-top: 15px;">2. Hitung Komponen Tubuh</div>
+        <div class="card-header" style="margin-top: 15px;">2. Masukkan Jumlah Jengkal Lengan</div>
 
         <div class="input-group">
-            <label>Jumlah jengkal Tangan Kanan (Ujung jari ke bahu)</label>
-            <input type="number" id="jengkal-right" placeholder="Contoh: 4.5" step="0.5">
+            <label>Jumlah Jengkal Lengan (Kanan + Kiri)</label>
+            <div class="arm-flex-container">
+                <input type="number" id="jengkal-right" placeholder="Kanan" step="0.5" oninput="syncLeftArm(this.value)">
+                <span class="plus-sign">+</span>
+                <input type="number" id="jengkal-left" placeholder="Kiri" step="0.5">
+            </div>
         </div>
 
         <div class="input-group">
-            <label>Jumlah jengkal Tangan Kiri (Ujung jari ke bahu)</label>
-            <input type="number" id="jengkal-left" placeholder="Contoh: 4.5" step="0.5">
-        </div>
-
-        <div class="input-group">
-            <label>Jumlah jengkal Dada (Pangkal kanan ke pangkal kiri)</label>
+            <label>Jumlah jengkal Dada (Tambahan lebar bahu/dada)</label>
             <input type="number" id="jengkal-chest" placeholder="Contoh: 2" step="0.5">
         </div>
 
-        <div class="input-group">
-            <label>Jenis Kelamin</label>
-            <select id="gender">
-                <option value="" disabled selected>Pilih jenis kelamin...</option>
-                <option value="male">Pria</option>
-                <option value="female">Wanita</option>
-            </select>
-        </div>
-
-        <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Otomatis</button>
+        <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Panjang Lengan</button>
     </div>
 
     <div id="result-container">
         <div class="card result-box">
-            <div class="card-header" style="margin-bottom: 12px;">Hasil Kalkulasi Anatomi</div>
+            <div class="card-header" style="margin-bottom: 12px;">Hasil Pengukuran Jengkal</div>
             
             <div class="stat-row">
-                <div class="stat-label">Total Jengkal Tubuh</div>
+                <div class="stat-label">Total Jengkal Keseluruhan</div>
                 <div class="stat-value" id="res-jengkal">0 Jengkal</div>
             </div>
             <div class="stat-row">
-                <div class="stat-label">Estimasi Tinggi Badan</div>
-                <div class="stat-value" id="res-height">0 cm</div>
+                <div class="stat-label">Panjang Lengan Kanan</div>
+                <div class="stat-value" id="res-right-arm">0 cm</div>
             </div>
             <div class="stat-row">
-                <div class="stat-label">Perkiraan Berat Ideal</div>
-                <div class="stat-value" id="res-weight" style="color: #f87171;">0 kg</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Status BMI</div>
-                <div class="stat-value" id="res-bmi" style="color: #22c55e;">Normal</div>
+                <div class="stat-label">Estimasi Tinggi Badan / Bentang</div>
+                <div class="stat-value" id="res-height" style="color: #22c55e;">0 cm</div>
             </div>
         </div>
     </div>
@@ -274,7 +275,11 @@
     <div class="footer">Created by_aggx</div>
 
     <script>
-        // Inisialisasi MediaPipe Hands
+        // Fitur pintar: otomatis menyamakan kiri jika kanan diisi karena lengan manusia sama panjang 🤣
+        function syncLeftArm(val) {
+            document.getElementById('jengkal-left').value = val;
+        }
+
         const canvasElement = document.getElementById('output-canvas');
         const canvasCtx = canvasElement.getContext('2d');
         const aiStatus = document.getElementById('ai-status');
@@ -307,8 +312,6 @@
                     canvasElement.height = img.height;
                     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
                     canvasCtx.drawImage(img, 0, 0, img.width, img.height);
-                    
-                    // Kirim gambar ke model AI MediaPipe
                     hands.send({image: img});
                 }
                 img.src = e.target.result;
@@ -321,11 +324,9 @@
                 aiStatus.innerText = "✅ Tangan berhasil dideteksi AI!";
                 const landmarks = results.multiHandLandmarks[0];
 
-                // Gambar kerangka tangan
                 drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#38bdf8', lineWidth: 4});
                 drawLandmarks(canvasCtx, landmarks, {color: '#f87171', lineWidth: 2, radius: 4});
 
-                // Titik 4 (Ujung Ibu Jari) dan Titik 20 (Ujung Kelingking)
                 const thumbTip = landmarks[4];
                 const pinkyTip = landmarks[20];
 
@@ -334,7 +335,6 @@
                 const x2 = pinkyTip.x * canvasElement.width;
                 const y2 = pinkyTip.y * canvasElement.height;
 
-                // Tarik garis penghubung jengkal di canvas
                 canvasCtx.beginPath();
                 canvasCtx.moveTo(x1, y1);
                 canvasCtx.lineTo(x2, y2);
@@ -342,11 +342,8 @@
                 canvasCtx.lineWidth = 6;
                 canvasCtx.stroke();
 
-                // Hitung jarak pixel antara jempol dan kelingking
                 const pixelDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 
-                // Estimasi rasio konversi sederhana (pixel ke cm perkiraan standar foto jarak dekat)
-                // Karena jarak kamera bervariasi, kita berikan estimasi cerdas atau biarkan user menyempurnakan angka cm-nya.
                 let estimatedCmFromPixels = Math.round((pixelDistance / canvasElement.width) * 35);
                 if (estimatedCmFromPixels < 12) estimatedCmFromPixels = 17;
                 if (estimatedCmFromPixels > 25) estimatedCmFromPixels = 20;
@@ -363,44 +360,26 @@
             const rArm = parseFloat(document.getElementById('jengkal-right').value) || 0;
             const lArm = parseFloat(document.getElementById('jengkal-left').value) || 0;
             const chest = parseFloat(document.getElementById('jengkal-chest').value) || 0;
-            const gender = document.getElementById('gender').value;
 
             if (!jengkalCm || jengkalCm <= 0) {
                 alert("Masukkan panjang 1 jengkal dengan benar!");
                 return;
             }
-            if (rArm <= 0 || lArm <= 0) {
-                alert("Masukkan jumlah jengkal tangan kanan dan kiri!");
-                return;
-            }
-            if (!gender) {
-                alert("Pilih jenis kelamin terlebih dahulu!");
+            if (rArm <= 0) {
+                alert("Masukkan jumlah jengkal lengan terlebih dahulu!");
                 return;
             }
 
             const totalJengkal = rArm + lArm + chest;
-            const totalWingspanCm = totalJengkal * jengkalCm;
-            const estimatedHeight = totalWingspanCm;
-
-            let idealWeight = 0;
-            if (gender === 'male') {
-                idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.1);
-            } else {
-                idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.15);
-            }
-
-            const heightM = estimatedHeight / 100;
-            const bmi = idealWeight / (heightM * heightM);
-
-            let bmiStatus = "Normal (Ideal)";
-            if (bmi < 18.5) bmiStatus = "Kurus (Underweight)";
-            else if (bmi > 24.9) bmiStatus = "Kelebihan Berat Badan";
+            const totalSpanCm = totalJengkal * jengkalCm;
+            
+            // Hitung panjang lengan kanan dalam cm (berdasarkan jengkal lengan kanan * ukuran jengkal cm)
+            const rightArmCm = rArm * jengkalCm;
 
             document.getElementById('result-container').style.display = 'block';
             document.getElementById('res-jengkal').innerText = totalJengkal + " Jengkal";
-            document.getElementById('res-height').innerText = estimatedHeight.toFixed(0) + " cm";
-            document.getElementById('res-weight').innerText = idealWeight.toFixed(1) + " kg";
-            document.getElementById('res-bmi').innerText = bmiStatus;
+            document.getElementById('res-right-arm').innerText = rightArmCm.toFixed(1) + " cm";
+            document.getElementById('res-height').innerText = totalSpanCm.toFixed(0) + " cm";
         }
     </script>
 </body>
