@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalkulator Tinggi Dan Panjang</title>
+    <title>Kalkulator Tinggi & Panjang Pro - Light HUD</title>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -77,7 +77,7 @@
         }
         .btn-header-action:active, .unit-btn:active { background: rgba(56, 189, 248, 0.4); }
 
-        /* Badge Hasil Ukur di Atas (Agar tidak menutupi tombol bawah) */
+        /* Badge Hasil Ukur di Atas */
         .top-result-badge {
             position: absolute;
             top: 62px;
@@ -131,7 +131,7 @@
         }
         .floating-eye-btn:active { transform: scale(0.9); }
 
-        /* Panel Samping Kiri (Drawer Pengaturan, Kalibrasi, Undo/Redo) */
+        /* Panel Samping Kiri (Drawer Pengaturan & Riwayat Undo/Redo) */
         .left-drawer {
             position: absolute;
             top: 0;
@@ -291,11 +291,11 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah Utama (Bisa Ditarik/Ditekan Naik-Turun) */
+        /* Panel Kontrol Bawah (Dilengkapi Tombol Geser/Tinggikan & Turunkan) */
         .bottom-panel {
             display: none;
             flex-direction: column;
-            background: rgba(15, 15, 20, 0.9);
+            background: rgba(15, 15, 20, 0.92);
             backdrop-filter: blur(16px);
             z-index: 50;
             position: absolute;
@@ -309,38 +309,78 @@
             padding: 8px 14px;
             padding-bottom: max(14px, env(safe-area-inset-bottom));
             gap: 8px;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Handle Bar untuk Tarik ke Atas / Dorong ke Bawah */
+        /* Handle Bar & Tombol Geser Posisi Panel (Tinggikan / Turunkan) */
         .panel-handle-bar {
             width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 6px;
+        }
+
+        .panel-shift-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-shift {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .btn-shift:active { background: rgba(56, 189, 248, 0.4); }
+
+        .handle-center-info {
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
-            padding: 4px 0;
-            gap: 3px;
         }
         .handle-pill {
-            width: 36px;
+            width: 32px;
             height: 4px;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 2px;
+            margin-bottom: 2px;
         }
         .handle-text {
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             color: #9ca3af;
             font-weight: 500;
         }
 
-        /* Status Collapsed / Disembunyikan ke Bawah */
-        .bottom-panel.collapsed {
+        /* Tingkatan Posisi Panel (Level 0: Collapsed, Level 1: Normal, Level 2: Naik/Tinggi, Level 3: Lebih Tinggi) */
+        .bottom-panel.level-0 {
             transform: translateY(calc(100% - 32px));
         }
-        .bottom-panel.collapsed .panel-content-wrap {
+        .bottom-panel.level-0 .panel-content-wrap {
             opacity: 0;
             pointer-events: none;
+        }
+
+        .bottom-panel.level-1 {
+            transform: translateY(0px);
+        }
+
+        .bottom-panel.level-2 {
+            transform: translateY(-45px);
+        }
+
+        .bottom-panel.level-3 {
+            transform: translateY(-90px);
         }
 
         .panel-content-wrap {
@@ -562,7 +602,7 @@
             </button>
         </div>
 
-        <!-- Badge Hasil Ukur di Atas -->
+        <!-- Badge Hasil Ukur di Atas (Agar tidak menutupi tombol bawah) -->
         <div class="top-result-badge" id="topResultBadge">
             <span class="result-label">Hasil:</span>
             <span class="result-value" id="resultValue">0 cm</span>
@@ -578,7 +618,7 @@
                 <button class="drawer-close" onclick="toggleDrawer()">✕</button>
             </div>
 
-            <!-- Riwayat Aksi (Undo & Redo dipindah ke sini) -->
+            <!-- Riwayat Aksi (Undo & Redo) -->
             <div class="setting-group">
                 <span>Riwayat Aksi (Undo / Redo):</span>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
@@ -641,12 +681,18 @@
             <button class="capture-btn" onclick="capturePhoto()">📷</button>
         </div>
 
-        <!-- Panel Kontrol Bawah (Bisa ditarik ke atas / ditekan ke bawah) -->
-        <div class="bottom-panel" id="bottomPanel">
-            <!-- Handle bar untuk tarik ke atas atau dorong ke bawah -->
-            <div class="panel-handle-bar" onclick="toggleBottomPanel()">
-                <div class="handle-pill"></div>
-                <span class="handle-text" id="handleText">Tutup Panel ▾</span>
+        <!-- Panel Kontrol Bawah dengan Tombol Tinggikan / Turunkan Panel -->
+        <div class="bottom-panel level-1" id="bottomPanel">
+            <!-- Handle bar lengkap dengan Tombol Tinggikan (▲) dan Turunkan (▼) -->
+            <div class="panel-handle-bar">
+                <button class="btn-shift" onclick="shiftPanelHeight(1)" title="Tinggikan Panel">▲ Tinggikan</button>
+                
+                <div class="handle-center-info" onclick="toggleCollapsePanel()">
+                    <div class="handle-pill"></div>
+                    <span class="handle-text" id="handleText">Panel Standar</span>
+                </div>
+
+                <button class="btn-shift" onclick="shiftPanelHeight(-1)" title="Turunkan Panel">▼ Turunkan</button>
             </div>
 
             <div class="panel-content-wrap">
@@ -726,13 +772,14 @@
         let currentUnit = 'cm';
         let isUiHidden = false;
         let isDrawerOpen = false;
-        let isPanelCollapsed = false;
+        
+        // Level Tinggi Panel (0 = Collapsed, 1 = Standar, 2 = Naik Sedikit, 3 = Paling Tinggi)
+        let currentPanelLevel = 1;
         
         let lines = [[]];
         let activeLineIndex = 0;
         let activePointIndex = 0;
 
-        // Histori untuk Undo & Redo
         let historyStack = [];
         let redoStack = [];
 
@@ -747,13 +794,47 @@
         let grabOffsetX = 0;
         let grabOffsetY = 0;
 
-        // Variabel untuk fitur Tap & Hold tombol Hapus
         let deletePressTimer = null;
         let isLongPressTriggered = false;
 
         window.addEventListener('DOMContentLoaded', () => {
             startCamera();
         });
+
+        // Fungsi untuk Mengatur Ketinggian Panel secara Bertahap (Tinggikan / Turunkan)
+        function shiftPanelHeight(direction) {
+            currentPanelLevel += direction;
+            if (currentPanelLevel > 3) currentPanelLevel = 3;
+            if (currentPanelLevel < 0) currentPanelLevel = 0;
+            applyPanelLevel();
+        }
+
+        function toggleCollapsePanel() {
+            if (currentPanelLevel === 0) {
+                currentPanelLevel = 1;
+            } else {
+                currentPanelLevel = 0;
+            }
+            applyPanelLevel();
+        }
+
+        function applyPanelLevel() {
+            let panel = document.getElementById('bottomPanel');
+            let handleText = document.getElementById('handleText');
+
+            panel.classList.remove('level-0', 'level-1', 'level-2', 'level-3');
+            panel.classList.add('level-' + currentPanelLevel);
+
+            if (currentPanelLevel === 0) {
+                handleText.innerText = 'Panel Terlipat (Buka ▴)';
+            } else if (currentPanelLevel === 1) {
+                handleText.innerText = 'Panel Standar';
+            } else if (currentPanelLevel === 2) {
+                handleText.innerText = 'Panel Naik Sedikit';
+            } else if (currentPanelLevel === 3) {
+                handleText.innerText = 'Panel Paling Tinggi';
+            }
+        }
 
         function saveState() {
             let snapshot = JSON.parse(JSON.stringify(lines));
@@ -830,20 +911,6 @@
             }
         }
 
-        function toggleBottomPanel() {
-            isPanelCollapsed = !isPanelCollapsed;
-            let panel = document.getElementById('bottomPanel');
-            let handleText = document.getElementById('handleText');
-            if (isPanelCollapsed) {
-                panel.classList.add('collapsed');
-                handleText.innerText = 'Buka Panel ▴';
-            } else {
-                panel.classList.remove('collapsed');
-                handleText.innerText = 'Tutup Panel ▾';
-            }
-        }
-
-        // Logika Tombol Hapus: Tap Sekali = Hapus Terbaru | Tahan (Hold 600ms) = Konfirmasi Hapus Semua
         function startDeletePress() {
             isLongPressTriggered = false;
             deletePressTimer = setTimeout(() => {
@@ -969,7 +1036,7 @@
                 activePointIndex = 1;
 
                 redraw();
-                showBanner("✨ Foto siap! Tap Menu (⚙️) di atas untuk kalibrasi.");
+                showBanner("✨ Foto siap! Gunakan tombol ▲/▼ di atas panel untuk mengatur tinggi panel.");
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -1006,7 +1073,7 @@
                     activePointIndex = 1;
 
                     redraw();
-                    showBanner("✨ Gambar dimuat! Tap Menu (⚙️) untuk kalibrasi.");
+                    showBanner("✨ Gambar dimuat! Gunakan tombol ▲/▼ di atas panel untuk mengatur tinggi panel.");
                 }
                 img.src = event.target.result;
             }
