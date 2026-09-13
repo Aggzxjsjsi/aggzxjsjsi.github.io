@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Room Measurement Pro</title>
-    <!-- TensorFlow.js & COCO-SSD Model -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
+    <title>Room Ruler Pro - Advanced HUD</title>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -20,7 +17,7 @@
         }
 
         body {
-            background-color: #0b0b0e;
+            background-color: #070709;
             color: #f3f4f6;
             display: flex;
             justify-content: center;
@@ -32,22 +29,22 @@
         .app-container {
             width: 100vw;
             height: 100vh;
-            background: #111115;
+            background: #0b0b0f;
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
         }
 
-        /* Header Modern */
+        /* Header Modern HUD */
         .app-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 14px 20px;
-            background: rgba(17, 17, 21, 0.85);
+            background: rgba(11, 11, 15, 0.85);
             backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.15);
             z-index: 50;
             position: absolute;
             top: 0;
@@ -58,13 +55,14 @@
         .header-title {
             font-size: 0.95rem;
             font-weight: 600;
-            color: #ffffff;
-            letter-spacing: 0.3px;
+            color: #38bdf8;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .refresh-btn, .unit-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
             color: #38bdf8;
             padding: 6px 12px;
             border-radius: 8px;
@@ -75,9 +73,9 @@
             align-items: center;
             gap: 6px;
         }
-        .refresh-btn:active { background: rgba(56, 189, 248, 0.2); }
+        .refresh-btn:active { background: rgba(56, 189, 248, 0.3); }
 
-        /* Workspace Kamera & Canvas Full dengan Pengaturan Lebar */
+        /* Workspace Kamera & Canvas */
         .workspace {
             position: absolute;
             top: 0;
@@ -97,7 +95,40 @@
             display: block;
         }
 
-        /* Tombol Awal Kamera/Galeri (Dinaikkan agar tidak terlalu bawah) */
+        /* Lensa Pembesar (Magnifier Loupe) saat Drag */
+        .magnifier {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 3px solid #38bdf8;
+            background: #000;
+            overflow: hidden;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(56, 189, 248, 0.5);
+            transform: translate(-50%, -120px);
+        }
+        .magnifier canvas {
+            width: 330px;
+            height: 330px;
+            position: absolute;
+        }
+        .magnifier::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: #f43f5e;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 5px #fff;
+        }
+
+        /* Tombol Awal Kamera/Galeri */
         .initial-actions {
             position: absolute;
             bottom: 50px;
@@ -111,8 +142,8 @@
         }
 
         .capture-btn {
-            background: linear-gradient(135deg, #f43f5e, #e11d48);
-            color: white;
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            color: #0b0b0f;
             border: none;
             border-radius: 50%;
             width: 76px;
@@ -122,16 +153,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 25px rgba(244, 63, 94, 0.4);
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4);
             transition: transform 0.1s ease;
         }
         .capture-btn:active { transform: scale(0.92); }
 
         .upload-btn-init {
-            background: rgba(24, 24, 27, 0.8);
+            background: rgba(24, 24, 27, 0.85);
             backdrop-filter: blur(10px);
-            color: #f43f5e;
-            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
             border-radius: 14px;
             padding: 12px 18px;
             font-size: 0.85rem;
@@ -143,16 +174,16 @@
         }
         .upload-btn-init input { display: none; }
 
-        /* Banner Status AI */
-        .ai-banner {
+        /* Banner Informasi */
+        .info-banner {
             position: absolute;
             top: 70px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(16, 185, 129, 0.9);
-            color: #fff;
+            background: rgba(56, 189, 248, 0.95);
+            color: #070709;
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
             padding: 6px 14px;
             border-radius: 20px;
             z-index: 60;
@@ -160,11 +191,11 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        /* Panel Kontrol & Perhitungan Bawah (Diberi padding bawah aman & posisi lebih nyaman) */
+        /* Panel Kontrol & Perhitungan Bawah */
         .bottom-panel {
             display: none;
             flex-direction: column;
-            background: rgba(18, 18, 22, 0.96);
+            background: rgba(15, 15, 20, 0.96);
             backdrop-filter: blur(16px);
             z-index: 50;
             position: absolute;
@@ -173,7 +204,7 @@
             right: 0;
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(56, 189, 248, 0.2);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.7);
             padding: 16px 16px 36px 16px;
             gap: 10px;
@@ -183,10 +214,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(56, 189, 248, 0.05);
             padding: 10px 16px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.15);
         }
 
         .result-label {
@@ -224,7 +255,7 @@
         }
         .btn-action.primary {
             background: #38bdf8;
-            color: #0b0b0e;
+            color: #070709;
             border-color: #38bdf8;
         }
         .btn-action.danger {
@@ -232,6 +263,25 @@
             color: #f43f5e;
             border-color: rgba(244, 63, 94, 0.3);
         }
+
+        /* Preset & Pengaturan */
+        .preset-row {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .preset-chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #d1d5db;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .preset-chip:active { background: #38bdf8; color: #070709; }
 
         .setting-group {
             display: flex;
@@ -292,7 +342,7 @@
         <!-- Header -->
         <div class="app-header">
             <button class="refresh-btn" onclick="refreshApp()">🔄 Refresh</button>
-            <div class="header-title">Room Ruler AI</div>
+            <div class="header-title">Ruler Pro HUD</div>
             <button class="unit-btn" onclick="toggleUnitMenu()">
                 <span id="unitLabel">cm</span> ▾
             </button>
@@ -306,7 +356,12 @@
             <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="ai-banner" id="aiBanner">⚡ Memuat Model AI...</div>
+        <div class="info-banner" id="infoBanner">🔍 Tahan & geser titik untuk mengaktifkan Lensa Pembesar Presisi!</div>
+
+        <!-- Lensa Pembesar -->
+        <div class="magnifier" id="magnifier">
+            <canvas id="magCanvas" width="330" height="330"></canvas>
+        </div>
 
         <!-- Workspace Full Layar -->
         <div class="workspace" id="workspace">
@@ -337,16 +392,27 @@
                 <button class="btn-action danger" onclick="clearAllLines()">🗑️ Hapus</button>
             </div>
 
-            <!-- Fitur Kalibrasi Cepat Ukuran Asli -->
+            <!-- Preset Kalibrasi Instan -->
+            <div class="setting-group" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                <span>Preset Kalibrasi Instan (Pilih acuan di garis aktif):</span>
+                <div class="preset-row">
+                    <div class="preset-chip" onclick="applyPreset(8.56)">💳 KTP / ATM (8.5 cm)</div>
+                    <div class="preset-chip" onclick="applyPreset(15.1)">💵 Uang 50rb (15 cm)</div>
+                    <div class="preset-chip" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
+                    <div class="preset-chip" onclick="applyPreset(10)">📏 Standar 10 cm</div>
+                </div>
+            </div>
+
+            <!-- Kalibrasi Manual -->
             <div class="setting-group">
-                <span>Kalibrasi Cepat (Ukuran Asli):</span>
+                <span>Atau Ketik Ukuran Asli:</span>
                 <div style="display: flex; gap: 6px; align-items: center;">
                     <input type="number" id="actualSizeInput" placeholder="Mis: 30">
                     <button class="btn-action primary" style="padding: 5px 10px;" onclick="calibrateWithRealSize()">Sesuaikan</button>
                 </div>
             </div>
 
-            <!-- Pengaturan Lebar Tampilan / Zoom Workspace -->
+            <!-- Pengaturan Zoom Workspace -->
             <div class="setting-group">
                 <span>Lebar Tampilan (Zoom):</span>
                 <input type="range" id="widthSlider" min="50" max="150" value="100" oninput="changeWorkspaceWidth(this.value)">
@@ -360,12 +426,15 @@
     </div>
 
     <script>
-        let aiModel = null;
         let video = document.getElementById('videoElement');
         let canvas = document.getElementById('measCanvas');
         let ctx = canvas.getContext('2d');
-        let img = new Image();
         
+        let magDiv = document.getElementById('magnifier');
+        let magCanvas = document.getElementById('magCanvas');
+        let magCtx = magCanvas.getContext('2d');
+
+        let img = new Image();
         let isImageLoaded = false;
         let currentUnit = 'cm';
         
@@ -378,18 +447,11 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             startCamera();
-            loadAI();
+            showBanner("💡 Jepret foto & gunakan Lensa Pembesar untuk presisi tinggi!");
         });
 
-        async function loadAI() {
-            try {
-                aiModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
-                showBanner("⚡ AI Siap Kalibrasi Otomatis!");
-            } catch (e) { console.log("AI Load error"); }
-        }
-
-        function showBanner(text, duration = 2500) {
-            let b = document.getElementById('aiBanner');
+        function showBanner(text, duration = 3500) {
+            let b = document.getElementById('infoBanner');
             b.innerText = text;
             b.style.display = 'block';
             setTimeout(() => { b.style.display = 'none'; }, duration);
@@ -448,7 +510,6 @@
                 activeLineIndex = 0;
 
                 redraw();
-                runAI();
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -478,30 +539,10 @@
                     activeLineIndex = 0;
 
                     redraw();
-                    runAI();
                 }
                 img.src = event.target.result;
             }
             reader.readAsDataURL(file);
-        }
-
-        async function runAI() {
-            if (!aiModel) return;
-            showBanner("⚡ AI Memindai Ruangan...");
-            try {
-                let preds = await aiModel.detect(canvas);
-                let sizes = { 'cell phone': 7.5, 'laptop': 32.0, 'book': 15.0, 'bottle': 7.0 };
-                for (let p of preds) {
-                    if (sizes[p.class]) {
-                        let scale = (sizes[p.class] / p.bbox[2]) * 100;
-                        document.getElementById('scaleInput').value = scale.toFixed(2);
-                        showBanner(`✨ Objek terdeteksi (${p.class}), skala dikalibrasi!`);
-                        redraw();
-                        return;
-                    }
-                }
-                showBanner("⚡ Pemindaian selesai.");
-            } catch(e) {}
         }
 
         function changeWorkspaceWidth(val) {
@@ -560,16 +601,21 @@
             return valCm.toFixed(1) + ' ' + currentUnit;
         }
 
+        function applyPreset(actualCm) {
+            document.getElementById('actualSizeInput').value = actualCm;
+            calibrateWithRealSize();
+        }
+
         function calibrateWithRealSize() {
             let actualCm = parseFloat(document.getElementById('actualSizeInput').value);
             if (!actualCm || actualCm <= 0) {
-                showBanner("⚠️ Masukkan angka ukuran asli yang valid!");
+                showBanner("⚠️ Masukkan angka ukuran asli terlebih dahulu!");
                 return;
             }
             
             let pts = lines[activeLineIndex];
             if (!pts || pts.length < 2) {
-                showBanner("⚠️ Buat garis pada objek tersebut terlebih dahulu!");
+                showBanner("⚠️ Buat garis di atas objek acuan terlebih dahulu!");
                 return;
             }
             
@@ -592,7 +638,7 @@
             let newScale = currentScale * (targetCm / currentCm);
             document.getElementById('scaleInput').value = newScale.toFixed(2);
             redraw();
-            showBanner(`✅ Skala disesuaikan! Kini akurat ke ${actualCm} ${currentUnit}.`);
+            showBanner(`✅ Berhasil! Skala disesuaikan ke ${actualCm} cm.`);
         }
 
         function redraw() {
@@ -615,7 +661,7 @@
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
                     ctx.strokeStyle = (l === activeLineIndex) ? '#38bdf8' : '#f43f5e';
-                    ctx.lineWidth = 5;
+                    ctx.lineWidth = 4;
                     ctx.stroke();
 
                     let dx = p2.x - p1.x;
@@ -626,9 +672,9 @@
                     let mx = (p1.x + p2.x) / 2;
                     let my = (p1.y + p2.y) / 2;
 
-                    ctx.fillStyle = 'rgba(17, 17, 21, 0.9)';
+                    ctx.fillStyle = 'rgba(11, 11, 15, 0.9)';
                     ctx.fillRect(mx - 38, my - 15, 76, 30);
-                    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
                     ctx.strokeRect(mx - 38, my - 15, 76, 30);
 
                     ctx.fillStyle = '#ffffff';
@@ -641,10 +687,10 @@
                 for (let i = 0; i < pts.length; i++) {
                     ctx.fillStyle = (l === activeLineIndex) ? '#38bdf8' : '#f43f5e';
                     ctx.beginPath();
-                    ctx.arc(pts[i].x, pts[i].y, 10, 0, Math.PI * 2);
+                    ctx.arc(pts[i].x, pts[i].y, 8, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2.5;
+                    ctx.lineWidth = 2;
                     ctx.stroke();
                 }
             }
@@ -673,7 +719,9 @@
 
             return {
                 x: (clientX - rect.left - ox) / scale,
-                y: (clientY - rect.top - oy) / scale
+                y: (clientY - rect.top - oy) / scale,
+                clientX: clientX,
+                clientY: clientY
             };
         }
 
@@ -686,7 +734,7 @@
                 for (let p = 0; p < lines[l].length; p++) {
                     let pt = lines[l][p];
                     let dist = Math.hypot(pos.x - pt.x, pos.y - pt.y);
-                    if (dist < 50) { 
+                    if (dist < 45) { 
                         isDragging = true;
                         draggedLineIdx = l;
                         draggedPointIdx = p;
@@ -711,26 +759,56 @@
                             closestIdx = i;
                         }
                     }
-                    pts[closestIdx] = pos;
+                    pts[closestIdx] = {x: pos.x, y: pos.y};
                     draggedLineIdx = activeLineIndex;
                     draggedPointIdx = closestIdx;
                     isDragging = true;
                     redraw();
                 }
             }
+
+            if (isDragging) {
+                magDiv.style.display = 'block';
+                updateMagnifier(pos);
+            }
         });
 
         canvas.addEventListener('pointermove', (e) => {
             if (!isDragging || draggedLineIdx === null || draggedPointIdx === null) return;
             let pos = getCanvasPos(e);
-            lines[draggedLineIdx][draggedPointIdx] = pos;
+            
+            lines[draggedLineIdx][draggedPointIdx] = {x: pos.x, y: pos.y};
             redraw();
+
+            // Tampilkan & update lensa pembesar mengikuti jari
+            magDiv.style.display = 'block';
+            magDiv.style.left = pos.clientX + 'px';
+            magDiv.style.top = pos.clientY + 'px';
+            updateMagnifier(pos);
         });
+
+        function updateMagnifier(pos) {
+            magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
+            magCtx.save();
+            magCtx.imageSmoothingEnabled = false; // Supaya piksel terlihat jelas untuk presisi
+            
+            let zoom = 3;
+            let sWidth = magCanvas.width / zoom;
+            let sHeight = magCanvas.height / zoom;
+            
+            magCtx.drawImage(
+                canvas, 
+                pos.x - sWidth / 2, pos.y - sHeight / 2, sWidth, sHeight,
+                0, 0, magCanvas.width, magCanvas.height
+            );
+            magCtx.restore();
+        }
 
         canvas.addEventListener('pointerup', () => {
             isDragging = false;
             draggedLineIdx = null;
             draggedPointIdx = null;
+            magDiv.style.display = 'none';
         });
 
         window.addEventListener('click', (e) => {
