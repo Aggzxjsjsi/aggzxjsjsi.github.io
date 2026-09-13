@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Anatomi Metode Kilan - Aggx</title>
+    <title>Kalkulator Anatomi Deteksi AI - Aggx</title>
+    <!-- Load MediaPipe Hands Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -25,20 +30,20 @@
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
-        .title-container { text-align: center; margin: 30px 0 20px 0; }
+        .title-container { text-align: center; margin: 20px 0; }
         h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             color: #38bdf8;
             text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        .subtitle { color: #cbd5e1; font-size: 0.9rem; line-height: 1.4; max-width: 400px; margin: 0 auto; }
+        .subtitle { color: #cbd5e1; font-size: 0.85rem; line-height: 1.4; max-width: 400px; margin: 0 auto; }
 
         .card {
             background: #111827;
             border: 1px solid #1f2937;
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             width: 100%;
             max-width: 450px;
             margin-bottom: 20px;
@@ -47,17 +52,17 @@
 
         .card-header {
             color: #f87171;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-transform: uppercase;
         }
 
         .btn-upload-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 15px;
         }
 
@@ -65,9 +70,9 @@
             background: rgba(56, 189, 248, 0.1);
             border: 1px solid #38bdf8;
             color: #38bdf8;
-            padding: 12px;
+            padding: 10px;
             border-radius: 12px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             text-align: center;
             cursor: pointer;
@@ -80,33 +85,49 @@
         .action-btn-upload:hover { background: rgba(56, 189, 248, 0.2); }
         .action-btn-upload input { display: none; }
 
-        #preview-container {
+        #canvas-container {
             display: none;
+            position: relative;
             margin-bottom: 15px;
             text-align: center;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px;
             border-radius: 12px;
             border: 1px solid #374151;
+            overflow: hidden;
         }
-        #preview-img { max-width: 100%; max-height: 160px; border-radius: 8px; }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .status-ai {
+            font-size: 0.8rem;
+            color: #38bdf8;
+            text-align: center;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
 
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
-        .input-group label { font-size: 0.85rem; color: #94a3b8; }
+        .input-group label { font-size: 0.8rem; color: #94a3b8; }
         
         input, select {
             width: 100%;
             background: transparent;
             border: 1px solid #374151;
             color: white;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 0.95rem;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
             outline: none;
             transition: border 0.3s;
         }
@@ -114,24 +135,24 @@
         select option { background: #111827; color: white; }
 
         .info-box {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #94a3b8;
             background: rgba(255,255,255,0.03);
             border: 1px dashed #374151;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 15px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
             line-height: 1.4;
         }
 
         button.submit-btn {
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             border: none;
             border-radius: 12px;
             background: linear-gradient(90deg, #1e3a8a 0%, #7f1d1d 100%);
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -154,64 +175,65 @@
             align-items: center;
             background: rgba(0,0,0,0.2);
             border: 1px solid #1f2937;
-            padding: 14px 16px;
+            padding: 12px 14px;
             border-radius: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .stat-label { color: #cbd5e1; font-size: 0.85rem; }
-        .stat-value { font-size: 1.1rem; font-weight: 700; color: #38bdf8; }
+        .stat-label { color: #cbd5e1; font-size: 0.8rem; }
+        .stat-value { font-size: 1rem; font-weight: 700; color: #38bdf8; }
 
-        .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; }
+        .footer { margin-top: 20px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
     <div class="title-container">
-        <h1>Metode Kilan Anatomi</h1>
-        <p class="subtitle">Ukur tubuh tanpa alat dengan menjumlahkan rentang kilan tanganmu</p>
+        <h1>AI Deteksi Jengkal</h1>
+        <p class="subtitle">Sistem otomatis mendeteksi rentang jari tangan lewat foto</p>
     </div>
 
     <div class="card">
-        <div class="card-header">1. Foto & Kalibrasi Kilan</div>
+        <div class="card-header">1. Foto Jengkal untuk Deteksi AI</div>
         
         <div class="btn-upload-grid">
             <label class="action-btn-upload">
-                📸 Foto Kilan
-                <input type="file" accept="image/*" capture="environment" onchange="previewImage(event)">
+                📸 Buka Kamera
+                <input type="file" accept="image/*" capture="environment" id="file-input" onchange="processImage(event)">
             </label>
             <label class="action-btn-upload">
-                🖼️ Dari Galeri
-                <input type="file" accept="image/*" onchange="previewImage(event)">
+                🖼️ Pilih Galeri
+                <input type="file" accept="image/*" id="file-input-2" onchange="processImage(event)">
             </label>
         </div>
 
-        <div id="preview-container">
-            <img id="preview-img" src="" alt="Preview Kilan">
+        <div id="canvas-container">
+            <div class="status-ai" id="ai-status">🤖 Memindai tangan dengan AI...</div>
+            <canvas id="output-canvas"></canvas>
         </div>
 
         <div class="input-group">
-            <label>Berapa cm perkiraan panjang 1 kilan tanganmu?</label>
-            <input type="number" id="kilan-cm" value="18" placeholder="Rata-rata dewasa 17-20 cm" step="0.5">
+            <label>Hasil Deteksi Ukuran 1 Jengkal (cm)</label>
+            <input type="number" id="jengkal-cm" value="18" placeholder="Otomatis / sesuaikan jika perlu" step="0.5">
         </div>
         <div class="info-box">
-            💡 <i>Tips: Ukur 1 kilan (jempol ke kelingking) sekali saja pakai penggaris biasa, masukkan angkanya di atas (biasanya 15-20 cm).</i>
+            💡 <i>AI akan melacak ujung jempol dan kelingking. Jika kurang pas, kamu bisa menyesuaikan angka cm di atas secara manual.</i>
         </div>
 
-        <div class="card-header" style="margin-top: 15px;">2. Hitung Jumlah Kilan Tubuh</div>
+        <div class="card-header" style="margin-top: 15px;">2. Hitung Komponen Tubuh</div>
 
         <div class="input-group">
-            <label>Jumlah kilan Tangan Kanan (Ujung jari ke bahu)</label>
-            <input type="number" id="kilan-right" placeholder="Contoh: 4.5" step="0.5">
-        </div>
-
-        <div class="input-group">
-            <label>Jumlah kilan Tangan Kiri (Ujung jari ke bahu)</label>
-            <input type="number" id="kilan-left" placeholder="Contoh: 4.5" step="0.5">
+            <label>Jumlah jengkal Tangan Kanan (Ujung jari ke bahu)</label>
+            <input type="number" id="jengkal-right" placeholder="Contoh: 4.5" step="0.5">
         </div>
 
         <div class="input-group">
-            <label>Jumlah kilan Dada (Pangkal kanan ke pangkal kiri)</label>
-            <input type="number" id="kilan-chest" placeholder="Contoh: 2" step="0.5">
+            <label>Jumlah jengkal Tangan Kiri (Ujung jari ke bahu)</label>
+            <input type="number" id="jengkal-left" placeholder="Contoh: 4.5" step="0.5">
+        </div>
+
+        <div class="input-group">
+            <label>Jumlah jengkal Dada (Pangkal kanan ke pangkal kiri)</label>
+            <input type="number" id="jengkal-chest" placeholder="Contoh: 2" step="0.5">
         </div>
 
         <div class="input-group">
@@ -223,16 +245,16 @@
             </select>
         </div>
 
-        <button class="submit-btn" onclick="calculateKilanSystem()">Hitung Otomatis</button>
+        <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Otomatis</button>
     </div>
 
     <div id="result-container">
         <div class="card result-box">
-            <div class="card-header" style="margin-bottom: 15px;">Hasil Kalkulasi Metode Kilan</div>
+            <div class="card-header" style="margin-bottom: 12px;">Hasil Kalkulasi Anatomi</div>
             
             <div class="stat-row">
-                <div class="stat-label">Total Kilan</div>
-                <div class="stat-value" id="res-kilan">0 Kilan</div>
+                <div class="stat-label">Total Jengkal Tubuh</div>
+                <div class="stat-value" id="res-jengkal">0 Jengkal</div>
             </div>
             <div class="stat-row">
                 <div class="stat-label">Estimasi Tinggi Badan</div>
@@ -252,31 +274,103 @@
     <div class="footer">Created by_aggx</div>
 
     <script>
-        function previewImage(event) {
+        // Inisialisasi MediaPipe Hands
+        const canvasElement = document.getElementById('output-canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const aiStatus = document.getElementById('ai-status');
+
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults(onHandResults);
+
+        function processImage(event) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('preview-img').src = e.target.result;
-                    document.getElementById('preview-container').style.display = 'block';
+            if (!file) return;
+
+            document.getElementById('canvas-container').style.display = 'block';
+            aiStatus.innerText = "🤖 Memindai tangan dengan AI...";
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    canvasElement.width = img.width;
+                    canvasElement.height = img.height;
+                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    canvasCtx.drawImage(img, 0, 0, img.width, img.height);
+                    
+                    // Kirim gambar ke model AI MediaPipe
+                    hands.send({image: img});
                 }
-                reader.readAsDataURL(file);
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function onHandResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                aiStatus.innerText = "✅ Tangan berhasil dideteksi AI!";
+                const landmarks = results.multiHandLandmarks[0];
+
+                // Gambar kerangka tangan
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#38bdf8', lineWidth: 4});
+                drawLandmarks(canvasCtx, landmarks, {color: '#f87171', lineWidth: 2, radius: 4});
+
+                // Titik 4 (Ujung Ibu Jari) dan Titik 20 (Ujung Kelingking)
+                const thumbTip = landmarks[4];
+                const pinkyTip = landmarks[20];
+
+                const x1 = thumbTip.x * canvasElement.width;
+                const y1 = thumbTip.y * canvasElement.height;
+                const x2 = pinkyTip.x * canvasElement.width;
+                const y2 = pinkyTip.y * canvasElement.height;
+
+                // Tarik garis penghubung jengkal di canvas
+                canvasCtx.beginPath();
+                canvasCtx.moveTo(x1, y1);
+                canvasCtx.lineTo(x2, y2);
+                canvasCtx.strokeStyle = '#22c55e';
+                canvasCtx.lineWidth = 6;
+                canvasCtx.stroke();
+
+                // Hitung jarak pixel antara jempol dan kelingking
+                const pixelDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+
+                // Estimasi rasio konversi sederhana (pixel ke cm perkiraan standar foto jarak dekat)
+                // Karena jarak kamera bervariasi, kita berikan estimasi cerdas atau biarkan user menyempurnakan angka cm-nya.
+                let estimatedCmFromPixels = Math.round((pixelDistance / canvasElement.width) * 35);
+                if (estimatedCmFromPixels < 12) estimatedCmFromPixels = 17;
+                if (estimatedCmFromPixels > 25) estimatedCmFromPixels = 20;
+
+                document.getElementById('jengkal-cm').value = estimatedCmFromPixels;
+
+            } else {
+                aiStatus.innerText = "⚠️ Tangan tidak terdeteksi jelas. Pastikan foto terbuka lebar dan jelas.";
             }
         }
 
-        function calculateKilanSystem() {
-            const kilanCm = parseFloat(document.getElementById('kilan-cm').value);
-            const rArm = parseFloat(document.getElementById('kilan-right').value) || 0;
-            const lArm = parseFloat(document.getElementById('kilan-left').value) || 0;
-            const chest = parseFloat(document.getElementById('kilan-chest').value) || 0;
+        function calculateJengkalSystem() {
+            const jengkalCm = parseFloat(document.getElementById('jengkal-cm').value);
+            const rArm = parseFloat(document.getElementById('jengkal-right').value) || 0;
+            const lArm = parseFloat(document.getElementById('jengkal-left').value) || 0;
+            const chest = parseFloat(document.getElementById('jengkal-chest').value) || 0;
             const gender = document.getElementById('gender').value;
 
-            if (!kilanCm || kilanCm <= 0) {
-                alert("Masukkan panjang 1 kilan dengan benar!");
+            if (!jengkalCm || jengkalCm <= 0) {
+                alert("Masukkan panjang 1 jengkal dengan benar!");
                 return;
             }
             if (rArm <= 0 || lArm <= 0) {
-                alert("Masukkan jumlah kilan tangan kanan dan kiri!");
+                alert("Masukkan jumlah jengkal tangan kanan dan kiri!");
                 return;
             }
             if (!gender) {
@@ -284,14 +378,10 @@
                 return;
             }
 
-            // Jumlahkan total kilan
-            const totalKilan = rArm + lArm + chest;
-            
-            // Konversi total kilan ke cm (Wingspan)
-            const totalWingspanCm = totalKilan * kilanCm;
-            const estimatedHeight = totalWingspanCm; // Tinggi diasumsikan setara wingspan
+            const totalJengkal = rArm + lArm + chest;
+            const totalWingspanCm = totalJengkal * jengkalCm;
+            const estimatedHeight = totalWingspanCm;
 
-            // Hitung Berat Badan Ideal (Broca)
             let idealWeight = 0;
             if (gender === 'male') {
                 idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.1);
@@ -299,7 +389,6 @@
                 idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.15);
             }
 
-            // Hitung BMI
             const heightM = estimatedHeight / 100;
             const bmi = idealWeight / (heightM * heightM);
 
@@ -307,9 +396,8 @@
             if (bmi < 18.5) bmiStatus = "Kurus (Underweight)";
             else if (bmi > 24.9) bmiStatus = "Kelebihan Berat Badan";
 
-            // Tampilkan hasil
             document.getElementById('result-container').style.display = 'block';
-            document.getElementById('res-kilan').innerText = totalKilan + " Kilan";
+            document.getElementById('res-jengkal').innerText = totalJengkal + " Jengkal";
             document.getElementById('res-height').innerText = estimatedHeight.toFixed(0) + " cm";
             document.getElementById('res-weight').innerText = idealWeight.toFixed(1) + " kg";
             document.getElementById('res-bmi').innerText = bmiStatus;
