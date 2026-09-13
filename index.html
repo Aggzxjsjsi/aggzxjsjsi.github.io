@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Ruangan AI</title>
-    <!-- TensorFlow.js & COCO-SSD Model -->
+    <title>Kalkulator Pengukur Ruangan AI Cepat</title>
+    <!-- TensorFlow.js & COCO-SSD Model (Lite version untuk kecepatan maksimal) -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
@@ -229,7 +229,7 @@
     <div class="calc-container">
         <div class="calc-header">
             <span class="back-icon">←</span>
-            <span class="calc-title">Pengukur Ruangan</span>
+            <span class="calc-title">Pengukur Ruangan Cepat</span>
             <button class="unit-dropdown-btn" onclick="toggleUnitMenu()">
                 <span id="currentUnitLabel">cm</span> ▾
             </button>
@@ -255,7 +255,7 @@
             </label>
         </div>
 
-        <div class="ai-status-banner" id="aiBanner">🤖 Memuat AI...</div>
+        <div class="ai-status-banner" id="aiBanner">⚡ Memuat Model Cepat...</div>
 
         <div class="workspace" id="workspace">
             <video id="videoElement" autoplay playsinline muted></video>
@@ -287,8 +287,13 @@
         let points = []; 
         let currentUnitKey = 'cm';
 
-        cocoSsd.load().then(model => {
+        // Menggunakan base model 'lite_mobilenet_v2' agar proses deteksi kilat / instan
+        cocoSsd.load({ base: 'lite_mobilenet_v2' }).then(model => {
             aiModel = model;
+            const banner = document.getElementById('aiBanner');
+            banner.style.display = 'block';
+            banner.innerText = "⚡ AI Cepat Siap!";
+            setTimeout(() => banner.style.display = 'none', 2000);
         }).catch(err => console.log(err));
 
         function toggleUnitMenu() {
@@ -341,10 +346,9 @@
             document.getElementById('captureBtn').style.display = 'none';
             isLiveCamera = false;
             
-            // Simpan gambar background statis
             img.src = canvas.toDataURL();
             redrawCanvas();
-            runAiDetection();
+            runSuperFastAiDetection();
         }
 
         function handleMedia(event) {
@@ -366,31 +370,45 @@
                     document.getElementById('captureBtn').style.display = 'none';
                     isLiveCamera = false;
                     redrawCanvas();
-                    runAiDetection();
+                    runSuperFastAiDetection();
                 }
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
         }
 
-        async function runAiDetection() {
+        async function runSuperFastAiDetection() {
             const banner = document.getElementById('aiBanner');
             banner.style.display = 'block';
-            banner.innerText = "🤖 AI memindai referensi ukuran...";
-            if (!aiModel) return;
+            banner.innerText = "⚡ AI memindai secara kilat...";
+            
+            if (!aiModel) {
+                banner.style.display = 'none';
+                return;
+            }
 
             try {
+                // Deteksi objek secara cepat
                 const predictions = await aiModel.detect(canvas);
-                const standardSizes = { 'cell phone': 7.5, 'laptop': 32.0, 'book': 15.0, 'bottle': 7.0 };
+                const standardSizes = { 'cell phone': 7.5, 'laptop': 32.0, 'book': 15.0, 'bottle': 7.0, 'cup': 8.0, 'mouse': 10.0 };
+                
+                let found = false;
                 for (let p of predictions) {
                     if (standardSizes[p.class]) {
                         const calculatedScale = (standardSizes[p.class] / p.bbox[2]) * 100;
                         document.getElementById('scaleFactor').value = calculatedScale.toFixed(2);
-                        banner.innerText = `✨ Terdeteksi ${p.class}! Skala disesuaikan.`;
+                        banner.innerText = `✨ Ketemu (${p.class})! Skala dikalibrasi instan.`;
+                        found = true;
                         redrawCanvas();
                         break;
                     }
                 }
+
+                if (!found) {
+                    banner.innerText = "⚡ Pemindaian selesai (Gunakan skala manual jika perlu).";
+                }
+                
+                setTimeout(() => { banner.style.display = 'none'; }, 3000);
             } catch (err) {
                 banner.style.display = 'none';
             }
@@ -418,15 +436,11 @@
                 ctx.drawImage(img, 0, 0);
             }
 
-            let totalDist = 0;
-
             if (points.length > 0) {
-                // Gambar garis antar titik dan label ukuran di setiap ruas garis
                 for (let i = 0; i < points.length - 1; i++) {
                     const p1 = points[i];
                     const p2 = points[i+1];
 
-                    // Garis Kuning Terang (seperti contoh gambar)
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
@@ -434,13 +448,10 @@
                     ctx.lineWidth = 3;
                     ctx.stroke();
 
-                    // Hitung panjang ruas ini
                     const dx = p2.x - p1.x;
                     const dy = p2.y - p1.y;
                     const distPx = Math.sqrt(dx*dx + dy*dy);
-                    totalDist += distPx;
 
-                    // Tulis teks ukuran di tengah garis
                     const midX = (p1.x + p2.x) / 2;
                     const midY = (p1.y + p2.y) / 2;
                     
@@ -454,7 +465,6 @@
                     ctx.fillText(formatVal(distPx), midX, midY);
                 }
 
-                // Gambar Titik Kuning di setiap sudut
                 for (let i = 0; i < points.length; i++) {
                     ctx.fillStyle = '#ffcc00';
                     ctx.beginPath(); 
@@ -466,7 +476,6 @@
                 }
             }
 
-            // Update total di layar atas
             let totalPxAll = 0;
             for (let i = 0; i < points.length - 1; i++) {
                 const dx = points[i+1].x - points[i].x;
