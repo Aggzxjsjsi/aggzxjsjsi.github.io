@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Panjang AI</title>
+    <title>Kalkulator Pengukur Panjang AI & Kamera</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
@@ -36,7 +36,6 @@
             position: relative;
         }
 
-        /* Header ala Aplikasi Kalkulator */
         .calc-header {
             display: flex;
             align-items: center;
@@ -70,7 +69,6 @@
             gap: 5px;
         }
 
-        /* Screen Display */
         .calc-display {
             padding: 20px;
             text-align: right;
@@ -94,7 +92,36 @@
             margin-top: 5px;
         }
 
-        /* Workspace Canvas Area */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: #2c2c2e;
+        }
+
+        .action-btn {
+            background: #1e1e1e;
+            border: none;
+            color: #ff9f0a;
+            padding: 14px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .action-btn:active {
+            background: #2c2c2e;
+        }
+
+        .action-btn input {
+            display: none;
+        }
+
         .workspace {
             position: relative;
             background: #000;
@@ -107,33 +134,24 @@
             touch-action: none;
         }
 
-        canvas {
+        video, canvas {
             width: 100%;
             height: 100%;
             object-fit: contain;
             display: block;
         }
 
-        .upload-placeholder {
-            padding: 15px 20px;
-            background: #1e1e1e;
-            text-align: center;
-            border-bottom: 1px solid #2c2c2e;
-        }
-
-        .upload-label {
-            color: #ff9f0a;
-            font-size: 0.9rem;
+        .capture-live-btn {
+            background: #ff453a;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px;
             font-weight: 500;
             cursor: pointer;
-            display: inline-block;
-        }
-
-        .upload-label input {
             display: none;
         }
 
-        /* Keypad / Control Panel */
         .control-panel {
             padding: 15px 20px;
             background: #181818;
@@ -162,7 +180,6 @@
             outline: none;
         }
 
-        /* Popup Unit Selection Menu ala Screenshot */
         .unit-popup {
             position: absolute;
             top: 60px;
@@ -188,19 +205,13 @@
             align-items: center;
         }
 
-        .unit-item:hover {
-            background: #3a3a3c;
-        }
-
-        .unit-item.active {
-            color: #ff9f0a;
-        }
+        .unit-item:hover { background: #3a3a3c; }
+        .unit-item.active { color: #ff9f0a; }
     </style>
 </head>
 <body>
 
     <div class="calc-container">
-        <!-- Header -->
         <div class="calc-header">
             <span class="back-icon">←</span>
             <span class="calc-title">Panjang</span>
@@ -209,7 +220,6 @@
             </button>
         </div>
 
-        <!-- Popup Menu Satuan (Menyerupai Screenshot Kalkulator) -->
         <div class="unit-popup" id="unitPopup">
             <div class="unit-item" onclick="selectUnit('km', 'Kilometer km')">Kilometer <span>km</span></div>
             <div class="unit-item active" onclick="selectUnit('cm', 'Sentimeter cm')">Sentimeter <span>cm</span></div>
@@ -221,45 +231,44 @@
             <div class="unit-item" onclick="selectUnit('yd', 'Yard yd')">Yard <span>yd</span></div>
             <div class="unit-item" onclick="selectUnit('ft', 'Kaki ft')">Kaki <span>ft</span></div>
             <div class="unit-item" onclick="selectUnit('in', 'Inci in')">Inci <span>in</span></div>
-            <div class="unit-item" onclick="selectUnit('ly', 'Tahun cahaya ly')">Tahun cahaya <span>ly</span></div>
-            <div class="unit-item" onclick="selectUnit('au', 'Satuan astronomis ⊙')">Satuan astronomis <span>⊙</span></div>
         </div>
 
-        <!-- Display Hasil -->
         <div class="calc-display">
             <div class="input-value-display" id="pixelDisplay">0 px</div>
             <div class="result-value-display" id="resultDisplay">0</div>
         </div>
 
-        <!-- Upload Foto / Video -->
-        <div class="upload-placeholder">
-            <label class="upload-label">
-                📷 Pilih Foto / Video Objek Untuk Diukur
-                <input type="file" accept="image/*,video/*" id="mediaInput" onchange="handleMedia(event)">
+        <div class="action-grid">
+            <button class="action-btn" onclick="startLiveCamera()">📷 Buka Kamera Live</button>
+            <label class="action-btn">
+                📁 Pilih Galeri
+                <input type="file" accept="image/*,video/*" onchange="handleMedia(event)">
             </label>
         </div>
 
-        <!-- Workspace Area Gambar & Garis Drag -->
         <div class="workspace" id="workspace">
+            <video id="videoElement" autoplay playsinline style="display:none;"></video>
             <canvas id="measCanvas"></canvas>
         </div>
+        <button class="capture-live-btn" id="captureBtn" onclick="captureLiveFrame()">📸 Ambil Foto dari Kamera</button>
 
-        <!-- Control Panel Skala -->
         <div class="control-panel">
             <div class="control-row">
                 <span>Skala (cm per 100px):</span>
                 <input type="number" id="scaleFactor" value="5" oninput="calculateLength()">
             </div>
             <div style="font-size: 0.7rem; color: #636366; text-align: center;">
-                Tarik garis langsung di atas foto objek untuk mengukur panjangnya.
+                Tarik garis di atas foto untuk mengukur panjang objek.
             </div>
         </div>
     </div>
 
     <script>
+        const video = document.getElementById('videoElement');
         const canvas = document.getElementById('measCanvas');
         const ctx = canvas.getContext('2d');
         let img = new Image();
+        let isLiveCamera = false;
         let isDrawing = false;
         let startX = 0, startY = 0;
         let endX = 0, endY = 0;
@@ -275,24 +284,65 @@
             currentUnitKey = key;
             document.getElementById('currentUnitLabel').innerText = label;
             document.getElementById('unitPopup').style.display = 'none';
-            
-            // Update active class
             document.querySelectorAll('.unit-item').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            
             calculateLength();
+        }
+
+        async function startLiveCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                canvas.style.display = 'none';
+                document.getElementById('workspace').style.display = 'block';
+                document.getElementById('captureBtn').style.display = 'block';
+                isLiveCamera = true;
+                hasDrawn = false;
+            } catch (err) {
+                alert("Tidak dapat mengakses kamera. Pastikan izin kamera diaktifkan.");
+            }
+        }
+
+        function captureLiveFrame() {
+            if (!isLiveCamera) return;
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Matikan stream kamera live
+            const stream = video.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            document.getElementById('captureBtn').style.display = 'none';
+            isLiveCamera = false;
+            hasDrawn = false;
+            redrawCanvas();
         }
 
         function handleMedia(event) {
             const file = event.target.files[0];
             if (!file) return;
 
+            // Matikan kamera jika sedang aktif
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 img.onload = function() {
                     canvas.width = img.width;
                     canvas.height = img.height;
+                    video.style.display = 'none';
+                    canvas.style.display = 'block';
                     document.getElementById('workspace').style.display = 'block';
+                    document.getElementById('captureBtn').style.display = 'none';
+                    isLiveCamera = false;
                     redrawCanvas();
                 }
                 img.src = e.target.result;
@@ -302,7 +352,9 @@
 
         function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
+            if (!isLiveCamera && img.src) {
+                ctx.drawImage(img, 0, 0);
+            }
 
             if (hasDrawn) {
                 ctx.beginPath();
@@ -312,7 +364,6 @@
                 ctx.lineWidth = Math.max(3, canvas.width / 150);
                 ctx.stroke();
 
-                // Titik Awal & Akhir
                 ctx.fillStyle = '#ff453a';
                 ctx.beginPath(); ctx.arc(startX, startY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
                 ctx.beginPath(); ctx.arc(endX, endY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
@@ -332,6 +383,7 @@
         }
 
         canvas.addEventListener('mousedown', (e) => {
+            if (isLiveCamera) return;
             const pos = getMousePos(e);
             startX = pos.x; startY = pos.y;
             isDrawing = true;
@@ -339,7 +391,7 @@
         });
 
         canvas.addEventListener('mousemove', (e) => {
-            if (!isDrawing) return;
+            if (!isDrawing || isLiveCamera) return;
             const pos = getMousePos(e);
             endX = pos.x; endY = pos.y;
             hasDrawn = true;
@@ -350,6 +402,7 @@
         canvas.addEventListener('mouseup', () => { isDrawing = false; });
 
         canvas.addEventListener('touchstart', (e) => {
+            if (isLiveCamera) return;
             const pos = getMousePos(e);
             startX = pos.x; startY = pos.y;
             isDrawing = true;
@@ -358,7 +411,7 @@
         });
 
         canvas.addEventListener('touchmove', (e) => {
-            if (!isDrawing) return;
+            if (!isDrawing || isLiveCamera) return;
             const pos = getMousePos(e);
             endX = pos.x; endY = pos.y;
             hasDrawn = true;
@@ -390,14 +443,11 @@
                 case 'yd': finalVal = valueInCm / 91.44; break;
                 case 'ft': finalVal = valueInCm / 30.48; break;
                 case 'in': finalVal = valueInCm / 2.54; break;
-                case 'ly': finalVal = valueInCm / 9.461e18; break;
-                case 'au': finalVal = valueInCm / 1.496e13; break;
             }
 
             document.getElementById('resultDisplay').innerText = finalVal < 0.001 ? finalVal.toExponential(2) : finalVal.toFixed(2);
         }
 
-        // Close dropdown when clicking outside
         window.onclick = function(event) {
             if (!event.target.closest('.unit-dropdown-btn') && !event.target.closest('.unit-popup')) {
                 document.getElementById('unitPopup').style.display = 'none';
