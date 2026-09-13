@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Panjang AI Otomatis</title>
+    <title>Kalkulator Pengukur Panjang AI Canggih</title>
     <!-- TensorFlow.js & COCO-SSD Model -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
@@ -150,7 +150,7 @@
             color: white;
             border: none;
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-weight: 500;
             cursor: pointer;
             display: none;
@@ -182,16 +182,35 @@
             color: #8e8e93;
         }
 
-        .control-row input[type="number"] {
+        .control-row input[type="number"], .control-row input[type="range"] {
             background: #2c2c2e;
             border: none;
             color: #fff;
             padding: 8px 12px;
             border-radius: 8px;
+            outline: none;
+        }
+
+        .control-row input[type="number"] {
             width: 90px;
             text-align: right;
             font-size: 0.9rem;
-            outline: none;
+        }
+
+        .control-row input[type="range"] {
+            width: 140px;
+            cursor: pointer;
+        }
+
+        .btn-clear {
+            background: #ff453a;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 500;
         }
 
         .unit-popup {
@@ -263,7 +282,7 @@
         <div class="ai-status-banner" id="aiBanner">🤖 AI sedang memuat model...</div>
 
         <div class="workspace" id="workspace">
-            <video id="videoElement" autoplay playsinline style="display:none;"></video>
+            <video id="videoElement" autoplay playsinline></video>
             <canvas id="measCanvas"></canvas>
         </div>
         <button class="capture-live-btn" id="captureBtn" onclick="captureLiveFrame()">📸 Ambil Foto dari Kamera</button>
@@ -273,8 +292,15 @@
                 <span>Skala (cm/100px):</span>
                 <input type="number" id="scaleFactor" value="5" oninput="calculateLength()">
             </div>
-            <div style="font-size: 0.7rem; color: #636366; text-align: center;">
-                AI mendeteksi objek standar & kalibrasi skala instan!
+            <div class="control-row">
+                <span>Kelengkungan Garis:</span>
+                <input type="range" id="curveSlider" min="-150" max="150" value="0" oninput="redrawCanvas()">
+            </div>
+            <div class="control-row">
+                <button class="btn-clear" onclick="clearLine()">🗑️ Hapus Garis</button>
+                <div style="font-size: 0.65rem; color: #8e8e93; text-align: right;">
+                    Garis menetap & bisa dibengkokkan
+                </div>
             </div>
         </div>
     </div>
@@ -292,7 +318,7 @@
         let hasDrawn = false;
         let currentUnitKey = 'cm';
 
-        // Load AI model dengan benar menggunakan cocoSsd
+        // Load AI model
         cocoSsd.load().then(model => {
             aiModel = model;
             console.log("Model AI Berhasil Dimuat!");
@@ -316,24 +342,31 @@
 
         async function startLiveCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
+                });
                 video.srcObject = stream;
+                await video.play();
+                
                 video.style.display = 'block';
                 canvas.style.display = 'none';
                 document.getElementById('workspace').style.display = 'block';
                 document.getElementById('captureBtn').style.display = 'block';
                 document.getElementById('aiBanner').style.display = 'none';
                 isLiveCamera = true;
-                hasDrawn = false;
             } catch (err) {
-                alert("Tidak dapat mengakses kamera. Pastikan Anda menggunakan Live Server atau HTTPS.");
+                alert("Tidak dapat mengakses kamera. Pastikan menggunakan HTTPS atau Local Server.");
             }
         }
 
         function captureLiveFrame() {
             if (!isLiveCamera) return;
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
+            
+            const w = video.videoWidth || video.clientWidth || 640;
+            const h = video.videoHeight || video.clientHeight || 480;
+            canvas.width = w;
+            canvas.height = h;
+            
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             const stream = video.srcObject;
@@ -343,7 +376,7 @@
             canvas.style.display = 'block';
             document.getElementById('captureBtn').style.display = 'none';
             isLiveCamera = false;
-            hasDrawn = false;
+            
             redrawCanvas();
             runAiDetection();
         }
@@ -420,6 +453,14 @@
             }
         }
 
+        function clearLine() {
+            hasDrawn = false;
+            document.getElementById('curveSlider').value = 0;
+            document.getElementById('pixelDisplay').innerText = `0 px`;
+            document.getElementById('resultDisplay').innerText = `0`;
+            redrawCanvas();
+        }
+
         function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (!isLiveCamera && img.src) {
@@ -427,13 +468,32 @@
             }
 
             if (hasDrawn) {
+                const curveVal = parseFloat(document.getElementById('curveSlider').value) || 0;
+                
+                // Hitung titik kontrol kurva (bisa dibengkokkan via slider)
+                const midX = (startX + endX) / 2;
+                const midY = (startY + endY) / 2;
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const len = Math.sqrt(dx * dx + dy * dy);
+                
+                let cx = midX;
+                let cy = midY;
+                if (len > 0) {
+                    // Geser titik tengah tegak lurus garis utama berdasarkan slider kelengkungan
+                    cx -= (dy / len) * curveVal;
+                    cy += (dx / len) * curveVal;
+                }
+
+                // Gambar garis lengkung (Quadratic Curve)
                 ctx.beginPath();
                 ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
+                ctx.quadraticCurveTo(cx, cy, endX, endY);
                 ctx.strokeStyle = '#32d74b';
                 ctx.lineWidth = Math.max(3, canvas.width / 150);
                 ctx.stroke();
 
+                // Titik Awal & Akhir
                 ctx.fillStyle = '#ff453a';
                 ctx.beginPath(); ctx.arc(startX, startY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
                 ctx.beginPath(); ctx.arc(endX, endY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
@@ -456,15 +516,15 @@
             if (isLiveCamera) return;
             const pos = getMousePos(e);
             startX = pos.x; startY = pos.y;
+            endX = pos.x; endY = pos.y;
             isDrawing = true;
-            hasDrawn = false;
+            hasDrawn = true;
         });
 
         canvas.addEventListener('mousemove', (e) => {
             if (!isDrawing || isLiveCamera) return;
             const pos = getMousePos(e);
             endX = pos.x; endY = pos.y;
-            hasDrawn = true;
             redrawCanvas();
             calculateLength();
         });
@@ -475,8 +535,9 @@
             if (isLiveCamera) return;
             const pos = getMousePos(e);
             startX = pos.x; startY = pos.y;
+            endX = pos.x; endY = pos.y;
             isDrawing = true;
-            hasDrawn = false;
+            hasDrawn = true;
             e.preventDefault();
         });
 
@@ -484,7 +545,6 @@
             if (!isDrawing || isLiveCamera) return;
             const pos = getMousePos(e);
             endX = pos.x; endY = pos.y;
-            hasDrawn = true;
             redrawCanvas();
             calculateLength();
             e.preventDefault();
@@ -495,6 +555,7 @@
         function calculateLength() {
             if (!hasDrawn) return;
 
+            // Perhitungan panjang garis lurus/lengkung perkiraan piksel
             const pixelDist = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
             document.getElementById('pixelDisplay').innerText = `${pixelDist.toFixed(0)} px`;
 
