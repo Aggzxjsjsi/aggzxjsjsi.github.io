@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Panjang AI & Kamera</title>
+    <title>Kalkulator Pengukur Panjang AI Otomatis</title>
+    <!-- TensorFlow.js & COCO-SSD Model untuk Deteksi Objek Pintar -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@coco-ssd@latest"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
@@ -152,6 +156,16 @@
             display: none;
         }
 
+        .ai-status-banner {
+            background: rgba(48, 209, 88, 0.15);
+            color: #30d158;
+            font-size: 0.75rem;
+            padding: 8px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(48, 209, 88, 0.3);
+            display: none;
+        }
+
         .control-panel {
             padding: 15px 20px;
             background: #181818;
@@ -214,7 +228,7 @@
     <div class="calc-container">
         <div class="calc-header">
             <span class="back-icon">←</span>
-            <span class="calc-title">Panjang</span>
+            <span class="calc-title">Panjang AI</span>
             <button class="unit-dropdown-btn" onclick="toggleUnitMenu()">
                 <span id="currentUnitLabel">Sentimeter cm</span> ▾
             </button>
@@ -246,6 +260,8 @@
             </label>
         </div>
 
+        <div class="ai-status-banner" id="aiBanner">🤖 AI sedang menganalisis objek...</div>
+
         <div class="workspace" id="workspace">
             <video id="videoElement" autoplay playsinline style="display:none;"></video>
             <canvas id="measCanvas"></canvas>
@@ -254,16 +270,17 @@
 
         <div class="control-panel">
             <div class="control-row">
-                <span>Skala (cm per 100px):</span>
+                <span>Skala (cm/100px):</span>
                 <input type="number" id="scaleFactor" value="5" oninput="calculateLength()">
             </div>
             <div style="font-size: 0.7rem; color: #636366; text-align: center;">
-                Tarik garis di atas foto untuk mengukur panjang objek.
+                AI mendeteksi objek otomatis & kalibrasi skala instan!
             </div>
         </div>
     </div>
 
     <script>
+        let aiModel = null;
         const video = document.getElementById('videoElement');
         const canvas = document.getElementById('measCanvas');
         const ctx = canvas.getContext('2d');
@@ -274,6 +291,13 @@
         let endX = 0, endY = 0;
         let hasDrawn = false;
         let currentUnitKey = 'cm';
+
+        // Load AI model saat halaman dibuka
+        cocoSdfLoaded = false;
+        cocoSdd.load().then(model => {
+            aiModel = model;
+            console.log("Model AI Berhasil Dimuat!");
+        });
 
         function toggleUnitMenu() {
             const popup = document.getElementById('unitPopup');
@@ -297,10 +321,11 @@
                 canvas.style.display = 'none';
                 document.getElementById('workspace').style.display = 'block';
                 document.getElementById('captureBtn').style.display = 'block';
+                document.getElementById('aiBanner').style.display = 'none';
                 isLiveCamera = true;
                 hasDrawn = false;
             } catch (err) {
-                alert("Tidak dapat mengakses kamera. Pastikan izin kamera diaktifkan.");
+                alert("Tidak dapat mengakses kamera.");
             }
         }
 
@@ -310,11 +335,8 @@
             canvas.height = video.videoHeight || 480;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            // Matikan stream kamera live
             const stream = video.srcObject;
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
+            if (stream) stream.getTracks().forEach(track => track.stop());
 
             video.style.display = 'none';
             canvas.style.display = 'block';
@@ -322,13 +344,13 @@
             isLiveCamera = false;
             hasDrawn = false;
             redrawCanvas();
+            runAiDetection();
         }
 
         function handleMedia(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Matikan kamera jika sedang aktif
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(track => track.stop());
             }
@@ -344,10 +366,59 @@
                     document.getElementById('captureBtn').style.display = 'none';
                     isLiveCamera = false;
                     redrawCanvas();
+                    runAiDetection();
                 }
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
+        }
+
+        async function runAiDetection() {
+            const banner = document.getElementById('aiBanner');
+            banner.style.display = 'block';
+            banner.innerText = "🤖 AI sedang memindai objek standar...";
+
+            if (!aiModel) {
+                banner.innerText = "⚠️ Model AI masih dimuat, gunakan skala manual.";
+                return;
+            }
+
+            try {
+                const predictions = await aiModel.detect(canvas);
+                // Ukuran standar referensi dunia nyata (dalam cm) untuk beberapa objek umum
+                const standardSizes = {
+                    'cell phone': 7.5, 
+                    'laptop': 32.0,
+                    'book': 15.0,
+                    'keyboard': 44.0,
+                    'bottle': 7.0,
+                    'cup': 8.0,
+                    'mouse': 10.0
+                };
+
+                let detected = false;
+                for (let p of predictions) {
+                    if (standardSizes[p.class]) {
+                        const objWidthPx = p.bbox[2]; // Lebar objek terdeteksi dalam piksel
+                        const realSizeCm = standardSizes[p.class];
+                        
+                        // Hitung otomatis skala (cm per 100px)
+                        const calculatedScale = (realSizeCm / objWidthPx) * 100;
+                        document.getElementById('scaleFactor').value = calculatedScale.toFixed(2);
+                        
+                        banner.innerText = `✨ AI Mendeteksi: "${p.class}"! Skala dikalibrasi otomatis.`;
+                        detected = true;
+                        calculateLength();
+                        break;
+                    }
+                }
+
+                if (!detected) {
+                    banner.innerText = "ℹ️ Objek standar tak dikenali AI. Silakan sesuaikan skala manual.";
+                }
+            } catch (err) {
+                banner.innerText = "⚠️ Gagal menjalankan AI pemindai.";
+            }
         }
 
         function redrawCanvas() {
