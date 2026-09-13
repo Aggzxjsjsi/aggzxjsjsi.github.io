@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator Umur</title>
     
-    <!-- Skrip Iklan Adsterra 1 -->
     <script src="https://pl31316420.profitableratecpmnetwork.com/0f/c2/0f/0fc20ff4da59ea128cf0dfb67cff8d47.js"></script>
 
     <style>
@@ -26,19 +25,24 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            padding-top: 60px; /* Memberikan ruang di atas untuk tanggal */
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
+            position: relative;
         }
 
-        /* Top Bar Date Time */
+        /* Top Bar Date Time di Pinggir Kanan Atas */
         .top-badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #a0aec0;
-            margin-bottom: 20px;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
+            z-index: 10;
         }
         .top-badge span { color: #60a5fa; }
 
@@ -139,7 +143,19 @@
         .z-left h3 { color: #60a5fa; font-size: 0.9rem; margin-bottom: 5px; }
         .z-left h2 { font-size: 1.3rem; margin-bottom: 10px; color: white; }
         .z-left p { color: #94a3b8; font-size: 0.8rem; font-style: italic; max-width: 200px; line-height: 1.4; }
-        .z-right { font-size: 4.5rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        
+        /* Animasi Zodiak: Muncul perlahan, lalu redup dan hilang berulang-ulang */
+        .z-right { 
+            font-size: 4.5rem; 
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.4));
+            animation: zodiacFadeAnim 2.5s infinite ease-in-out;
+        }
+
+        @keyframes zodiacFadeAnim {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
 
         .stat-row {
             display: flex;
@@ -259,135 +275,3 @@
                     <h3>ZODIAK KAMU</h3>
                     <h2 id="z-name">-</h2>
                     <p id="z-desc">-</p>
-                </div>
-                <div class="z-right" id="z-emoji">✨</div>
-            </div>
-
-            <div class="stat-row">
-                <div class="stat-label">Usia Tahun</div>
-                <div class="stat-value val-blue" id="val-year">0</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Total Bulan</div>
-                <div class="stat-value val-blue" id="val-month">0</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Total Hari</div>
-                <div class="stat-value val-red" id="val-day">0</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Total Jam</div>
-                <div class="stat-value val-white" id="val-hour">0</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Total Menit</div>
-                <div class="stat-value val-white" id="val-minute">0</div>
-            </div>
-        </div>
-
-        <!-- Bagian Khusus Total Detik Hidup dengan Indikator Kedip-Kedip -->
-        <div class="live-sec-card">
-            <div class="zodiac-header" style="margin-bottom: 5px;">TOTAL DETIK HIDUP</div>
-            <div class="live-sec-value" id="val-second">0</div>
-            <div class="live-indicator">
-                <span class="blink-dot">●</span> Berdetak secara real-time
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">Created by_aggx</div>
-
-    <script>
-        // Data Zodiak
-        const zodiacs = [
-            { name: "Capricorn (Kambing)", emoji: "🐐", desc: '"Disiplin, tangguh, sabar, dan sangat praktis."', start: [1,1], end: [1,19] },
-            { name: "Aquarius (Air)", emoji: "🌊", desc: '"Mandiri, unik, inovatif, dan pemikir keras."', start: [1,20], end: [2,18] },
-            { name: "Pisces (Ikan)", emoji: "🐟", desc: '"Penuh empati, artistik, intuitif, dan penyayang."', start: [2,19], end: [3,20] },
-            { name: "Aries (Domba)", emoji: "🐏", desc: '"Pemberani, energik, kompetitif, dan pantang menyerah."', start: [3,21], end: [4,19] },
-            { name: "Taurus (Banteng)", emoji: "🐂", desc: '"Setia, dapat diandalkan, sabar, tekun, dan menyukai kenyamanan serta stabilitas."', start: [4,20], end: [5,20] },
-            { name: "Gemini (Kembar)", emoji: "👯", desc: '"Adaptif, komunikatif, cerdas, dan selalu ingin tahu."', start: [5,21], end: [6,20] },
-            { name: "Cancer (Kepiting)", emoji: "🦀", desc: '"Sensitif, protektif, sangat setia, dan penuh kasih sayang."', start: [6,21], end: [7,22] },
-            { name: "Leo (Singa)", emoji: "🦁", desc: '"Percaya diri, karismatik, murah hati, dan berjiwa pemimpin sejati."', start: [7,23], end: [8,22] },
-            { name: "Virgo (Gadis)", emoji: "👱‍♀️", desc: '"Perfeksionis, analitis, pekerja keras, dan suka kebersihan."', start: [8,23], end: [9,22] },
-            { name: "Libra (Timbangan)", emoji: "⚖️", desc: '"Diplomatis, menyukai keharmonisan, sosial, dan pemaaf."', start: [9,23], end: [10,22] },
-            { name: "Scorpio (Kalajengking)", emoji: "🦂", desc: '"Misterius, bersemangat tinggi, setia, dan punya insting tajam."', start: [10,23], end: [11,21] },
-            { name: "Sagittarius (Pemanah)", emoji: "🏹", desc: '"Petualang, optimis, jujur, dan mencintai kebebasan."', start: [11,22], end: [12,21] },
-            { name: "Capricorn (Kambing)", emoji: "🐐", desc: '"Disiplin, tangguh, sabar, dan sangat praktis."', start: [12,22], end: [12,31] }
-        ];
-
-        // Format Angka ke Rupiah style (titik)
-        function formatNum(num) {
-            return num.toLocaleString('id-ID');
-        }
-
-        // Live Clock Header
-        setInterval(() => {
-            const now = new Date();
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            
-            document.getElementById('live-date').innerText = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-            document.getElementById('live-time').innerText = now.toLocaleTimeString('id-ID', {hour12: false});
-        }, 1000);
-
-        let calcInterval;
-
-        function startCalculate() {
-            const d = parseInt(document.getElementById('b-day').value);
-            const m = parseInt(document.getElementById('b-month').value);
-            const y = parseInt(document.getElementById('b-year').value);
-
-            if(!d || !m || !y) {
-                alert("Harap masukkan tanggal, bulan, dan tahun lahir terlebih dahulu!");
-                return;
-            }
-
-            document.getElementById('about-card').style.display = 'none';
-            document.getElementById('result-container').style.display = 'block';
-
-            let z = zodiacs.find(zod => {
-                if(m===12 && d>=22) return zod.name.includes("Capricorn");
-                if(m===1 && d<=19) return zod.name.includes("Capricorn");
-                return (m === zod.start[0] && d >= zod.start[1]) || (m === zod.end[0] && d <= zod.end[1]);
-            });
-            if(z) {
-                document.getElementById('z-name').innerText = z.name;
-                document.getElementById('z-emoji').innerText = z.emoji;
-                document.getElementById('z-desc').innerText = z.desc;
-            }
-
-            clearInterval(calcInterval);
-            runCalc(d, m, y);
-            calcInterval = setInterval(() => runCalc(d, m, y), 1000);
-        }
-
-        function runCalc(d, m, y) {
-            const now = new Date();
-            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
-            
-            const diffMs = now - birthDate;
-            
-            let ageY = now.getFullYear() - y;
-            let ageM = now.getMonth() - (m - 1);
-            if(now.getDate() < d) { ageM--; }
-            if(ageM < 0) { ageY--; }
-
-            const totalMonths = (now.getFullYear() - y) * 12 + (now.getMonth() - (m - 1));
-            const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const totalMinutes = Math.floor(diffMs / (1000 * 60));
-            const totalSeconds = Math.floor(diffMs / 1000);
-
-            document.getElementById('val-year').innerText = formatNum(ageY);
-            document.getElementById('val-month').innerText = formatNum(totalMonths);
-            document.getElementById('val-day').innerText = formatNum(totalDays);
-            document.getElementById('val-hour').innerText = formatNum(totalHours);
-            document.getElementById('val-minute').innerText = formatNum(totalMinutes);
-            document.getElementById('val-second').innerText = formatNum(totalSeconds);
-        }
-    </script>
-    
-    <!-- Skrip Iklan Adsterra 2 -->
-    <script src="https://pl31316421.profitableratecpmnetwork.com/74/bb/70/74bb704fc94d0ac5fc75c7aae9081643.js"></script>
-</body>
-</html>
