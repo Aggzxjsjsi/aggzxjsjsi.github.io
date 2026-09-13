@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator Umur</title>
     
+    <!-- Skrip Iklan Adsterra 1 -->
     <script src="https://pl31316420.profitableratecpmnetwork.com/0f/c2/0f/0fc20ff4da59ea128cf0dfb67cff8d47.js"></script>
 
     <style>
@@ -302,11 +303,9 @@
                 return;
             }
 
-            // Tampilkan hasil, sembunyikan kotak about
             document.getElementById('about-card').style.display = 'none';
             document.getElementById('result-container').style.display = 'block';
 
-            // Cari Zodiak
             let z = zodiacs.find(zod => {
                 if(m===12 && d>=22) return zod.name.includes("Capricorn");
                 if(m===1 && d<=19) return zod.name.includes("Capricorn");
@@ -318,7 +317,6 @@
                 document.getElementById('z-desc').innerText = z.desc;
             }
 
-            // Mulai hitung realtime
             clearInterval(calcInterval);
             runCalc(d, m, y);
             calcInterval = setInterval(() => runCalc(d, m, y), 1000);
@@ -326,18 +324,15 @@
 
         function runCalc(d, m, y) {
             const now = new Date();
-            // Asumsi lahir jam 00:00:00
             const birthDate = new Date(y, m - 1, d, 0, 0, 0);
             
             const diffMs = now - birthDate;
             
-            // Total Usia
             let ageY = now.getFullYear() - y;
             let ageM = now.getMonth() - (m - 1);
             if(now.getDate() < d) { ageM--; }
             if(ageM < 0) { ageY--; }
 
-            // Total absolut
             const totalMonths = (now.getFullYear() - y) * 12 + (now.getMonth() - (m - 1));
             const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -353,6 +348,7 @@
         }
     </script>
     
+    <!-- Skrip Iklan Adsterra 2 -->
     <script src="https://pl31316421.profitableratecpmnetwork.com/74/bb/70/74bb704fc94d0ac5fc75c7aae9081643.js"></script>
 </body>
 </html>
