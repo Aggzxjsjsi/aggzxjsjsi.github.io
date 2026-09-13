@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Panjang AI Canggih</title>
+    <title>Kalkulator Pengukur Panjang Multi-Titik AI</title>
     <!-- TensorFlow.js & COCO-SSD Model -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
@@ -182,24 +182,16 @@
             color: #8e8e93;
         }
 
-        .control-row input[type="number"], .control-row input[type="range"] {
+        .control-row input[type="number"] {
             background: #2c2c2e;
             border: none;
             color: #fff;
             padding: 8px 12px;
             border-radius: 8px;
-            outline: none;
-        }
-
-        .control-row input[type="number"] {
             width: 90px;
             text-align: right;
             font-size: 0.9rem;
-        }
-
-        .control-row input[type="range"] {
-            width: 140px;
-            cursor: pointer;
+            outline: none;
         }
 
         .btn-clear {
@@ -247,7 +239,7 @@
     <div class="calc-container">
         <div class="calc-header">
             <span class="back-icon">←</span>
-            <span class="calc-title">Panjang AI</span>
+            <span class="calc-title">Panjang AI Multi-Titik</span>
             <button class="unit-dropdown-btn" onclick="toggleUnitMenu()">
                 <span id="currentUnitLabel">Sentimeter cm</span> ▾
             </button>
@@ -282,7 +274,8 @@
         <div class="ai-status-banner" id="aiBanner">🤖 AI sedang memuat model...</div>
 
         <div class="workspace" id="workspace">
-            <video id="videoElement" autoplay playsinline></video>
+            <!-- Atribut muted ditambahkan agar kamera live tidak hitam di HP -->
+            <video id="videoElement" autoplay playsinline muted></video>
             <canvas id="measCanvas"></canvas>
         </div>
         <button class="capture-live-btn" id="captureBtn" onclick="captureLiveFrame()">📸 Ambil Foto dari Kamera</button>
@@ -293,13 +286,9 @@
                 <input type="number" id="scaleFactor" value="5" oninput="calculateLength()">
             </div>
             <div class="control-row">
-                <span>Kelengkungan Garis:</span>
-                <input type="range" id="curveSlider" min="-150" max="150" value="0" oninput="redrawCanvas()">
-            </div>
-            <div class="control-row">
-                <button class="btn-clear" onclick="clearLine()">🗑️ Hapus Garis</button>
+                <button class="btn-clear" onclick="clearPoints()">🗑️ Hapus Semua Titik</button>
                 <div style="font-size: 0.65rem; color: #8e8e93; text-align: right;">
-                    Garis menetap & bisa dibengkokkan
+                    Ketuk layar berulang kali<br>untuk menambah banyak titik
                 </div>
             </div>
         </div>
@@ -312,10 +301,7 @@
         const ctx = canvas.getContext('2d');
         let img = new Image();
         let isLiveCamera = false;
-        let isDrawing = false;
-        let startX = 0, startY = 0;
-        let endX = 0, endY = 0;
-        let hasDrawn = false;
+        let points = []; // Array untuk menyimpan banyak titik (multi-point path)
         let currentUnitKey = 'cm';
 
         // Load AI model
@@ -453,9 +439,8 @@
             }
         }
 
-        function clearLine() {
-            hasDrawn = false;
-            document.getElementById('curveSlider').value = 0;
+        function clearPoints() {
+            points = [];
             document.getElementById('pixelDisplay').innerText = `0 px`;
             document.getElementById('resultDisplay').innerText = `0`;
             redrawCanvas();
@@ -467,36 +452,29 @@
                 ctx.drawImage(img, 0, 0);
             }
 
-            if (hasDrawn) {
-                const curveVal = parseFloat(document.getElementById('curveSlider').value) || 0;
-                
-                // Hitung titik kontrol kurva (bisa dibengkokkan via slider)
-                const midX = (startX + endX) / 2;
-                const midY = (startY + endY) / 2;
-                const dx = endX - startX;
-                const dy = endY - startY;
-                const len = Math.sqrt(dx * dx + dy * dy);
-                
-                let cx = midX;
-                let cy = midY;
-                if (len > 0) {
-                    // Geser titik tengah tegak lurus garis utama berdasarkan slider kelengkungan
-                    cx -= (dy / len) * curveVal;
-                    cy += (dx / len) * curveVal;
-                }
-
-                // Gambar garis lengkung (Quadratic Curve)
+            if (points.length > 0) {
+                // Gambar garis antar titik secara berurutan
                 ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.quadraticCurveTo(cx, cy, endX, endY);
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
+                }
                 ctx.strokeStyle = '#32d74b';
                 ctx.lineWidth = Math.max(3, canvas.width / 150);
                 ctx.stroke();
 
-                // Titik Awal & Akhir
-                ctx.fillStyle = '#ff453a';
-                ctx.beginPath(); ctx.arc(startX, startY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
-                ctx.beginPath(); ctx.arc(endX, endY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
+                // Gambar lingkaran kecil di setiap titik (banyak titik)
+                for (let i = 0; i < points.length; i++) {
+                    ctx.fillStyle = '#ff453a';
+                    ctx.beginPath(); 
+                    ctx.arc(points[i].x, points[i].y, Math.max(4, canvas.width / 90), 0, Math.PI * 2); 
+                    ctx.fill();
+                    
+                    // Beri border putih agar titik terlihat jelas
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             }
         }
 
@@ -512,51 +490,36 @@
             };
         }
 
-        canvas.addEventListener('mousedown', (e) => {
+        // Setiap kali layar diklik/disentuh, tambahkan titik baru ke dalam array points
+        canvas.addEventListener('click', (e) => {
             if (isLiveCamera) return;
             const pos = getMousePos(e);
-            startX = pos.x; startY = pos.y;
-            endX = pos.x; endY = pos.y;
-            isDrawing = true;
-            hasDrawn = true;
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (!isDrawing || isLiveCamera) return;
-            const pos = getMousePos(e);
-            endX = pos.x; endY = pos.y;
+            points.push(pos);
             redrawCanvas();
             calculateLength();
         });
 
-        canvas.addEventListener('mouseup', () => { isDrawing = false; });
-
-        canvas.addEventListener('touchstart', (e) => {
+        canvas.addEventListener('touchend', (e) => {
             if (isLiveCamera) return;
-            const pos = getMousePos(e);
-            startX = pos.x; startY = pos.y;
-            endX = pos.x; endY = pos.y;
-            isDrawing = true;
-            hasDrawn = true;
+            // Mencegah klik ganda pada simulasi touch event tertentu
             e.preventDefault();
-        });
-
-        canvas.addEventListener('touchmove', (e) => {
-            if (!isDrawing || isLiveCamera) return;
-            const pos = getMousePos(e);
-            endX = pos.x; endY = pos.y;
-            redrawCanvas();
-            calculateLength();
-            e.preventDefault();
-        });
-
-        canvas.addEventListener('touchend', () => { isDrawing = false; });
+        }, { passive: false });
 
         function calculateLength() {
-            if (!hasDrawn) return;
+            if (points.length < 2) {
+                document.getElementById('pixelDisplay').innerText = `0 px`;
+                document.getElementById('resultDisplay').innerText = `0`;
+                return;
+            }
 
-            // Perhitungan panjang garis lurus/lengkung perkiraan piksel
-            const pixelDist = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            // Hitung total panjang piksel dari seluruh segmen garis
+            let pixelDist = 0;
+            for (let i = 0; i < points.length - 1; i++) {
+                const dx = points[i+1].x - points[i].x;
+                const dy = points[i+1].y - points[i].y;
+                pixelDist += Math.sqrt(dx * dx + dy * dy);
+            }
+
             document.getElementById('pixelDisplay').innerText = `${pixelDist.toFixed(0)} px`;
 
             const scaleFactor = parseFloat(document.getElementById('scaleFactor').value) || 5;
