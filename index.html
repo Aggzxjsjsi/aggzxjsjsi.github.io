@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Umur</title>
-    
-    <!-- Skrip Iklan Adsterra 1 -->
-    <script src="https://pl31316420.profitableratecpmnetwork.com/0f/c2/0f/0fc20ff4da59ea128cf0dfb67cff8d47.js"></script>
-
+    <title>Kalkulator Estimasi Tubuh (Wingspan)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
@@ -26,29 +22,10 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            padding-top: 65px;
-            position: relative;
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
-        /* Top Bar Date Time di Pojok Kanan Atas */
-        .top-badge {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: #a0aec0;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
-            z-index: 10;
-        }
-        .top-badge span { color: #60a5fa; }
-
-        /* Titles */
-        .title-container { text-align: center; margin-bottom: 30px; }
+        .title-container { text-align: center; margin: 30px 0; }
         h1 {
             font-size: 2.2rem;
             color: #38bdf8;
@@ -57,7 +34,6 @@
         }
         .subtitle { color: #cbd5e1; font-size: 0.95rem; }
 
-        /* Cards */
         .card {
             background: #111827;
             border: 1px solid #1f2937;
@@ -69,7 +45,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* Input Section */
         .card-header {
             color: #f87171;
             font-size: 0.85rem;
@@ -78,16 +53,12 @@
             margin-bottom: 20px;
             text-transform: uppercase;
         }
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            margin-bottom: 20px;
         }
         .input-group label { font-size: 0.85rem; color: #94a3b8; }
         
@@ -105,7 +76,31 @@
         input:focus, select:focus { border-color: #38bdf8; }
         select option { background: #111827; color: white; }
 
-        /* Button */
+        .file-upload-box {
+            border: 2px dashed #374151;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: border 0.3s;
+        }
+        .file-upload-box:hover { border-color: #38bdf8; }
+        .file-upload-box input { display: none; }
+        .upload-text { font-size: 0.9rem; color: #94a3b8; }
+
+        #preview-container {
+            display: none;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        #preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+        }
+
         button {
             width: 100%;
             padding: 16px;
@@ -121,194 +116,81 @@
         }
         button:hover { opacity: 0.9; }
 
-        /* About Section (Initial state) */
-        .about-title { color: #38bdf8; font-weight: 700; letter-spacing: 1px; margin-bottom: 15px; }
-        .about-text { color: #94a3b8; font-size: 0.9rem; line-height: 1.6; }
-        .about-text strong { color: #cbd5e1; }
-
-        /* Results Section */
         #result-container { display: none; width: 100%; max-width: 450px; }
         
-        .zodiac-header { color: #f87171; font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 20px; }
-        
-        .zodiac-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .result-box {
             background: #111827;
             border: 1px solid #1f2937;
             padding: 20px;
             border-radius: 16px;
-            margin-bottom: 15px;
         }
-        .z-left h3 { color: #60a5fa; font-size: 0.9rem; margin-bottom: 5px; }
-        .z-left h2 { font-size: 1.3rem; margin-bottom: 10px; color: white; }
-        .z-left p { color: #94a3b8; font-size: 0.8rem; font-style: italic; max-width: 200px; line-height: 1.4; }
-        
-        /* Animasi Zodiak Muncul-Hilang (Fade & Scale) */
-        .z-right { 
-            font-size: 4.5rem; 
-            filter: drop-shadow(0 0 15px rgba(255,255,255,0.6));
-            animation: zodiacFadeAnim 2.5s infinite ease-in-out;
-        }
-
-        @keyframes zodiacFadeAnim {
-            0% { opacity: 0.2; transform: scale(0.85); }
-            50% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0.2; transform: scale(0.85); }
-        }
-
         .stat-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #111827;
+            background: rgba(0,0,0,0.2);
             border: 1px solid #1f2937;
-            padding: 16px 20px;
-            border-radius: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
             margin-bottom: 10px;
         }
-        .stat-label { color: #cbd5e1; font-size: 0.95rem; }
-        .stat-value { font-size: 1.3rem; font-weight: 700; }
-        
-        .val-blue { color: #38bdf8; }
-        .val-red { color: #f87171; }
-        .val-white { color: #ffffff; }
+        .stat-label { color: #cbd5e1; font-size: 0.9rem; }
+        .stat-value { font-size: 1.2rem; font-weight: 700; color: #38bdf8; }
 
-        /* Blinking Real-Time Seconds Card Styling */
-        .live-sec-card {
-            text-align: center;
-            background: #111827;
-            border: 1px solid #1f2937;
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 10px;
-        }
-        .live-sec-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin: 10px 0;
-            letter-spacing: 1px;
-        }
-        .live-indicator {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .blink-dot {
-            color: #22c55e;
-            font-size: 1rem;
-            animation: blinkAnim 1s infinite;
-        }
-        @keyframes blinkAnim {
-            0% { opacity: 0.2; }
-            50% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
-
-        /* Footer */
         .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; }
-
     </style>
 </head>
 <body>
 
-    <!-- Widget Waktu di Pojok Kanan Atas -->
-    <div class="top-badge">
-        <span id="live-date">Memuat...</span> <span id="live-time"></span>
-    </div>
-
     <div class="title-container">
-        <h1>Kalkulator Umur</h1>
-        <p class="subtitle">Pantau detail waktu hidupmu & zodiak secara real-time</p>
+        <h1>Estimasi Tubuh Tanpa Alat</h1>
+        <p class="subtitle">Gunakan foto rentang tangan (wingspan) untuk memperkirakan tinggi & berat badan</p>
     </div>
 
     <div class="card">
-        <div class="card-header">MASUKKAN TANGGAL LAHIRMU</div>
-        <div class="input-grid">
-            <div class="input-group">
-                <label>Tanggal</label>
-                <input type="number" id="b-day" placeholder="Contoh: 5" min="1" max="31">
-            </div>
-            <div class="input-group">
-                <label>Bulan</label>
-                <select id="b-month">
-                    <option value="" disabled selected>Pilih B...</option>
-                    <option value="1">Januari</option>
-                    <option value="2">Februari</option>
-                    <option value="3">Maret</option>
-                    <option value="4">April</option>
-                    <option value="5">Mei</option>
-                    <option value="6">Juni</option>
-                    <option value="7">Juli</option>
-                    <option value="8">Agustus</option>
-                    <option value="9">September</option>
-                    <option value="10">Oktober</option>
-                    <option value="11">November</option>
-                    <option value="12">Desember</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Tahun</label>
-                <input type="number" id="b-year" placeholder="Contoh: 2005" min="1900">
-            </div>
-        </div>
-        <button onclick="startCalculate()">Hitung Umur Sekarang</button>
-    </div>
+        <div class="card-header">Upload & Pengukuran Rentang Tangan</div>
+        
+        <label class="file-upload-box" id="drop-zone">
+            <span class="upload-text" id="upload-label">📷 Klik untuk upload foto rentang tangan</span>
+            <input type="file" id="photo-input" accept="image/*" onchange="previewImage(event)">
+        </label>
 
-    <div class="card" id="about-card">
-        <div class="about-title">TENTANG KALKULATOR UMUR & ZODIAK</div>
-        <p class="about-text">
-            Kalkulator umur online ini dirancang khusus untuk membantu Anda menghitung durasi usia secara akurat hingga tingkat detik terkecil. Selain itu, sistem kami secara otomatis mengidentifikasi tanda zodiak Anda berdasarkan tanggal dan bulan lahir lengkap dengan karakteristik kepribadiannya.<br><br>
-            <strong>Cara Penggunaan:</strong> Masukkan tanggal, pilih bulan, dan ketikkan tahun kelahiran Anda pada kolom di atas, lalu klik tombol <em>Hitung Umur Sekarang</em>. Waktu hidup Anda akan diperbarui secara langsung (real-time).
-        </p>
+        <div id="preview-container">
+            <img id="preview-img" src="" alt="Preview Foto">
+        </div>
+
+        <div class="input-group">
+            <label>Estimasi Panjang Rentang Tangan / Wingspan (cm)</label>
+            <input type="number" id="wingspan" placeholder="Contoh: 170 (Ukur pakai tali/penggaris)">
+        </div>
+
+        <div class="input-group">
+            <label>Jenis Kelamin (Untuk rumus berat ideal)</label>
+            <select id="gender">
+                <option value="" disabled selected>Pilih jenis kelamin...</option>
+                <option value="male">Pria</option>
+                <option value="female">Wanita</option>
+            </select>
+        </div>
+
+        <button onclick="calculateEstimation()">Estimasi Tinggi & Berat</button>
     </div>
 
     <div id="result-container">
-        <div class="card" style="padding: 20px;">
-            <div class="zodiac-header">RINCIAN WAKTU & ZODIAK</div>
+        <div class="card result-box">
+            <div class="card-header" style="margin-bottom: 15px;">Hasil Estimasi Anatomi</div>
             
-            <div class="zodiac-flex">
-                <div class="z-left">
-                    <h3>ZODIAK KAMU</h3>
-                    <h2 id="z-name">-</h2>
-                    <p id="z-desc">-</p>
-                </div>
-                <div class="z-right" id="z-emoji">✨</div>
-            </div>
-
             <div class="stat-row">
-                <div class="stat-label">Usia Tahun</div>
-                <div class="stat-value val-blue" id="val-year">0</div>
+                <div class="stat-label">Estimasi Tinggi Badan</div>
+                <div class="stat-value" id="res-height">0 cm</div>
             </div>
             <div class="stat-row">
-                <div class="stat-label">Total Bulan</div>
-                <div class="stat-value val-blue" id="val-month">0</div>
+                <div class="stat-label">Perkiraan Berat Ideal (Broca)</div>
+                <div class="stat-value" id="res-weight" style="color: #f87171;">0 kg</div>
             </div>
             <div class="stat-row">
-                <div class="stat-label">Total Hari</div>
-                <div class="stat-value val-red" id="val-day">0</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Total Jam</div>
-                <div class="stat-value val-white" id="val-hour">0</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Total Menit</div>
-                <div class="stat-value val-white" id="val-minute">0</div>
-            </div>
-        </div>
-
-        <!-- Bagian Khusus Total Detik Hidup dengan Indikator Kedip-Kedip -->
-        <div class="live-sec-card">
-            <div class="zodiac-header" style="margin-bottom: 5px;">TOTAL DETIK HIDUP</div>
-            <div class="live-sec-value" id="val-second">0</div>
-            <div class="live-indicator">
-                <span class="blink-dot">●</span> Berdetak secara real-time
+                <div class="stat-label">Status BMI Estimasi</div>
+                <div class="stat-value" id="res-bmi" style="color: #22c55e;">Normal</div>
             </div>
         </div>
     </div>
@@ -316,108 +198,57 @@
     <div class="footer">Created by_aggx</div>
 
     <script>
-        // Data Zodiak
-        const zodiacs = [
-            { name: "Capricorn (Kambing)", emoji: "🐐", desc: '"Disiplin, tangguh, sabar, dan sangat praktis."', start: [1,1], end: [1,19] },
-            { name: "Aquarius (Air)", emoji: "🌊", desc: '"Mandiri, unik, inovatif, dan pemikir keras."', start: [1,20], end: [2,18] },
-            { name: "Pisces (Ikan)", emoji: "🐟", desc: '"Penuh empati, artistik, intuitif, dan penyayang."', start: [2,19], end: [3,20] },
-            { name: "Aries (Domba)", emoji: "🐏", desc: '"Pemberani, energik, kompetitif, dan pantang menyerah."', start: [3,21], end: [4,19] },
-            { name: "Taurus (Banteng)", emoji: "🐂", desc: '"Setia, dapat diandalkan, sabar, tekun, dan menyukai kenyamanan serta stabilitas."', start: [4,20], end: [5,20] },
-            { name: "Gemini (Kembar)", emoji: "👯", desc: '"Adaptif, komunikatif, cerdas, dan selalu ingin tahu."', start: [5,21], end: [6,20] },
-            { name: "Cancer (Kepiting)", emoji: "🦀", desc: '"Sensitif, protektif, sangat setia, dan penuh kasih sayang."', start: [6,21], end: [7,22] },
-            { name: "Leo (Singa)", emoji: "🦁", desc: '"Percaya diri, karismatik, murah hati, dan berjiwa pemimpin sejati."', start: [7,23], end: [8,22] },
-            { name: "Virgo (Gadis)", emoji: "👱‍♀️", desc: '"Perfeksionis, analitis, pekerja keras, dan suka kebersihan."', start: [8,23], end: [9,22] },
-            { name: "Libra (Timbangan)", emoji: "⚖️", desc: '"Diplomatis, menyukai keharmonisan, sosial, dan pemaaf."', start: [9,23], end: [10,22] },
-            { name: "Scorpio (Kalajengking)", emoji: "🦂", desc: '"Misterius, bersemangat tinggi, setia, dan punya insting tajam."', start: [10,23], end: [11,21] },
-            { name: "Sagittarius (Pemanah)", emoji: "🏹", desc: '"Petualang, optimis, jujur, dan mencintai kebebasan."', start: [11,22], end: [12,21] },
-            { name: "Capricorn (Kambing)", emoji: "🐐", desc: '"Disiplin, tangguh, sabar, dan sangat praktis."', start: [12,22], end: [12,31] }
-        ];
-
-        function formatNum(num) {
-            return num.toLocaleString('id-ID');
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-img').src = e.target.result;
+                    document.getElementById('preview-container').style.display = 'block';
+                    document.getElementById('upload-label').innerText = "Ganti Foto Rentang Tangan";
+                }
+                reader.readAsDataURL(file);
+            }
         }
 
-        // Live Clock Header
-        setInterval(() => {
-            const now = new Date();
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            
-            const dateEl = document.getElementById('live-date');
-            const timeEl = document.getElementById('live-time');
-            if(dateEl && timeEl) {
-                dateEl.innerText = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-                timeEl.innerText = now.toLocaleTimeString('id-ID', {hour12: false});
+        function calculateEstimation() {
+            const wingspan = parseFloat(document.getElementById('wingspan').value);
+            const gender = document.getElementById('gender').value;
+
+            if (!wingspan || wingspan <= 0) {
+                alert("Harap masukkan angka panjang rentang tangan (wingspan) terlebih dahulu!");
+                return;
             }
-        }, 1000);
-
-        let calcInterval;
-
-        function startCalculate() {
-            const d = parseInt(document.getElementById('b-day').value);
-            const m = parseInt(document.getElementById('b-month').value);
-            const y = parseInt(document.getElementById('b-year').value);
-
-            if(!d || !m || !y) {
-                alert("Harap masukkan tanggal, bulan, dan tahun lahir terlebih dahulu!");
+            if (!gender) {
+                alert("Pilih jenis kelamin terlebih dahulu!");
                 return;
             }
 
-            const now = new Date();
-            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
+            // 1. Tinggi badan diasumsikan setara dengan rentang tangan (Wingspan $\approx$ Height)
+            const estimatedHeight = wingspan;
 
-            // Validasi agar tanggal lahir tidak boleh lebih dari waktu sekarang
-            if (birthDate > now) {
-                alert("Tanggal lahir tidak boleh melebihi waktu sekarang!");
-                return;
+            // 2. Hitung Berat Badan Ideal menggunakan rumus Broca
+            let idealWeight = 0;
+            if (gender === 'male') {
+                idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.1);
+            } else {
+                idealWeight = (estimatedHeight - 100) - ((estimatedHeight - 100) * 0.15);
             }
 
-            document.getElementById('about-card').style.display = 'none';
+            // 3. Hitung BMI berdasarkan tinggi dan berat ideal perkiraan
+            const heightM = estimatedHeight / 100;
+            const bmi = idealWeight / (heightM * heightM);
+
+            let bmiStatus = "Normal (Ideal)";
+            if (bmi < 18.5) bmiStatus = "Kurus (Underweight)";
+            else if (bmi > 24.9) bmiStatus = "Kelebihan Berat Badan";
+
+            // Tampilkan hasil ke UI
             document.getElementById('result-container').style.display = 'block';
-
-            let z = zodiacs.find(zod => {
-                if(m===12 && d>=22) return zod.name.includes("Capricorn");
-                if(m===1 && d<=19) return zod.name.includes("Capricorn");
-                return (m === zod.start[0] && d >= zod.start[1]) || (m === zod.end[0] && d <= zod.end[1]);
-            });
-            if(z) {
-                document.getElementById('z-name').innerText = z.name;
-                document.getElementById('z-emoji').innerText = z.emoji;
-                document.getElementById('z-desc').innerText = z.desc;
-            }
-
-            clearInterval(calcInterval);
-            runCalc(d, m, y);
-            calcInterval = setInterval(() => runCalc(d, m, y), 1000);
-        }
-
-        function runCalc(d, m, y) {
-            const now = new Date();
-            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
-            
-            const diffMs = now - birthDate;
-            
-            let ageY = now.getFullYear() - y;
-            let ageM = now.getMonth() - (m - 1);
-            if(now.getDate() < d) { ageM--; }
-            if(ageM < 0) { ageY--; }
-
-            const totalMonths = (now.getFullYear() - y) * 12 + (now.getMonth() - (m - 1));
-            const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const totalMinutes = Math.floor(diffMs / (1000 * 60));
-            const totalSeconds = Math.floor(diffMs / 1000);
-
-            document.getElementById('val-year').innerText = formatNum(ageY);
-            document.getElementById('val-month').innerText = formatNum(totalMonths);
-            document.getElementById('val-day').innerText = formatNum(totalDays);
-            document.getElementById('val-hour').innerText = formatNum(totalHours);
-            document.getElementById('val-minute').innerText = formatNum(totalMinutes);
-            document.getElementById('val-second').innerText = formatNum(totalSeconds);
+            document.getElementById('res-height').innerText = estimatedHeight.toFixed(0) + " cm";
+            document.getElementById('res-weight').innerText = idealWeight.toFixed(1) + " kg";
+            document.getElementById('res-bmi').innerText = bmiStatus;
         }
     </script>
-    
-    <!-- Skrip Iklan Adsterra 2 -->
-    <script src="https://pl31316421.profitableratecpmnetwork.com/74/bb/70/74bb704fc94d0ac5fc75c7aae9081643.js"></script>
 </body>
 </html>
