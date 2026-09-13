@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pengukur Ruangan AI Profesional</title>
+    <title>Kalkulator Pengukur Ruangan AI Akurat</title>
     <!-- TensorFlow.js & COCO-SSD Model -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
@@ -131,7 +131,7 @@
         video, canvas {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* Menggunakan contain agar seluruh gambar proporsional & tidak terpotong */
             display: block;
         }
 
@@ -304,7 +304,7 @@
                 <button class="btn-clear" onclick="clearPoints()">🗑️ Hapus Semua</button>
             </div>
             <div style="font-size: 0.65rem; color: #8e8e93; text-align: center;" id="helperText">
-                Ketuk layar untuk membuat titik dan garis bersambung.
+                Ketuk layar pada foto untuk membuat titik dan garis.
             </div>
         </div>
     </div>
@@ -361,7 +361,7 @@
         async function startLiveCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } 
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
                 });
                 video.srcObject = stream;
                 video.onloadedmetadata = () => { video.play(); };
@@ -389,7 +389,6 @@
             const stream = video.srcObject;
             if (stream) stream.getTracks().forEach(track => track.stop());
 
-            // Muat gambar secara aman dengan callback onload
             img.onload = function() {
                 isImageLoaded = true;
                 redrawCanvas();
@@ -492,7 +491,6 @@
         function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Render ulang foto latar belakang jika sudah siap
             if (isImageLoaded && img.src) {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             }
@@ -506,12 +504,11 @@
                         const p1 = pts[i];
                         const p2 = pts[i+1];
 
-                        // Gambar Garis
                         ctx.beginPath();
                         ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(p2.x, p2.y);
                         ctx.strokeStyle = (l === currentLineIndex) ? '#ffcc00' : '#ff9500';
-                        ctx.lineWidth = 3;
+                        ctx.lineWidth = 4;
                         ctx.stroke();
 
                         const dx = p2.x - p1.x;
@@ -519,25 +516,23 @@
                         const distPx = Math.sqrt(dx*dx + dy*dy);
                         totalPxAll += distPx;
 
-                        // Label Teks Ukuran
                         const midX = (p1.x + p2.x) / 2;
                         const midY = (p1.y + p2.y) / 2;
                         
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-                        ctx.fillRect(midX - 28, midY - 12, 56, 24);
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                        ctx.fillRect(midX - 32, midY - 14, 64, 28);
 
                         ctx.fillStyle = '#ffcc00';
-                        ctx.font = 'bold 11px Roboto';
+                        ctx.font = 'bold 12px Roboto';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText(formatVal(distPx), midX, midY);
                     }
 
-                    // Gambar Titik Sudut/Lingkaran
                     for (let i = 0; i < pts.length; i++) {
                         ctx.fillStyle = (l === currentLineIndex) ? '#ffcc00' : '#ff9500';
                         ctx.beginPath(); 
-                        ctx.arc(pts[i].x, pts[i].y, 6, 0, Math.PI * 2); 
+                        ctx.arc(pts[i].x, pts[i].y, 7, 0, Math.PI * 2); 
                         ctx.fill();
                         ctx.strokeStyle = '#000000';
                         ctx.lineWidth = 2;
@@ -549,21 +544,40 @@
             document.getElementById('resultDisplay').innerText = formatVal(totalPxAll);
         }
 
+        // Perhitungan akurat koordinat sentuhan dengan object-fit: contain
         function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
+            
+            const renderWidth = rect.width;
+            const renderHeight = rect.height;
+            
+            const imgRatio = canvas.width / canvas.height;
+            const displayRatio = renderWidth / renderHeight;
+            
+            let scale, offsetX = 0, offsetY = 0;
+            
+            if (displayRatio > imgRatio) {
+                scale = renderHeight / canvas.height;
+                offsetX = (renderWidth - canvas.width * scale) / 2;
+            } else {
+                scale = renderWidth / canvas.width;
+                offsetY = (renderHeight - canvas.height * scale) / 2;
+            }
+            
+            const clickX = (clientX - rect.left - offsetX) / scale;
+            const clickY = (clientY - rect.top - offsetY) / scale;
+            
+            return { x: clickX, y: clickY };
         }
 
         function handleCanvasClick(e) {
             if (isLiveCamera || !isImageLoaded) return;
             const pos = getMousePos(e);
+
+            // Batasi klik agar tidak di luar area gambar asli canvas
+            if (pos.x < 0 || pos.y < 0 || pos.x > canvas.width || pos.y > canvas.height) return;
 
             if (interactionMode === 'draw') {
                 if (!lines[currentLineIndex]) lines[currentLineIndex] = [];
@@ -578,7 +592,7 @@
                         let p2 = pts[i+1];
                         
                         let dist = distToSegment(pos, p1, p2);
-                        if (dist < 25) { // Toleransi klik 25 pixel
+                        if (dist < 30) { 
                             pts.splice(i + 1, 0, pos);
                             inserted = true;
                             break;
@@ -590,7 +604,7 @@
                     redrawCanvas();
                     setMode('draw'); 
                 } else {
-                    alert("Ketuk lebih dekat ke garis kuning untuk menyisipkan titik.");
+                    alert("Ketuk lebih dekat ke garis kuning.");
                 }
             }
         }
