@@ -158,8 +158,43 @@
         .val-red { color: #f87171; }
         .val-white { color: #ffffff; }
 
+        /* Blinking Real-Time Seconds Card Styling */
+        .live-sec-card {
+            text-align: center;
+            background: #111827;
+            border: 1px solid #1f2937;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+        }
+        .live-sec-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 10px 0;
+            letter-spacing: 1px;
+        }
+        .live-indicator {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .blink-dot {
+            color: #22c55e;
+            font-size: 1rem;
+            animation: blinkAnim 1s infinite;
+        }
+        @keyframes blinkAnim {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+
         /* Footer */
-        .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; }
+        .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; }
 
     </style>
 </head>
@@ -216,7 +251,6 @@
     </div>
 
     <div id="result-container">
-        
         <div class="card" style="padding: 20px;">
             <div class="zodiac-header">RINCIAN WAKTU & ZODIAK</div>
             
@@ -249,9 +283,14 @@
                 <div class="stat-label">Total Menit</div>
                 <div class="stat-value val-white" id="val-minute">0</div>
             </div>
-            <div class="stat-row">
-                <div class="stat-label">Total Detik Hidup</div>
-                <div class="stat-value val-white" id="val-second">0</div>
+        </div>
+
+        <!-- Bagian Khusus Total Detik Hidup dengan Indikator Kedip-Kedip -->
+        <div class="live-sec-card">
+            <div class="zodiac-header" style="margin-bottom: 5px;">TOTAL DETIK HIDUP</div>
+            <div class="live-sec-value" id="val-second">0</div>
+            <div class="live-indicator">
+                <span class="blink-dot">●</span> Berdetak secara real-time
             </div>
         </div>
     </div>
