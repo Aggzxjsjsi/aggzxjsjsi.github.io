@@ -227,10 +227,10 @@
 
         <div class="input-group">
             <label>Hasil Deteksi Ukuran 1 Jengkal (cm)</label>
-            <input type="text" id="jengkal-cm" value="18" placeholder="Otomatis / sesuaikan">
+            <input type="text" id="jengkal-cm" inputmode="decimal" value="18" placeholder="Otomatis / sesuaikan">
         </div>
         <div class="info-box">
-            💡 <i>Sistem otomatis mengonversi koma (,) menjadi titik (.) agar akurat.</i>
+            💡 <i>AI mendeteksi otomatis panjang jengkal. Sistem otomatis mengonversi koma (,) menjadi titik (.) agar akurat.</i>
         </div>
 
         <div class="card-header" style="margin-top: 15px;">2. Masukkan Jumlah Jengkal Lengan</div>
@@ -238,15 +238,15 @@
         <div class="input-group">
             <label>Jumlah Jengkal Lengan (Kanan + Kiri)</label>
             <div class="arm-flex-container">
-                <input type="text" id="jengkal-right" placeholder="Kanan" oninput="syncLeftArm(this.value)">
+                <input type="text" id="jengkal-right" inputmode="decimal" placeholder="Kanan" oninput="syncLeftArm(this.value)">
                 <span class="plus-sign">+</span>
-                <input type="text" id="jengkal-left" placeholder="Kiri">
+                <input type="text" id="jengkal-left" inputmode="decimal" placeholder="Kiri">
             </div>
         </div>
 
         <div class="input-group">
             <label>Jumlah jengkal Dada (Tambahan lebar bahu/dada)</label>
-            <input type="text" id="jengkal-chest" placeholder="Contoh: 1.4">
+            <input type="text" id="jengkal-chest" inputmode="decimal" placeholder="Contoh: 1.4">
         </div>
 
         <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Tinggi Badan</button>
@@ -261,12 +261,8 @@
                 <div class="stat-value" id="res-jengkal">0 Jengkal</div>
             </div>
             <div class="stat-row">
-                <div class="stat-label">Panjang Lengan Kanan</div>
-                <div class="stat-value" id="res-right-arm">0 cm</div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Panjang Lengan Kiri</div>
-                <div class="stat-value" id="res-left-arm">0 cm</div>
+                <div class="stat-label">Panjang Lengan (Kanan + Kiri)</div>
+                <div class="stat-value" id="res-total-arm">0 cm</div>
             </div>
             <div class="stat-row">
                 <div class="stat-label">Estimasi Tinggi Badan / Bentang</div>
@@ -382,13 +378,11 @@
             const totalJengkal = rArm + lArm + chest;
             const totalSpanCm = totalJengkal * jengkalCm;
             
-            const rightArmCm = rArm * jengkalCm;
-            const leftArmCm = lArm * jengkalCm;
+            const totalArmCm = (rArm + lArm) * jengkalCm;
 
             document.getElementById('result-container').style.display = 'block';
             document.getElementById('res-jengkal').innerText = totalJengkal + " Jengkal";
-            document.getElementById('res-right-arm').innerText = rightArmCm.toFixed(1) + " cm";
-            document.getElementById('res-left-arm').innerText = leftArmCm.toFixed(1) + " cm";
+            document.getElementById('res-total-arm').innerText = totalArmCm.toFixed(1) + " cm";
             document.getElementById('res-height').innerText = totalSpanCm.toFixed(0) + " cm";
         }
     </script>
