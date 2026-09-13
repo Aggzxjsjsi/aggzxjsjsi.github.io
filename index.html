@@ -26,19 +26,24 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            padding-top: 65px;
+            position: relative;
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
-        /* Top Bar Date Time */
+        /* Top Bar Date Time di Pojok Kanan Atas */
         .top-badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #a0aec0;
-            margin-bottom: 20px;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
+            z-index: 10;
         }
         .top-badge span { color: #60a5fa; }
 
@@ -139,7 +144,19 @@
         .z-left h3 { color: #60a5fa; font-size: 0.9rem; margin-bottom: 5px; }
         .z-left h2 { font-size: 1.3rem; margin-bottom: 10px; color: white; }
         .z-left p { color: #94a3b8; font-size: 0.8rem; font-style: italic; max-width: 200px; line-height: 1.4; }
-        .z-right { font-size: 4.5rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+        
+        /* Animasi Zodiak Muncul-Hilang (Fade & Scale) */
+        .z-right { 
+            font-size: 4.5rem; 
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.6));
+            animation: zodiacFadeAnim 2.5s infinite ease-in-out;
+        }
+
+        @keyframes zodiacFadeAnim {
+            0% { opacity: 0.2; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.2; transform: scale(0.85); }
+        }
 
         .stat-row {
             display: flex;
@@ -200,6 +217,7 @@
 </head>
 <body>
 
+    <!-- Widget Waktu di Pojok Kanan Atas -->
     <div class="top-badge">
         <span id="live-date">Memuat...</span> <span id="live-time"></span>
     </div>
@@ -315,7 +333,6 @@
             { name: "Capricorn (Kambing)", emoji: "🐐", desc: '"Disiplin, tangguh, sabar, dan sangat praktis."', start: [12,22], end: [12,31] }
         ];
 
-        // Format Angka ke Rupiah style (titik)
         function formatNum(num) {
             return num.toLocaleString('id-ID');
         }
@@ -326,8 +343,12 @@
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
             
-            document.getElementById('live-date').innerText = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-            document.getElementById('live-time').innerText = now.toLocaleTimeString('id-ID', {hour12: false});
+            const dateEl = document.getElementById('live-date');
+            const timeEl = document.getElementById('live-time');
+            if(dateEl && timeEl) {
+                dateEl.innerText = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+                timeEl.innerText = now.toLocaleTimeString('id-ID', {hour12: false});
+            }
         }, 1000);
 
         let calcInterval;
@@ -339,6 +360,15 @@
 
             if(!d || !m || !y) {
                 alert("Harap masukkan tanggal, bulan, dan tahun lahir terlebih dahulu!");
+                return;
+            }
+
+            const now = new Date();
+            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
+
+            // Validasi agar tanggal lahir tidak boleh lebih dari waktu sekarang
+            if (birthDate > now) {
+                alert("Tanggal lahir tidak boleh melebihi waktu sekarang!");
                 return;
             }
 
