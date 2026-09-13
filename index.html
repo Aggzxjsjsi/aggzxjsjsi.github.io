@@ -36,7 +36,6 @@
             background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
-        /* Sembunyikan sub-judul saat mode kalkulator aktif */
         body.in-calculator .subtitle {
             display: none !important;
         }
@@ -73,7 +72,6 @@
             gap: 15px;
         }
 
-        /* Sembunyikan kotak menu utama yang tidak aktif */
         .main-container.active-mode > .card-box:not(.active) {
             display: none !important;
         }
@@ -96,7 +94,6 @@
             background: #111827;
             user-select: none;
         }
-        .card-toggle-header::after { content: none !important; }
         .card-toggle-header h2 {
             font-size: 1.1rem;
             color: #38bdf8;
@@ -115,7 +112,6 @@
             display: block;
         }
 
-        /* Styling Tombol Kembali */
         button.back-menu-btn {
             width: 100%;
             padding: 12px;
@@ -147,7 +143,6 @@
             text-transform: uppercase;
         }
 
-        /* Kotak Instruksi Peringatan & Petunjuk Cara Ukur */
         .instruction-box {
             background: rgba(56, 189, 248, 0.05);
             border: 1px solid rgba(56, 189, 248, 0.2);
@@ -159,17 +154,13 @@
             color: #cbd5e1;
             line-height: 1.5;
         }
-        .instruction-box strong {
-            color: #38bdf8;
-        }
+        .instruction-box strong { color: #38bdf8; }
         .instruction-box ul {
             margin-top: 6px;
             padding-left: 18px;
             list-style-type: disc;
         }
-        .instruction-box li {
-            margin-bottom: 3px;
-        }
+        .instruction-box li { margin-bottom: 3px; }
 
         .input-grid {
             display: grid;
@@ -710,11 +701,14 @@
                 if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                     if (aiStatus) aiStatus.innerText = "✅ Tangan berhasil dideteksi AI!";
                     const landmarks = results.multiHandLandmarks[0];
+                    
+                    // Garis konektor dipertebal menjadi 6px dan warna cyan terang
                     if (typeof drawConnectors !== 'undefined' && typeof HAND_CONNECTIONS !== 'undefined') {
-                        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#38bdf8', lineWidth: 4});
+                        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FFFF', lineWidth: 6});
                     }
+                    // Titik landmarker diperbesar ukurannya menjadi radius 6px
                     if (typeof drawLandmarks !== 'undefined') {
-                        drawLandmarks(canvasCtx, landmarks, {color: '#f87171', lineWidth: 2, radius: 4});
+                        drawLandmarks(canvasCtx, landmarks, {color: '#FF0055', lineWidth: 3, radius: 6});
                     }
 
                     const x1 = landmarks[4].x * canvasElement.width;
@@ -726,8 +720,8 @@
                         canvasCtx.beginPath();
                         canvasCtx.moveTo(x1, y1);
                         canvasCtx.lineTo(x2, y2);
-                        canvasCtx.strokeStyle = '#22c55e';
-                        canvasCtx.lineWidth = 6;
+                        canvasCtx.strokeStyle = '#00FF00'; // Hijau neon terang untuk jarak jengkal
+                        canvasCtx.lineWidth = 8;          // Sangat tebal dan terlihat jelas
                         canvasCtx.stroke();
                     }
 
