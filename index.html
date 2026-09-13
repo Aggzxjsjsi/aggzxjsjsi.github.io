@@ -3,784 +3,406 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Serbaguna - Umur & Tinggi Badan</title>
-    
-    <!-- Skrip Iklan Adsterra 1 -->
-    <script src="https://pl31316420.profitableratecpmnetwork.com/0f/c2/0f/0fc20ff4da59ea128cf0dfb67cff8d47.js"></script>
-
-    <!-- Load MediaPipe Hands Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-
+    <title>Kalkulator Pengukur Panjang AI</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Roboto', sans-serif;
         }
 
         body {
-            background-color: #0b0f19;
+            background-color: #121212;
             color: #ffffff;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
-            padding-top: 65px;
-            position: relative;
-            background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
+            padding: 10px;
         }
 
-        body.in-calculator .subtitle {
-            display: none !important;
-        }
-
-        .top-badge {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: #a0aec0;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
-            z-index: 10;
-        }
-        .top-badge span { color: #60a5fa; }
-
-        .title-container { text-align: center; margin-bottom: 25px; }
-        h1 {
-            font-size: 2rem;
-            color: #38bdf8;
-            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
-            margin-bottom: 8px;
-        }
-        .subtitle { color: #cbd5e1; font-size: 0.9rem; transition: opacity 0.3s; }
-
-        .main-container {
+        .calc-container {
             width: 100%;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .main-container.active-mode > .card-box:not(.active) {
-            display: none !important;
-        }
-
-        .card-box {
-            background: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 20px;
+            max-width: 400px;
+            background: #181818;
+            border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: border-color 0.3s;
-        }
-
-        .card-toggle-header {
-            padding: 20px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            background: #111827;
-            user-select: none;
-        }
-        .card-toggle-header h2 {
-            font-size: 1.1rem;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-content {
-            display: none;
-            padding: 25px;
-            border-top: 1px solid #1f2937;
-            background: #0d1322;
-        }
-        .card-box.active .card-content {
-            display: block;
-        }
-
-        button.back-menu-btn {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #374151;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #38bdf8;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        button.back-menu-btn:hover {
-            background: rgba(56, 189, 248, 0.15);
-            border-color: #38bdf8;
-            color: white;
-        }
-
-        .inner-header {
-            color: #f87171;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin: 10px 0 12px 0;
-            text-transform: uppercase;
-        }
-
-        .instruction-box {
-            background: rgba(56, 189, 248, 0.05);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-left: 4px solid #38bdf8;
-            padding: 12px 14px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            font-size: 0.82rem;
-            color: #cbd5e1;
-            line-height: 1.5;
-        }
-        .instruction-box strong { color: #38bdf8; }
-        .instruction-box ul {
-            margin-top: 6px;
-            padding-left: 18px;
-            list-style-type: disc;
-        }
-        .instruction-box li { margin-bottom: 3px; }
-
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .input-group {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-bottom: 12px;
+            position: relative;
         }
-        .input-group label { font-size: 0.8rem; color: #94a3b8; }
-        
-        input, select {
-            width: 100%;
-            background: transparent;
-            border: 1px solid #374151;
-            color: white;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 0.90rem;
-            outline: none;
-        }
-        input:focus, select:focus { border-color: #38bdf8; }
-        select option { background: #111827; color: white; }
 
-        button.submit-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(90deg, #1e3a8a 0%, #7f1d1d 100%);
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
+        /* Header ala Aplikasi Kalkulator */
+        .calc-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: #181818;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .back-icon {
+            font-size: 1.2rem;
+            color: #e0e0e0;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-right: 15px;
+        }
+
+        .calc-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #e0e0e0;
+            flex-grow: 1;
+        }
+
+        .unit-dropdown-btn {
+            background: transparent;
+            border: none;
+            color: #ff9f0a;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Screen Display */
+        .calc-display {
+            padding: 20px;
+            text-align: right;
+            background: #181818;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .input-value-display {
+            font-size: 1.5rem;
+            color: #8e8e93;
+            font-weight: 300;
+        }
+
+        .result-value-display {
+            font-size: 2.5rem;
+            color: #ffffff;
+            font-weight: 400;
             margin-top: 5px;
         }
 
-        .about-box {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed #374151;
-            border-radius: 14px;
-            padding: 16px;
-            margin-top: 20px;
+        /* Workspace Canvas Area */
+        .workspace {
+            position: relative;
+            background: #000;
+            width: 100%;
+            height: 250px;
+            display: none;
+            overflow: hidden;
+            border-top: 1px solid #2c2c2e;
+            border-bottom: 1px solid #2c2c2e;
+            touch-action: none;
         }
-        .about-title { color: #38bdf8; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; margin-bottom: 8px; }
-        .about-text { color: #94a3b8; font-size: 0.85rem; line-height: 1.5; }
-        .about-list { margin-top: 6px; padding-left: 18px; color: #cbd5e1; font-size: 0.83rem; line-height: 1.6; }
-        .about-list li { margin-bottom: 6px; }
 
-        .zodiac-header { color: #f87171; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; margin: 20px 0 12px 0; }
-        
-        .zodiac-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #111827;
-            border: 1px solid #1f2937;
-            padding: 16px;
-            border-radius: 14px;
-            margin-bottom: 12px;
+        canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
-        .z-left h3 { color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px; }
-        .z-left h2 { font-size: 1.15rem; margin-bottom: 8px; color: white; }
-        .z-left p { color: #cbd5e1; font-size: 0.78rem; font-style: italic; max-width: 230px; line-height: 1.4; }
-        
-        .z-right {
-            font-size: 3.8rem;
+
+        .upload-placeholder {
+            padding: 15px 20px;
+            background: #1e1e1e;
+            text-align: center;
+            border-bottom: 1px solid #2c2c2e;
+        }
+
+        .upload-label {
+            color: #ff9f0a;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
             display: inline-block;
-            animation: fadeGlowZodiac 3s ease-in-out infinite;
-        }
-        @keyframes fadeGlowZodiac {
-            0% { opacity: 0.15; transform: scale(0.92); filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.1)); }
-            50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.9)); }
-            100% { opacity: 0.15; transform: scale(0.92); filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.1)); }
         }
 
-        .stat-row {
+        .upload-label input {
+            display: none;
+        }
+
+        /* Keypad / Control Panel */
+        .control-panel {
+            padding: 15px 20px;
+            background: #181818;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .control-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #111827;
-            border: 1px solid #1f2937;
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #8e8e93;
         }
-        .stat-label { color: #cbd5e1; font-size: 0.9rem; }
-        .stat-value { font-size: 1.2rem; font-weight: 700; }
-        .val-blue { color: #38bdf8; }
-        .val-red { color: #f87171; }
-        .val-white { color: #ffffff; }
 
-        .live-sec-card {
-            text-align: center;
-            background: #111827;
-            border: 1px solid #1f2937;
-            padding: 16px;
-            border-radius: 14px;
-            margin-top: 10px;
+        .control-row input[type="number"] {
+            background: #2c2c2e;
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            width: 90px;
+            text-align: right;
+            font-size: 0.9rem;
+            outline: none;
         }
-        .live-sec-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin: 8px 0;
-        }
-        .live-indicator {
-            font-size: 0.75rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .blink-dot { color: #22c55e; animation: blinkAnim 1s infinite; }
-        @keyframes blinkAnim { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
 
-        .btn-upload-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
+        /* Popup Unit Selection Menu ala Screenshot */
+        .unit-popup {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            width: 240px;
+            max-height: 350px;
+            background: #2c2c2e;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            padding: 8px 0;
         }
-        .action-btn-upload {
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid #38bdf8;
-            color: #38bdf8;
-            padding: 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-align: center;
+
+        .unit-item {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            color: #e0e0e0;
             cursor: pointer;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
         }
-        .action-btn-upload input { display: none; }
 
-        #canvas-container {
-            display: none;
-            position: relative;
-            margin-bottom: 12px;
-            text-align: center;
-            background: rgba(0,0,0,0.5);
-            padding: 6px;
-            border-radius: 12px;
-            border: 1px solid #374151;
+        .unit-item:hover {
+            background: #3a3a3c;
         }
-        canvas {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            display: block;
-            margin: 0 auto;
+
+        .unit-item.active {
+            color: #ff9f0a;
         }
-        .status-ai {
-            font-size: 0.75rem;
-            color: #38bdf8;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .arm-flex-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .arm-flex-container input { text-align: center; }
-        .plus-sign { font-size: 1.1rem; font-weight: 700; color: #38bdf8; }
-        .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="top-badge">
-        <span id="live-date">Memuat...</span> <span id="live-time"></span>
-    </div>
-
-    <div class="title-container">
-        <h1>Kalkulator Serbaguna</h1>
-        <p class="subtitle">Ketuk salah satu kotak menu di bawah untuk mulai</p>
-    </div>
-
-    <div class="main-container" id="mainContainer">
-
-        <!-- KOTAK 1: UMUR -->
-        <div class="card-box" id="box-age">
-            <div class="card-toggle-header" onclick="openBox('box-age')">
-                <h2>Kalkulator Umur & Zodiak</h2>
-            </div>
-            <div class="card-content">
-                <div class="inner-header">MASUKKAN TANGGAL LAHIRMU</div>
-                <div class="input-grid">
-                    <div class="input-group" style="margin-bottom:0;">
-                        <label>Tanggal</label>
-                        <input type="number" id="b-day" placeholder="Contoh: 5" min="1" max="31">
-                    </div>
-                    <div class="input-group" style="margin-bottom:0;">
-                        <label>Bulan</label>
-                        <select id="b-month">
-                            <option value="" disabled selected>Pilih...</option>
-                            <option value="1">Januari</option>
-                            <option value="2">Februari</option>
-                            <option value="3">Maret</option>
-                            <option value="4">April</option>
-                            <option value="5">Mei</option>
-                            <option value="6">Juni</option>
-                            <option value="7">Juli</option>
-                            <option value="8">Agustus</option>
-                            <option value="9">September</option>
-                            <option value="10">Oktober</option>
-                            <option value="11">November</option>
-                            <option value="12">Desember</option>
-                        </select>
-                    </div>
-                    <div class="input-group" style="margin-bottom:0;">
-                        <label>Tahun</label>
-                        <input type="number" id="b-year" placeholder="Contoh: 2005" min="1900">
-                    </div>
-                </div>
-                <button class="submit-btn" onclick="startCalculateAge()">Hitung Umur Sekarang</button>
-
-                <div id="result-container-age" style="display: none; margin-top: 15px;">
-                    <div class="zodiac-header">RINCIAN WAKTU & ZODIAK</div>
-                    <div class="zodiac-flex">
-                        <div class="z-left">
-                            <h3>ZODIAK KAMU</h3>
-                            <h2 id="z-name">-</h2>
-                            <p id="z-desc">-</p>
-                        </div>
-                        <div class="z-right" id="z-emoji">✨</div>
-                    </div>
-                    <div class="stat-row"><div class="stat-label">Usia Tahun</div><div class="stat-value val-blue" id="val-year">0</div></div>
-                    <div class="stat-row"><div class="stat-label">Total Bulan</div><div class="stat-value val-blue" id="val-month">0</div></div>
-                    <div class="stat-row"><div class="stat-label">Total Hari</div><div class="stat-value val-red" id="val-day">0</div></div>
-                    <div class="stat-row"><div class="stat-label">Total Jam</div><div class="stat-value val-white" id="val-hour">0</div></div>
-                    <div class="stat-row"><div class="stat-label">Total Menit</div><div class="stat-value val-white" id="val-minute">0</div></div>
-                    <div class="live-sec-card">
-                        <div class="zodiac-header" style="margin: 0 0 5px 0;">TOTAL DETIK HIDUP</div>
-                        <div class="live-sec-value" id="val-second">0</div>
-                        <div class="live-indicator"><span class="blink-dot">●</span> Berdetak secara real-time</div>
-                    </div>
-                </div>
-
-                <div class="about-box">
-                    <div class="about-title">TENTANG KALKULATOR UMUR & ZODIAK</div>
-                    <p class="about-text">
-                        Kalkulator ini menghitung durasi usia Anda secara akurat hingga tingkat detik terkecil secara real-time. Sistem juga mendeteksi zodiak Anda beserta karakteristik kepribadiannya secara otomatis.
-                    </p>
-                    
-                    <div class="about-title" style="margin-top: 14px;">CARA PENGGUNAAN</div>
-                    <ol class="about-list">
-                        <li><strong>Langkah 1:</strong> Pilih <strong>Tanggal</strong>, <strong>Bulan</strong>, dan <strong>Tahun</strong> lahir Anda pada form di atas.</li>
-                        <li><strong>Langkah 2:</strong> Klik tombol <strong>Hitung Umur Sekarang</strong>.</li>
-                        <li><strong>Langkah 3:</strong> Rincian total waktu hidup dan informasi zodiak Anda akan ditampilkan di layar.</li>
-                    </ol>
-                </div>
-
-                <button class="back-menu-btn" style="margin-top: 20px;" onclick="closeBox('box-age')">
-                    ⬅️ Kembali ke Menu Utama
-                </button>
-            </div>
+    <div class="calc-container">
+        <!-- Header -->
+        <div class="calc-header">
+            <span class="back-icon">←</span>
+            <span class="calc-title">Panjang</span>
+            <button class="unit-dropdown-btn" onclick="toggleUnitMenu()">
+                <span id="currentUnitLabel">Sentimeter cm</span> ▾
+            </button>
         </div>
 
-        <!-- KOTAK 2: TINGGI BADAN -->
-        <div class="card-box" id="box-height">
-            <div class="card-toggle-header" onclick="openBox('box-height')">
-                <h2>Kalkulator Tinggi Badan (Jengkal & AI)</h2>
-            </div>
-            <div class="card-content">
-                <!-- NOMOR 1 -->
-                <div class="inner-header">1. FOTO JENGKAL UNTUK KALIBRASI AI</div>
-                <div class="instruction-box">
-                    📸 <strong>Petunjuk Foto Jengkal:</strong><br>
-                    Pastikan posisi HP/kamera <strong>tegak lurus</strong> berhadapan dengan telapak tangan dan <strong>hasil foto terlihat jelas</strong> (tidak buram). Rentangkan tangan selebar-lebarnya dari ujung jempol sampai ujung kelingking.
-                </div>
-                <div class="btn-upload-grid">
-                    <label class="action-btn-upload">📸 Buka Kamera<input type="file" accept="image/*" capture="environment" onchange="processImage(event)"></label>
-                    <label class="action-btn-upload">🖼️ Pilih Galeri<input type="file" accept="image/*" onchange="processImage(event)"></label>
-                </div>
-                <div id="canvas-container">
-                    <div class="status-ai" id="ai-status">🤖 Memindai tangan dengan AI...</div>
-                    <canvas id="output-canvas"></canvas>
-                </div>
-                <div class="input-group">
-                    <label>Hasil Deteksi Ukuran 1 Jengkal (cm)</label>
-                    <input type="text" id="jengkal-cm" inputmode="decimal" value="18">
-                </div>
-
-                <!-- NOMOR 2 -->
-                <div class="inner-header" style="margin-top: 20px;">2. JUMLAH JENGKAL LENGAN</div>
-                <div class="instruction-box">
-                    ⚠️ <strong>Cara Mengukur:</strong><br>
-                    Rapatkan lengan ke perut atau samping badan. <strong>Mulai mengukur jengkal dari lengan paling atas (ujung pundak/bahu) turun sampai ke ujung jari tengah.</strong><br><br>
-                    📝 <strong>Contoh Penulisan Desimal (Gunakan Titik):</strong>
-                    <ul>
-                        <li><strong>3 Jengkal Pas</strong> &rarr; Tulis <code>3</code></li>
-                        <li><strong>3 Jengkal Lebih Sedikit Sekali</strong> &rarr; Tulis <code>3.1</code> atau <code>3.2</code></li>
-                        <li><strong>3 Jengkal Lebih Sedikit</strong> &rarr; Tulis <code>3.3</code> atau <code>3.4</code></li>
-                        <li><strong>3 Jengkal Lebih Setengah</strong> &rarr; Tulis <code>3.5</code></li>
-                        <li><strong>3 Jengkal Lebih Banyak</strong> &rarr; Tulis <code>3.6</code> atau <code>3.7</code></li>
-                        <li><strong>3 Jengkal Lebih Banyak Sekali</strong> (Hampir 4 Jengkal) &rarr; Tulis <code>3.8</code> atau <code>3.9</code></li>
-                    </ul>
-                </div>
-                <div class="input-group">
-                    <label>Jumlah Jengkal Lengan (Kanan + Kiri)</label>
-                    <div class="arm-flex-container">
-                        <input type="text" id="jengkal-right" inputmode="decimal" value="3.5" placeholder="Kanan" oninput="syncLeftArm(this.value)">
-                        <span class="plus-sign">+</span>
-                        <input type="text" id="jengkal-left" inputmode="decimal" value="3.5" placeholder="Kiri">
-                    </div>
-                </div>
-
-                <!-- NOMOR 3 -->
-                <div class="inner-header" style="margin-top: 20px;">3. JUMLAH JENGKAL BAHU / DADA</div>
-                <div class="instruction-box">
-                    ⚠️ <strong>Cara Mengukur:</strong><br>
-                    Ukur lebar dada/bahu dari ujung bahu kanan ke ujung bahu kiri.<br><br>
-                    📝 <strong>Contoh Penulisan Desimal (Gunakan Titik):</strong>
-                    <ul>
-                        <li><strong>2 Jengkal Pas</strong> &rarr; Tulis <code>2</code></li>
-                        <li><strong>2 Jengkal Lebih Sedikit Sekali</strong> &rarr; Tulis <code>2.1</code> atau <code>2.2</code></li>
-                        <li><strong>2 Jengkal Lebih Setengah</strong> &rarr; Tulis <code>2.5</code></li>
-                        <li><strong>2 Jengkal Lebih Banyak Sekali</strong> (Hampir 3 Jengkal) &rarr; Tulis <code>2.8</code> atau <code>2.9</code></li>
-                    </ul>
-                </div>
-                <div class="input-group">
-                    <label>Jumlah Jengkal Bahu / Dada</label>
-                    <input type="text" id="jengkal-chest" inputmode="decimal" value="2" placeholder="Contoh: 2 atau 2.5">
-                </div>
-
-                <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Tinggi Badan</button>
-
-                <div id="result-container-height" style="display: none; margin-top: 15px;">
-                    <div style="padding: 16px; background: #111827; border: 1px solid #1f2937; border-radius: 14px;">
-                        <div class="inner-header" style="margin: 0 0 10px 0;">Hasil Kalkulasi Tinggi Badan</div>
-                        <div class="stat-row"><div class="stat-label">Total Jengkal Keseluruhan</div><div class="stat-value" id="res-jengkal">0 Jengkal</div></div>
-                        <div class="stat-row"><div class="stat-label">Panjang Lengan</div><div class="stat-value" id="res-total-arm">0 cm</div></div>
-                        <div class="stat-row"><div class="stat-label">Lebar Bahu / Dada</div><div class="stat-value" id="res-total-chest">0 cm</div></div>
-                        <div class="stat-row"><div class="stat-label">Estimasi Tinggi Badan</div><div class="stat-value" id="res-height" style="color: #22c55e;">0 cm</div></div>
-                    </div>
-                </div>
-
-                <div class="about-box">
-                    <div class="about-title">TENTANG KALKULATOR TINGGI BADAN</div>
-                    <p class="about-text">
-                        Kalkulator ini memperkirakan tinggi badan menggunakan metode rasio rentangan jengkal tangan dan bahu yang dikalibrasi secara otomatis dengan teknologi AI (MediaPipe Hands).
-                    </p>
-
-                    <div class="about-title" style="margin-top: 14px;">CARA PENGGUNAAN</div>
-                    <ol class="about-list">
-                        <li><strong>1. Kalibrasi Jengkal AI (Opsional):</strong> Ambil foto tangan yang direntangkan via kamera/galeri untuk menghitung panjang 1 jengkal Anda (cm) secara otomatis, atau ketik nilainya secara manual.</li>
-                        <li><strong>2. Masukkan Jengkal Lengan & Bahu:</strong> Isi jumlah jengkal rentangan lengan kanan, lengan kiri, serta lebar bahu/dada Anda pada kolom input yang tersedia.</li>
-                        <li><strong>3. Hitung Tinggi Badan:</strong> Klik tombol <strong>Hitung Tinggi Badan</strong> untuk melihat hasil estimasi total jengkal dan perkiraan tinggi badan Anda dalam sentimeter (cm).</li>
-                    </ol>
-                </div>
-
-                <button class="back-menu-btn" style="margin-top: 20px;" onclick="closeBox('box-height')">
-                    ⬅️ Kembali ke Menu Utama
-                </button>
-            </div>
+        <!-- Popup Menu Satuan (Menyerupai Screenshot Kalkulator) -->
+        <div class="unit-popup" id="unitPopup">
+            <div class="unit-item" onclick="selectUnit('km', 'Kilometer km')">Kilometer <span>km</span></div>
+            <div class="unit-item active" onclick="selectUnit('cm', 'Sentimeter cm')">Sentimeter <span>cm</span></div>
+            <div class="unit-item" onclick="selectUnit('m', 'Meter m')">Meter <span>m</span></div>
+            <div class="unit-item" onclick="selectUnit('mm', 'Milimeter mm')">Milimeter <span>mm</span></div>
+            <div class="unit-item" onclick="selectUnit('um', 'Mikrometer µm')">Mikrometer <span>µm</span></div>
+            <div class="unit-item" onclick="selectUnit('nm', 'Nanometer nm')">Nanometer <span>nm</span></div>
+            <div class="unit-item" onclick="selectUnit('mi', 'Mil mil')">Mil <span>mil</span></div>
+            <div class="unit-item" onclick="selectUnit('yd', 'Yard yd')">Yard <span>yd</span></div>
+            <div class="unit-item" onclick="selectUnit('ft', 'Kaki ft')">Kaki <span>ft</span></div>
+            <div class="unit-item" onclick="selectUnit('in', 'Inci in')">Inci <span>in</span></div>
+            <div class="unit-item" onclick="selectUnit('ly', 'Tahun cahaya ly')">Tahun cahaya <span>ly</span></div>
+            <div class="unit-item" onclick="selectUnit('au', 'Satuan astronomis ⊙')">Satuan astronomis <span>⊙</span></div>
         </div>
 
-    </div>
+        <!-- Display Hasil -->
+        <div class="calc-display">
+            <div class="input-value-display" id="pixelDisplay">0 px</div>
+            <div class="result-value-display" id="resultDisplay">0</div>
+        </div>
 
-    <div class="footer">Created by_aggx</div>
+        <!-- Upload Foto / Video -->
+        <div class="upload-placeholder">
+            <label class="upload-label">
+                📷 Pilih Foto / Video Objek Untuk Diukur
+                <input type="file" accept="image/*,video/*" id="mediaInput" onchange="handleMedia(event)">
+            </label>
+        </div>
+
+        <!-- Workspace Area Gambar & Garis Drag -->
+        <div class="workspace" id="workspace">
+            <canvas id="measCanvas"></canvas>
+        </div>
+
+        <!-- Control Panel Skala -->
+        <div class="control-panel">
+            <div class="control-row">
+                <span>Skala (cm per 100px):</span>
+                <input type="number" id="scaleFactor" value="5" oninput="calculateLength()">
+            </div>
+            <div style="font-size: 0.7rem; color: #636366; text-align: center;">
+                Tarik garis langsung di atas foto objek untuk mengukur panjangnya.
+            </div>
+        </div>
+    </div>
 
     <script>
-        function openBox(boxId) {
-            document.getElementById('mainContainer').classList.add('active-mode');
-            document.body.classList.add('in-calculator');
-            document.getElementById(boxId).classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        const canvas = document.getElementById('measCanvas');
+        const ctx = canvas.getContext('2d');
+        let img = new Image();
+        let isDrawing = false;
+        let startX = 0, startY = 0;
+        let endX = 0, endY = 0;
+        let hasDrawn = false;
+        let currentUnitKey = 'cm';
+
+        function toggleUnitMenu() {
+            const popup = document.getElementById('unitPopup');
+            popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
         }
 
-        function closeBox(boxId) {
-            document.getElementById(boxId).classList.remove('active');
-            document.getElementById('mainContainer').classList.remove('active-mode');
-            document.body.classList.remove('in-calculator');
-        }
-
-        const zodiacs = [
-            { name: "Capricorn (Kambing Gunung)", emoji: "🐐", desc: "Sangat disiplin, pekerja keras, berorientasi target, bertanggung jawab, sabar, dan memiliki jiwa kepemimpinan yang tenang.", start: [1,1], end: [1,19] },
-            { name: "Aquarius (Pembawa Air)", emoji: "🌊", desc: "Mandiri, inovatif, berpemikiran terbuka, humanis, sangat menyukai kebebasan, kreatif, dan unik.", start: [1,20], end: [2,18] },
-            { name: "Pisces (Ikan)", emoji: "🐟", desc: "Sangat empati, intuitif, artistik, penuh kasih sayang, imajinatif, serta pemimpi yang memiliki ketulusan hati tinggi.", start: [2,19], end: [3,20] },
-            { name: "Aries (Domba Jantan)", emoji: "🐏", desc: "Pemberani, energik, berjiwa pemimpin, penuh semangat, percaya diri, kompetitif, dan pantang menyerah.", start: [3,21], end: [4,19] },
-            { name: "Taurus (Banteng)", emoji: "🐂", desc: "Setia, teguh pada pendirian, sabar, dapat diandalkan, menyukai kenyamanan, tekun, dan realistis.", start: [4,20], end: [5,20] },
-            { name: "Gemini (Si Kembar)", emoji: "👯", desc: "Komunikatif, adaptif, cepat belajar, serba bisa, cerdas, humoris, dan penuh rasa ingin tahu.", start: [5,21], end: [6,20] },
-            { name: "Cancer (Kepiting)", emoji: "🦀", desc: "Protektif, setia, berjiwa pengasuh, intuitif, sangat menyayangi keluarga, empati tinggi, dan peka.", start: [6,21], end: [7,22] },
-            { name: "Leo (Singa)", emoji: "🦁", desc: "Percaya diri, karismatik, pemurah, berjiwa pemimpin kuat, optimis, penuh energi, serta suka menjadi pusat perhatian.", start: [7,23], end: [8,22] },
-            { name: "Virgo (Gadis)", emoji: "👱‍♀️", desc: "Perfeksionis, analitis, teliti, rapi, pekerja keras, sangat peduli detail, dan suka membantu orang lain.", start: [8,23], end: [9,22] },
-            { name: "Libra (Timbangan)", emoji: "⚖️", desc: "Diplomatis, adil, menyukai keharmonisan, menawan, romantis, bijaksana dalam mengambil keputusan tengah.", start: [9,23], end: [10,22] },
-            { name: "Scorpio (Kalajengking)", emoji: "🦂", desc: "Intens, misterius, memiliki intuisi tajam, sangat setia, bersemangat tinggi, fokus, dan tangguh.", start: [10,23], end: [11,21] },
-            { name: "Sagittarius (Pemanah)", emoji: "🏹", desc: "Petualang sejati, optimis, jujur, berjiwa bebas, antusias, filosofis, dan menyukai wawasan baru.", start: [11,22], end: [12,21] },
-            { name: "Capricorn (Kambing Gunung)", emoji: "🐐", desc: "Sangat disiplin, pekerja keras, berorientasi target, bertanggung jawab, sabar, dan memiliki jiwa kepemimpinan yang tenang.", start: [12,22], end: [12,31] }
-        ];
-
-        function formatNum(num) { return num.toLocaleString('id-ID'); }
-
-        setInterval(() => {
-            const now = new Date();
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            const dateEl = document.getElementById('live-date');
-            const timeEl = document.getElementById('live-time');
-            if(dateEl && timeEl) {
-                dateEl.innerText = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-                timeEl.innerText = now.toLocaleTimeString('id-ID', {hour12: false});
-            }
-        }, 1000);
-
-        let calcInterval;
-        function startCalculateAge() {
-            const d = parseInt(document.getElementById('b-day').value);
-            const m = parseInt(document.getElementById('b-month').value);
-            const y = parseInt(document.getElementById('b-year').value);
-
-            if(!d || !m || !y) {
-                alert("Harap masukkan tanggal, bulan, dan tahun lahir terlebih dahulu!");
-                return;
-            }
-
-            const now = new Date();
-            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
-            if (birthDate > now) {
-                alert("Tanggal lahir tidak boleh melebihi waktu sekarang!");
-                return;
-            }
-
-            const resContainerAge = document.getElementById('result-container-age');
-            resContainerAge.style.display = 'block';
-
-            let z = zodiacs.find(zod => {
-                if(m===12 && d>=22) return zod.name.includes("Capricorn");
-                if(m===1 && d<=19) return zod.name.includes("Capricorn");
-                return (m === zod.start[0] && d >= zod.start[1]) || (m === zod.end[0] && d <= zod.end[1]);
-            });
-            if(z) {
-                document.getElementById('z-name').innerText = z.name;
-                document.getElementById('z-emoji').innerText = z.emoji;
-                document.getElementById('z-desc').innerText = z.desc;
-            }
-
-            clearInterval(calcInterval);
-            runCalcAge(d, m, y);
-            calcInterval = setInterval(() => runCalcAge(d, m, y), 1000);
-
-            resContainerAge.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        function runCalcAge(d, m, y) {
-            const now = new Date();
-            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
-            const diffMs = now - birthDate;
+        function selectUnit(key, label) {
+            currentUnitKey = key;
+            document.getElementById('currentUnitLabel').innerText = label;
+            document.getElementById('unitPopup').style.display = 'none';
             
-            let ageY = now.getFullYear() - y;
-            let ageM = now.getMonth() - (m - 1);
-            if(now.getDate() < d) { ageM--; }
-            if(ageM < 0) { ageY--; }
-
-            const totalMonths = (now.getFullYear() - y) * 12 + (now.getMonth() - (m - 1));
-            const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const totalMinutes = Math.floor(diffMs / (1000 * 60));
-            const totalSeconds = Math.floor(diffMs / 1000);
-
-            document.getElementById('val-year').innerText = formatNum(ageY);
-            document.getElementById('val-month').innerText = formatNum(totalMonths);
-            document.getElementById('val-day').innerText = formatNum(totalDays);
-            document.getElementById('val-hour').innerText = formatNum(totalHours);
-            document.getElementById('val-minute').innerText = formatNum(totalMinutes);
-            document.getElementById('val-second').innerText = formatNum(totalSeconds);
+            // Update active class
+            document.querySelectorAll('.unit-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            calculateLength();
         }
 
-        function parseVal(id) {
-            const el = document.getElementById(id);
-            if (!el || !el.value) return 0;
-            const cleaned = el.value.toString().replace(',', '.');
-            const parsed = parseFloat(cleaned);
-            return isNaN(parsed) ? 0 : parsed;
-        }
-
-        function syncLeftArm(val) {
-            const elLeft = document.getElementById('jengkal-left');
-            if (elLeft) elLeft.value = val;
-        }
-
-        const canvasElement = document.getElementById('output-canvas');
-        const canvasCtx = canvasElement ? canvasElement.getContext('2d') : null;
-        const aiStatus = document.getElementById('ai-status');
-
-        let hands = null;
-        try {
-            if (typeof Hands !== 'undefined') {
-                hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-                hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-                hands.onResults(onHandResults);
-            }
-        } catch (e) {
-            console.log("MediaPipe fallback mode.");
-        }
-
-        function processImage(event) {
+        function handleMedia(event) {
             const file = event.target.files[0];
             if (!file) return;
-            document.getElementById('canvas-container').style.display = 'block';
-            if (aiStatus) aiStatus.innerText = "🤖 Memindai tangan dengan AI...";
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const img = new Image();
                 img.onload = function() {
-                    if (canvasElement && canvasCtx) {
-                        canvasElement.width = img.width;
-                        canvasElement.height = img.height;
-                        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-                        canvasCtx.drawImage(img, 0, 0, img.width, img.height);
-                        if (hands) {
-                            hands.send({image: img});
-                        } else if (aiStatus) {
-                            aiStatus.innerText = "⚠️ AI tidak aktif, silakan isi manual.";
-                        }
-                    }
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    document.getElementById('workspace').style.display = 'block';
+                    redrawCanvas();
                 }
                 img.src = e.target.result;
             }
             reader.readAsDataURL(file);
         }
 
-        function onHandResults(results) {
-            try {
-                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    if (aiStatus) aiStatus.innerText = "✅ Tangan berhasil dideteksi AI!";
-                    const landmarks = results.multiHandLandmarks[0];
-                    
-                    // Garis konektor dipertebal menjadi 6px dan warna cyan terang
-                    if (typeof drawConnectors !== 'undefined' && typeof HAND_CONNECTIONS !== 'undefined') {
-                        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FFFF', lineWidth: 6});
-                    }
-                    // Titik landmarker diperbesar ukurannya menjadi radius 6px
-                    if (typeof drawLandmarks !== 'undefined') {
-                        drawLandmarks(canvasCtx, landmarks, {color: '#FF0055', lineWidth: 3, radius: 6});
-                    }
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
 
-                    const x1 = landmarks[4].x * canvasElement.width;
-                    const y1 = landmarks[4].y * canvasElement.height;
-                    const x2 = landmarks[20].x * canvasElement.width;
-                    const y2 = landmarks[20].y * canvasElement.height;
+            if (hasDrawn) {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = '#32d74b';
+                ctx.lineWidth = Math.max(3, canvas.width / 150);
+                ctx.stroke();
 
-                    if (canvasCtx) {
-                        canvasCtx.beginPath();
-                        canvasCtx.moveTo(x1, y1);
-                        canvasCtx.lineTo(x2, y2);
-                        canvasCtx.strokeStyle = '#00FF00'; // Hijau neon terang untuk jarak jengkal
-                        canvasCtx.lineWidth = 8;          // Sangat tebal dan terlihat jelas
-                        canvasCtx.stroke();
-                    }
-
-                    const pixelDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                    let estimatedCm = Math.round((pixelDistance / canvasElement.width) * 35);
-                    if (estimatedCm < 12) estimatedCm = 17;
-                    if (estimatedCm > 25) estimatedCm = 20;
-                    const jengkalInput = document.getElementById('jengkal-cm');
-                    if (jengkalInput) jengkalInput.value = estimatedCm;
-                } else {
-                    if (aiStatus) aiStatus.innerText = "⚠️ Tangan tidak terdeteksi jelas.";
-                }
-            } catch(e) {
-                console.log("Error in AI hand result rendering:", e);
+                // Titik Awal & Akhir
+                ctx.fillStyle = '#ff453a';
+                ctx.beginPath(); ctx.arc(startX, startY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(endX, endY, canvas.width/100, 0, Math.PI * 2); ctx.fill();
             }
         }
 
-        function calculateJengkalSystem() {
-            try {
-                const jengkalCm = parseVal('jengkal-cm');
-                const rArm = parseVal('jengkal-right');
-                const lArm = parseVal('jengkal-left');
-                const chest = parseVal('jengkal-chest');
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
 
-                if (jengkalCm <= 0) {
-                    alert("Masukkan panjang 1 jengkal dengan benar!");
-                    return;
-                }
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getMousePos(e);
+            startX = pos.x; startY = pos.y;
+            isDrawing = true;
+            hasDrawn = false;
+        });
 
-                const totalJengkal = rArm + lArm + chest;
-                const totalSpanCm = totalJengkal * jengkalCm;
-                const totalArmCm = (rArm + lArm) * jengkalCm;
-                const totalChestCm = chest * jengkalCm;
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            endX = pos.x; endY = pos.y;
+            hasDrawn = true;
+            redrawCanvas();
+            calculateLength();
+        });
 
-                const resContainerHeight = document.getElementById('result-container-height');
-                if (resContainerHeight) {
-                    resContainerHeight.style.display = 'block';
-                }
+        canvas.addEventListener('mouseup', () => { isDrawing = false; });
 
-                const elJengkal = document.getElementById('res-jengkal');
-                const elArm = document.getElementById('res-total-arm');
-                const elChest = document.getElementById('res-total-chest');
-                const elHeight = document.getElementById('res-height');
+        canvas.addEventListener('touchstart', (e) => {
+            const pos = getMousePos(e);
+            startX = pos.x; startY = pos.y;
+            isDrawing = true;
+            hasDrawn = false;
+            e.preventDefault();
+        });
 
-                if (elJengkal) elJengkal.innerText = totalJengkal.toFixed(1) + " Jengkal";
-                if (elArm) elArm.innerText = totalArmCm.toFixed(1) + " cm";
-                if (elChest) elChest.innerText = totalChestCm.toFixed(1) + " cm";
-                if (elHeight) elHeight.innerText = Math.round(totalSpanCm) + " cm";
+        canvas.addEventListener('touchmove', (e) => {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+            endX = pos.x; endY = pos.y;
+            hasDrawn = true;
+            redrawCanvas();
+            calculateLength();
+            e.preventDefault();
+        });
 
-                if (resContainerHeight) {
-                    resContainerHeight.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            } catch (err) {
-                alert("Terjadi masalah saat menghitung.");
+        canvas.addEventListener('touchend', () => { isDrawing = false; });
+
+        function calculateLength() {
+            if (!hasDrawn) return;
+
+            const pixelDist = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            document.getElementById('pixelDisplay').innerText = `${pixelDist.toFixed(0)} px`;
+
+            const scaleFactor = parseFloat(document.getElementById('scaleFactor').value) || 5;
+            let valueInCm = (pixelDist / 100) * scaleFactor;
+            
+            let finalVal = valueInCm;
+            switch(currentUnitKey) {
+                case 'mm': finalVal = valueInCm * 10; break;
+                case 'cm': finalVal = valueInCm; break;
+                case 'm': finalVal = valueInCm / 100; break;
+                case 'km': finalVal = valueInCm / 100000; break;
+                case 'um': finalVal = valueInCm * 10000; break;
+                case 'nm': finalVal = valueInCm * 10000000; break;
+                case 'mi': finalVal = valueInCm / 160934; break;
+                case 'yd': finalVal = valueInCm / 91.44; break;
+                case 'ft': finalVal = valueInCm / 30.48; break;
+                case 'in': finalVal = valueInCm / 2.54; break;
+                case 'ly': finalVal = valueInCm / 9.461e18; break;
+                case 'au': finalVal = valueInCm / 1.496e13; break;
+            }
+
+            document.getElementById('resultDisplay').innerText = finalVal < 0.001 ? finalVal.toExponential(2) : finalVal.toFixed(2);
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.closest('.unit-dropdown-btn') && !event.target.closest('.unit-popup')) {
+                document.getElementById('unitPopup').style.display = 'none';
             }
         }
     </script>
-
-    <!-- Skrip Iklan Adsterra 2 -->
-    <script src="https://pl31316421.profitableratecpmnetwork.com/74/bb/70/74bb704fc94d0ac5fc75c7aae9081643.js"></script>
 </body>
 </html>
