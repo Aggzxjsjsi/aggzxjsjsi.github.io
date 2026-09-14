@@ -372,7 +372,7 @@
             font-weight: 500;
         }
 
-        /* Tingkatan Posisi Panel (Tanpa Celah di Bawah) */
+        /* Tingkatan Posisi Panel */
         .bottom-panel.level-0 { transform: translateY(calc(100% - 28px)); }
         .bottom-panel.level-0 .panel-content-wrap { opacity: 0; pointer-events: none; }
         .bottom-panel.level-1 { transform: translateY(0px); }
@@ -593,7 +593,7 @@
                 <div class="preset-grid">
                     <div class="preset-chip active" id="preset14" onclick="applyPreset(14)">🖊️ Pulpen (14 cm)</div>
                     <div class="preset-chip" id="preset18" onclick="applyPreset(18)">✋ Jengkal (18 cm)</div>
-                    <div class="preset-chip" id="preset8.56" onclick="applyPreset(8.56)">💳 KTP (8.5 cm)</div>
+                    <div class="preset-chip" id="preset8.5" onclick="applyPreset(8.5)">💳 KTP (8.5 cm)</div>
                     <div class="preset-chip" id="preset30" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
                 </div>
             </div>
@@ -758,7 +758,9 @@
         let currentUnit = 'cm';
         let isDrawerOpen = false;
         let currentPanelLevel = 1;
+        
         let calibrationScaleCm = 14; 
+        let calibrationRefPx = null; // Menyimpan panjang pixel garis acuan kalibrasi
         
         let currentFacingMode = 'environment';
         let currentZoom = 1;
@@ -804,6 +806,7 @@
             imgOffsetX = 0;
             imgOffsetY = 0;
             currentZoom = 1;
+            calibrationRefPx = null;
             applyCssZoom();
 
             document.getElementById('bottomPanel').style.display = 'none';
@@ -940,6 +943,7 @@
                 
                 imgOffsetX = 0;
                 imgOffsetY = 0;
+                calibrationRefPx = null;
                 lines = [[ {x: w * 0.3, y: h * 0.5}, {x: w * 0.7, y: h * 0.5} ]];
                 historyStack = [];
                 redoStack = [];
@@ -977,6 +981,7 @@
 
                     imgOffsetX = 0;
                     imgOffsetY = 0;
+                    calibrationRefPx = null;
                     lines = [[ {x: img.width * 0.3, y: img.height * 0.5}, {x: img.width * 0.7, y: img.height * 0.5} ]];
                     historyStack = [];
                     redoStack = [];
@@ -1038,7 +1043,7 @@
         }
 
         function saveState() {
-            let snapshot = JSON.parse(JSON.stringify(lines));
+            let snapshot = JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm }));
             historyStack.push(snapshot);
             if (historyStack.length > 30) historyStack.shift();
             redoStack = [];
@@ -1049,8 +1054,11 @@
                 showBanner("⚠️ Tidak ada aksi untuk di-undo");
                 return;
             }
-            redoStack.push(JSON.parse(JSON.stringify(lines)));
-            lines = historyStack.pop();
+            redoStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm })));
+            let state = historyStack.pop();
+            lines = state.lines;
+            calibrationRefPx = state.calibrationRefPx;
+            calibrationScaleCm = state.calibrationScaleCm;
             redraw();
             showBanner("↩️ Undo berhasil");
         }
@@ -1060,8 +1068,11 @@
                 showBanner("⚠️ Tidak ada aksi untuk di-redo");
                 return;
             }
-            historyStack.push(JSON.parse(JSON.stringify(lines)));
-            lines = redoStack.pop();
+            historyStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm })));
+            let state = redoStack.pop();
+            lines = state.lines;
+            calibrationRefPx = state.calibrationRefPx;
+            calibrationScaleCm = state.calibrationScaleCm;
             redraw();
             showBanner("↪️ Redo berhasil");
         }
@@ -1118,6 +1129,7 @@
             closeModal();
             saveState();
             lines = [[]];
+            calibrationRefPx = null;
             activeLineIndex = 0;
             activePointIndex = 0;
             redraw();
@@ -1164,19 +1176,22 @@
             if (mode === 'point') {
                 document.getElementById('modePointBtn').classList.add('active');
                 document.getElementById('modeImgBtn').classList.remove('active');
-                showBanner("Mode: Geser Titik Ukur");
+                showBanner("Mode: Geser Garis Aktif");
             } else {
                 document.getElementById('modeImgBtn').classList.add('active');
                 document.getElementById('modePointBtn').classList.remove('active');
-                showBanner("Mode: Geser Gambar (Titik Terkunci)");
+                showBanner("Mode: Geser Gambar");
             }
         }
 
         function setStep(val) {
             moveStep = val;
-            document.querySelectorAll('.dpad-container .preset-chip').forEach(el => {
-                if (el.id === 'step' + val) el.classList.add('active');
-                else if (el.id === 'step1' || el.id === 'step5' || el.id === 'step29') el.classList.remove('active');
+            [1, 5, 29].forEach(s => {
+                let btn = document.getElementById('step' + s);
+                if (btn) {
+                    if (s === val) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
             });
         }
 
@@ -1195,17 +1210,27 @@
                     }
                 }
             } else {
+                // Geser seluruh titik pada garis aktif (tinggikan/rendahkan atau geser arah)
                 if (!lines[activeLineIndex] || lines[activeLineIndex].length === 0) return;
                 let pts = lines[activeLineIndex];
-                if (activePointIndex >= pts.length) activePointIndex = pts.length - 1;
-                pts[activePointIndex].x += dx;
-                pts[activePointIndex].y += dy;
+                for (let p = 0; p < pts.length; p++) {
+                    pts[p].x += dx;
+                    pts[p].y += dy;
+                }
             }
             redraw();
         }
 
         function formatDistance(pxDist) {
-            let valCm = (pxDist / 100) * calibrationScaleCm;
+            let valCm;
+            if (calibrationRefPx && calibrationRefPx > 0) {
+                // Skala dihitung akurat berdasarkan garis kalibrasi referensi
+                valCm = (pxDist / calibrationRefPx) * calibrationScaleCm;
+            } else {
+                // Default fallback awal sebelum dikalibrasi
+                valCm = (pxDist / 100) * calibrationScaleCm;
+            }
+
             if (currentUnit === 'm') valCm /= 100;
             if (currentUnit === 'mm') valCm *= 10;
             if (currentUnit === 'in') valCm /= 2.54;
@@ -1213,12 +1238,21 @@
         }
 
         function applyPreset(actualCm) {
+            saveState();
             calibrationScaleCm = actualCm;
             document.getElementById('actualSizeInput').value = actualCm;
             
-            // Perbarui kelas aktif pada chip preset secara spesifik berdasarkan ID
-            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => el.classList.remove('active'));
-            let activeChip = document.getElementById('preset' + actualCm);
+            // Ambil panjang pixel garis aktif saat ini sebagai referensi kalibrasi
+            let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
+            if (targetLine && targetLine.length >= 2) {
+                let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
+                if (pxDist > 0) calibrationRefPx = pxDist;
+            }
+
+            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => {
+                if (el.id.startsWith('preset')) el.classList.remove('active');
+            });
+            let activeChip = document.getElementById('preset' + (actualCm === 8.5 ? '8.5' : actualCm));
             if (activeChip) activeChip.classList.add('active');
 
             redraw();
@@ -1231,10 +1265,23 @@
                 showBanner("⚠️ Masukkan angka ukuran asli!");
                 return;
             }
+            saveState();
             calibrationScaleCm = actualCm;
             
-            // Hapus status aktif dari semua preset chip jika nilai kustom
-            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => el.classList.remove('active'));
+            // Ambil garis aktif/pertama sebagai referensi pixel kalibrasi
+            let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
+            if (targetLine && targetLine.length >= 2) {
+                let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
+                if (pxDist > 0) {
+                    calibrationRefPx = pxDist;
+                }
+            } else {
+                calibrationRefPx = 100;
+            }
+
+            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => {
+                if (el.id.startsWith('preset')) el.classList.remove('active');
+            });
 
             redraw();
             showBanner(`✅ Dikalibrasi ke ${actualCm} cm!`);
