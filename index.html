@@ -327,7 +327,7 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah */
+        /* Panel Kontrol Bawah (Tinggi Dinamis Bebas) */
         .bottom-panel {
             display: none;
             flex-direction: column;
@@ -345,8 +345,9 @@
             padding: 8px 14px;
             padding-bottom: max(14px, env(safe-area-inset-bottom));
             gap: 8px;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            max-height: 90vh;
+            height: 320px;
+            transition: height 0.1s ease-out;
+            overflow: hidden;
         }
 
         .panel-handle-bar {
@@ -357,6 +358,7 @@
             padding: 2px 4px 6px 4px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         .handle-pill {
@@ -372,21 +374,13 @@
             font-weight: 500;
         }
 
-        /* Tingkatan Posisi Panel */
-        .bottom-panel.level-0 { transform: translateY(calc(100% - 28px)); }
-        .bottom-panel.level-0 .panel-content-wrap { opacity: 0; pointer-events: none; }
-        .bottom-panel.level-1 { transform: translateY(0px); }
-        .bottom-panel.level-2 { transform: translateY(0px); }
-        .bottom-panel.level-3 { transform: translateY(0px); }
-
         .panel-content-wrap {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            transition: opacity 0.2s ease;
             overflow-y: auto;
-            max-height: calc(85vh - 30px);
-            padding-bottom: 6px;
+            height: calc(100% - 35px);
+            padding-bottom: 10px;
         }
 
         .action-row {
@@ -455,7 +449,7 @@
             outline: none;
         }
 
-        /* Panel D-Pad Kontrol Arah */
+        /* Panel D-Pad Kontrol */
         .dpad-container {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -581,14 +575,6 @@
             </div>
 
             <div class="setting-group">
-                <span>Atur Ketinggian Panel:</span>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                    <button class="btn-action primary" onclick="shiftPanelHeight(1)">▲ Tinggi Sekali</button>
-                    <button class="btn-action danger" onclick="shiftPanelHeight(-1)">▼ Sembunyikan</button>
-                </div>
-            </div>
-
-            <div class="setting-group" style="margin-top: 4px;">
                 <span>Preset Kalibrasi Instan:</span>
                 <div class="preset-grid">
                     <div class="preset-chip active" id="preset14" onclick="applyPreset(14)">🖊️ Pulpen (14 cm)</div>
@@ -657,10 +643,10 @@
         </div>
 
         <!-- Panel Kontrol Bawah -->
-        <div class="bottom-panel level-1" id="bottomPanel">
-            <div class="panel-handle-bar" onclick="toggleCollapsePanel()">
+        <div class="bottom-panel" id="bottomPanel">
+            <div class="panel-handle-bar">
                 <div class="handle-pill"></div>
-                <span class="handle-text" id="handleText">Panel Kontrol Utama (Tap untuk Lipat)</span>
+                <span class="handle-text" id="handleText">Panel Kontrol Utama</span>
             </div>
 
             <div class="panel-content-wrap">
@@ -690,27 +676,28 @@
                 <div class="setting-group">
                     <div class="dpad-container">
                         <div class="dpad-header">
-                            <span>Tombol Arah (D-Pad):</span>
-                            <div style="display: flex; gap: 3px;">
-                                <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px; font-size: 0.62rem;">📍 Titik</button>
-                                <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px; font-size: 0.62rem;">🖼️ Gambar</button>
+                            <span>Kontrol D-Pad:</span>
+                            <div style="display: flex; gap: 2px;">
+                                <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 5px; font-size: 0.6rem;">📍 Titik</button>
+                                <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 5px; font-size: 0.6rem;">🖼️ Gambar</button>
+                                <button class="preset-chip" id="modePanelBtn" onclick="setControlMode('panel')" style="padding: 2px 5px; font-size: 0.6rem;">📐 Panel</button>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
                             <div style="display: flex; flex-direction: column; gap: 2px;">
-                                <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
+                                <span style="font-size: 0.6rem; color: #9ca3af;">Langkah (Step):</span>
                                 <div style="display: flex; gap: 2px;">
                                     <button class="preset-chip" id="step1" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
                                     <button class="preset-chip" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                                    <button class="preset-chip active" id="step29" style="padding: 2px 5px;" onclick="setStep(29)">29</button>
+                                    <button class="preset-chip active" id="step30" style="padding: 2px 5px;" onclick="setStep(30)">30</button>
                                 </div>
                             </div>
                             <div class="dpad-grid">
                                 <div></div>
-                                <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
+                                <button class="dpad-btn" onclick="dpadUp()">▲</button>
                                 <div></div>
                                 <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
-                                <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
+                                <button class="dpad-btn" onclick="dpadDown()">▼</button>
                                 <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
                             </div>
                         </div>
@@ -757,10 +744,9 @@
         let isImageLoaded = false;
         let currentUnit = 'cm';
         let isDrawerOpen = false;
-        let currentPanelLevel = 1;
         
         let calibrationScaleCm = 14; 
-        let calibrationRefPx = null; // Menyimpan panjang pixel garis acuan kalibrasi
+        let calibrationRefPx = null;
         
         let currentFacingMode = 'environment';
         let currentZoom = 1;
@@ -778,8 +764,9 @@
 
         let imgOffsetX = 0;
         let imgOffsetY = 0;
-        let controlMode = 'point';
-        let moveStep = 29; // Default langkah diset ke 29 sesuai permintaan
+        let controlMode = 'point'; // 'point', 'image', 'panel'
+        let moveStep = 30; 
+        let currentPanelHeight = 320; 
 
         let isDragging = false;
         let isImageDragging = false;
@@ -1014,32 +1001,14 @@
             location.reload();
         }
 
-        function shiftPanelHeight(direction) {
-            if (direction === 1) {
-                currentPanelLevel = 3; 
-            } else {
-                currentPanelLevel = 0; 
-            }
-            applyPanelLevel();
-        }
+        function adjustPanelHeight(direction) {
+            currentPanelHeight += direction * moveStep;
+            if (currentPanelHeight < 50) currentPanelHeight = 50; 
+            if (currentPanelHeight > window.innerHeight * 0.9) currentPanelHeight = window.innerHeight * 0.9;
 
-        function toggleCollapsePanel() {
-            currentPanelLevel = currentPanelLevel === 0 ? 1 : 0;
-            applyPanelLevel();
-        }
-
-        function applyPanelLevel() {
             let panel = document.getElementById('bottomPanel');
-            let handleText = document.getElementById('handleText');
-
-            panel.classList.remove('level-0', 'level-1', 'level-2', 'level-3');
-            panel.classList.add('level-' + currentPanelLevel);
-
-            if (currentPanelLevel === 0) {
-                handleText.innerText = 'Panel Terlipat (Buka ▴)';
-            } else {
-                handleText.innerText = 'Panel Standar';
-            }
+            panel.style.height = currentPanelHeight + 'px';
+            showBanner(`📐 Tinggi Panel: ${Math.round(currentPanelHeight)}px`, 1500);
         }
 
         function saveState() {
@@ -1173,26 +1142,41 @@
 
         function setControlMode(mode) {
             controlMode = mode;
-            if (mode === 'point') {
-                document.getElementById('modePointBtn').classList.add('active');
-                document.getElementById('modeImgBtn').classList.remove('active');
-                showBanner("Mode: Geser Garis Aktif");
-            } else {
-                document.getElementById('modeImgBtn').classList.add('active');
-                document.getElementById('modePointBtn').classList.remove('active');
-                showBanner("Mode: Geser Gambar");
-            }
+            document.getElementById('modePointBtn').classList.toggle('active', mode === 'point');
+            document.getElementById('modeImgBtn').classList.toggle('active', mode === 'image');
+            document.getElementById('modePanelBtn').classList.toggle('active', mode === 'panel');
+
+            if (mode === 'point') showBanner("Mode: Geser Titik / Garis");
+            else if (mode === 'image') showBanner("Mode: Geser Gambar");
+            else if (mode === 'panel') showBanner("Mode: Atur Tinggi Panel");
         }
 
         function setStep(val) {
             moveStep = val;
-            [1, 5, 29].forEach(s => {
+            [1, 5, 30].forEach(s => {
                 let btn = document.getElementById('step' + s);
                 if (btn) {
                     if (s === val) btn.classList.add('active');
                     else btn.classList.remove('active');
                 }
             });
+            showBanner(`⚙️ Langkah diatur: ${val} px`);
+        }
+
+        function dpadUp() {
+            if (controlMode === 'panel') {
+                adjustPanelHeight(1);
+            } else {
+                moveDirection(0, -1);
+            }
+        }
+
+        function dpadDown() {
+            if (controlMode === 'panel') {
+                adjustPanelHeight(-1);
+            } else {
+                moveDirection(0, 1);
+            }
         }
 
         function moveDirection(dirX, dirY) {
@@ -1210,7 +1194,6 @@
                     }
                 }
             } else {
-                // Geser seluruh titik pada garis aktif (tinggikan/rendahkan atau geser arah)
                 if (!lines[activeLineIndex] || lines[activeLineIndex].length === 0) return;
                 let pts = lines[activeLineIndex];
                 for (let p = 0; p < pts.length; p++) {
@@ -1224,10 +1207,8 @@
         function formatDistance(pxDist) {
             let valCm;
             if (calibrationRefPx && calibrationRefPx > 0) {
-                // Skala dihitung akurat berdasarkan garis kalibrasi referensi
                 valCm = (pxDist / calibrationRefPx) * calibrationScaleCm;
             } else {
-                // Default fallback awal sebelum dikalibrasi
                 valCm = (pxDist / 100) * calibrationScaleCm;
             }
 
@@ -1242,7 +1223,6 @@
             calibrationScaleCm = actualCm;
             document.getElementById('actualSizeInput').value = actualCm;
             
-            // Ambil panjang pixel garis aktif saat ini sebagai referensi kalibrasi
             let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
             if (targetLine && targetLine.length >= 2) {
                 let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
@@ -1268,7 +1248,6 @@
             saveState();
             calibrationScaleCm = actualCm;
             
-            // Ambil garis aktif/pertama sebagai referensi pixel kalibrasi
             let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
             if (targetLine && targetLine.length >= 2) {
                 let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
