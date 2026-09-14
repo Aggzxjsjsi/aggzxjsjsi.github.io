@@ -632,10 +632,10 @@
                 </div>
 
                 <div class="setting-group">
-                    <span>Riwayat Aksi (Undo / Redo):</span>
+                    <span>Riwayat Aksi (Undo / Sudo / Redo):</span>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
                         <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
-                        <button class="btn-action" onclick="redoAction()">↪️ Redo</button>
+                        <button class="btn-action" onclick="redoAction()">↪️ Sudo/Redo</button>
                     </div>
                 </div>
 
@@ -770,6 +770,7 @@
             historyStack = [];
             redoStack = [];
             activeLineIndex = 0;
+            activePointIndex = 0;
             imgOffsetX = 0;
             imgOffsetY = 0;
             imgScale = 1;
@@ -918,12 +919,12 @@
                 
                 let lenPx = 240;
                 lines = [[ {x: w * 0.3, y: h * 0.5}, {x: w * 0.3 + lenPx, y: h * 0.5} ]];
+                activeLineIndex = 0;
+                activePointIndex = 1;
+                
                 historyStack = [];
                 redoStack = [];
                 saveState();
-
-                activeLineIndex = 0;
-                activePointIndex = 1;
 
                 redraw();
                 showBanner("✨ Foto siap diukur!");
@@ -960,12 +961,12 @@
                     
                     let lenPx = 240;
                     lines = [[ {x: img.width * 0.3, y: img.height * 0.5}, {x: img.width * 0.3 + lenPx, y: img.height * 0.5} ]];
+                    activeLineIndex = 0;
+                    activePointIndex = 1;
+
                     historyStack = [];
                     redoStack = [];
                     saveState();
-
-                    activeLineIndex = 0;
-                    activePointIndex = 1;
 
                     redraw();
                     showBanner("✨ Gambar dimuat!");
@@ -1005,8 +1006,9 @@
             showBanner("📍 Ketuk pada layar untuk memindahkan objek ke lokasi tersebut.");
         }
 
+        // Simpan State Lengkap (Termasuk posisi titik aktif agar Undo/Redo tidak error/melompat)
         function saveState() {
-            let snapshot = JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm }));
+            let snapshot = JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm, activeLineIndex, activePointIndex }));
             historyStack.push(snapshot);
             if (historyStack.length > 30) historyStack.shift();
             redoStack = [];
@@ -1017,27 +1019,31 @@
                 showBanner("⚠️ Tidak ada aksi untuk di-undo");
                 return;
             }
-            redoStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm })));
+            redoStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm, activeLineIndex, activePointIndex })));
             let state = historyStack.pop();
             lines = state.lines;
             calibrationRefPx = state.calibrationRefPx;
             calibrationScaleCm = state.calibrationScaleCm;
+            activeLineIndex = state.activeLineIndex !== undefined ? state.activeLineIndex : 0;
+            activePointIndex = state.activePointIndex !== undefined ? state.activePointIndex : 0;
             redraw();
             showBanner("↩️ Undo berhasil");
         }
 
         function redoAction() {
             if (redoStack.length === 0) {
-                showBanner("⚠️ Tidak ada aksi untuk di-redo");
+                showBanner("⚠️ Tidak ada aksi untuk di-redo/sudo");
                 return;
             }
-            historyStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm })));
+            historyStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm, activeLineIndex, activePointIndex })));
             let state = redoStack.pop();
             lines = state.lines;
             calibrationRefPx = state.calibrationRefPx;
             calibrationScaleCm = state.calibrationScaleCm;
+            activeLineIndex = state.activeLineIndex !== undefined ? state.activeLineIndex : 0;
+            activePointIndex = state.activePointIndex !== undefined ? state.activePointIndex : 0;
             redraw();
-            showBanner("↪️ Redo berhasil");
+            showBanner("↪️ Sudo/Redo berhasil");
         }
 
         function showBanner(text, duration = 3000) {
@@ -1078,6 +1084,7 @@
                     lines.splice(activeLineIndex, 1);
                     activeLineIndex = lines.length - 1;
                 }
+                activePointIndex = Math.max(0, (lines[activeLineIndex] ? lines[activeLineIndex].length - 1 : 0));
             } else {
                 lines = [[]];
             }
@@ -1120,18 +1127,21 @@
             saveState();
             if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
             let pts = lines[activeLineIndex];
-            let last = pts[pts.length - 1];
             
-            if (last) {
-                // Titik baru bergeser 40px ke samping agar mudah diseret
-                pts.push({x: last.x + 40, y: last.y});
+            // Mengambil posisi dari titik yang sedang aktif (dipencet)
+            let activePt = pts[activePointIndex] || pts[pts.length - 1];
+            
+            if (activePt) {
+                let newPoint = { x: activePt.x + 40, y: activePt.y };
+                pts.splice(activePointIndex + 1, 0, newPoint);
+                activePointIndex = activePointIndex + 1; // Otomatis aktifkan titik baru
             } else {
                 pts.push({x: canvas.width / 2, y: canvas.height / 2});
+                activePointIndex = pts.length - 1;
             }
             
-            activePointIndex = pts.length - 1;
             redraw();
-            showBanner("🔗 Titik terhubung ditambahkan di samping");
+            showBanner("🔗 Titik terhubung ditambahkan di sebelah titik aktif");
         }
 
         function addFreePoint() {
@@ -1159,7 +1169,6 @@
 
         function setControlMode(mode) {
             controlMode = mode;
-            
             let pBtn = document.getElementById('modePointBtn');
             let iBtn = document.getElementById('modeImgBtn');
 
@@ -1411,7 +1420,7 @@
                         draggedLineIdx = l;
                         draggedPointIdx = p;
                         activeLineIndex = l;
-                        activePointIndex = p;
+                        activePointIndex = p; // Titik yang disentuh otomatis menjadi aktif
                         grabOffsetX = lines[l][p].x - pos.x;
                         grabOffsetY = lines[l][p].y - pos.y;
                         found = true;
