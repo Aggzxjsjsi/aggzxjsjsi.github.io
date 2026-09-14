@@ -225,7 +225,7 @@
             box-shadow: 0 0 5px #fff;
         }
 
-        /* Tombol Awal Kamera/Galeri & Kontrol Tambahan (Dinaikkan Posisinya) */
+        /* Tombol Awal Kamera/Galeri & Kontrol Tambahan */
         .initial-actions {
             position: absolute;
             bottom: 90px;
@@ -327,7 +327,7 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah */
+        /* Panel Kontrol Bawah (Permanent Height) */
         .bottom-panel {
             display: none;
             flex-direction: column;
@@ -342,45 +342,17 @@
             border-top-right-radius: 20px;
             border-top: 1px solid rgba(56, 189, 248, 0.2);
             box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
-            padding: 8px 14px;
+            padding: 12px 14px;
             padding-bottom: max(14px, env(safe-area-inset-bottom));
             gap: 8px;
-            height: 320px;
-            transition: height 0.1s ease-out;
-            overflow: hidden;
-        }
-
-        .panel-handle-bar {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2px 4px 6px 4px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .handle-pill {
-            width: 32px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 2px;
-            margin-bottom: 4px;
-        }
-        .handle-text {
-            font-size: 0.65rem;
-            color: #9ca3af;
-            font-weight: 500;
+            height: 380px;
+            overflow-y: auto;
         }
 
         .panel-content-wrap {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            overflow-y: auto;
-            height: calc(100% - 35px);
-            padding-bottom: 10px;
         }
 
         .action-row {
@@ -457,15 +429,13 @@
             padding: 8px 10px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .dpad-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.7rem;
-            color: #9ca3af;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .dpad-grid {
@@ -574,15 +544,6 @@
                 <button class="drawer-close" onclick="toggleDrawer()">✕</button>
             </div>
 
-            <!-- Tombol Cepat Atur Tinggi Panel (Naik & Turun) -->
-            <div class="setting-group">
-                <span>Atur Tinggi Panel (Naik / Turun):</span>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                    <button class="btn-action primary" onclick="adjustPanelHeight(1)">▲ Naik</button>
-                    <button class="btn-action primary" onclick="adjustPanelHeight(-1)">▼ Turun</button>
-                </div>
-            </div>
-
             <div class="setting-group">
                 <span>Preset Kalibrasi Instan:</span>
                 <div class="preset-grid">
@@ -610,7 +571,7 @@
             <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="info-banner" id="infoBanner">💡 Tap Menu (⚙️) di kiri atas untuk pengaturan kalibrasi!</div>
+        <div class="info-banner" id="infoBanner">💡 Ketuk Menu (⚙️) untuk kalibrasi!</div>
 
         <!-- Lensa Pembesar (Magnifier) -->
         <div class="magnifier" id="magnifier">
@@ -628,7 +589,7 @@
             <canvas id="measCanvas"></canvas>
         </div>
 
-        <!-- Tombol Awal Kamera/Galeri & Kontrol Tambahan (Dinaikkan Posisinya) -->
+        <!-- Tombol Awal Kamera/Galeri & Kontrol Tambahan -->
         <div class="initial-actions" id="initialActions">
             <div class="camera-controls-row">
                 <button class="cam-tool-btn" onclick="toggleCameraFacing()">🔄 <span id="facingLabel">Belakang</span></button>
@@ -651,13 +612,8 @@
             </div>
         </div>
 
-        <!-- Panel Kontrol Bawah -->
+        <!-- Panel Kontrol Bawah (Permanent Height) -->
         <div class="bottom-panel" id="bottomPanel">
-            <div class="panel-handle-bar">
-                <div class="handle-pill"></div>
-                <span class="handle-text" id="handleText">Panel Kontrol Utama</span>
-            </div>
-
             <div class="panel-content-wrap">
                 <div class="action-row">
                     <button class="btn-action primary" onclick="addNewLine()">➕ Tambah Garis</button>
@@ -685,18 +641,24 @@
                 <div class="setting-group">
                     <div class="dpad-container">
                         <div class="dpad-header">
-                            <div style="display: flex; gap: 4px; align-items: center;">
-                                <span style="font-size:0.65rem;">Mode:</span>
-                                <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px;">📍 Titik</button>
-                                <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px;">🖼️ Gambar</button>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <span style="font-size:0.65rem;">Mode:</span>
+                                    <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px;">📍 Titik</button>
+                                    <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px;">🖼️ Gambar</button>
+                                </div>
+                                <div style="display: flex; gap: 2px;">
+                                    <button class="preset-chip" id="step1" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
+                                    <button class="preset-chip" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
+                                    <button class="preset-chip active" id="step30" style="padding: 2px 5px;" onclick="setStep(30)">30</button>
+                                </div>
                             </div>
-                            <div style="display: flex; gap: 2px;">
-                                <button class="preset-chip" id="step1" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
-                                <button class="preset-chip" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                                <button class="preset-chip active" id="step30" style="padding: 2px 5px;" onclick="setStep(30)">30</button>
-                            </div>
+                            <!-- Tombol Lokasi tepat di bawah tombol Titik / Mode -->
+                            <button class="btn-action primary" onclick="promptRelocate()" style="width: 100%; font-size: 0.7rem; padding: 6px; margin-top: 4px;">
+                                📍 Lokasi (Pindah Garis ke Titik Sentuh)
+                            </button>
                         </div>
-                        <div style="display: flex; align-items: center; justify-content: flex-end; margin-top: 6px;">
+                        <div style="display: flex; align-items: center; justify-content: flex-end; margin-top: 2px;">
                             <div class="dpad-grid">
                                 <div></div>
                                 <button class="dpad-btn" onclick="dpadUp()">▲</button>
@@ -720,6 +682,18 @@
             <div class="modal-actions">
                 <button class="btn-action" onclick="closeModal()">Batal</button>
                 <button class="btn-action danger" onclick="executeClearAll()">Ya, Hapus Semua</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Pindah Lokasi -->
+    <div class="modal-overlay" id="confirmRelocateModal">
+        <div class="modal-box">
+            <div class="modal-title">Konfirmasi Lokasi</div>
+            <div class="modal-text">Anda yakin memindahkan lokasi?</div>
+            <div class="modal-actions">
+                <button class="btn-action" onclick="closeRelocateModal()">Batal</button>
+                <button class="btn-action primary" onclick="executeRelocateMode()">Ya</button>
             </div>
         </div>
     </div>
@@ -769,12 +743,12 @@
 
         let imgOffsetX = 0;
         let imgOffsetY = 0;
-        let controlMode = 'point'; // 'point' atau 'image'
+        let controlMode = 'point';
         let moveStep = 30; 
-        let currentPanelHeight = 320; 
 
         let isDragging = false;
         let isImageDragging = false;
+        let isRelocateActive = false;
         let dragStartX = 0;
         let dragStartY = 0;
         let draggedLineIdx = null;
@@ -799,6 +773,7 @@
             imgOffsetY = 0;
             currentZoom = 1;
             calibrationRefPx = null;
+            isRelocateActive = false;
             applyCssZoom();
 
             document.getElementById('bottomPanel').style.display = 'none';
@@ -936,6 +911,7 @@
                 imgOffsetX = 0;
                 imgOffsetY = 0;
                 calibrationRefPx = null;
+                isRelocateActive = false;
                 lines = [[ {x: w * 0.3, y: h * 0.5}, {x: w * 0.7, y: h * 0.5} ]];
                 historyStack = [];
                 redoStack = [];
@@ -974,6 +950,7 @@
                     imgOffsetX = 0;
                     imgOffsetY = 0;
                     calibrationRefPx = null;
+                    isRelocateActive = false;
                     lines = [[ {x: img.width * 0.3, y: img.height * 0.5}, {x: img.width * 0.7, y: img.height * 0.5} ]];
                     historyStack = [];
                     redoStack = [];
@@ -1006,14 +983,18 @@
             location.reload();
         }
 
-        function adjustPanelHeight(direction) {
-            currentPanelHeight += direction * moveStep;
-            if (currentPanelHeight < 50) currentPanelHeight = 50; 
-            if (currentPanelHeight > window.innerHeight * 0.9) currentPanelHeight = window.innerHeight * 0.9;
+        function promptRelocate() {
+            document.getElementById('confirmRelocateModal').style.display = 'flex';
+        }
 
-            let panel = document.getElementById('bottomPanel');
-            panel.style.height = currentPanelHeight + 'px';
-            showBanner(`📐 Tinggi Panel: ${Math.round(currentPanelHeight)}px`, 1500);
+        function closeRelocateModal() {
+            document.getElementById('confirmRelocateModal').style.display = 'none';
+        }
+
+        function executeRelocateMode() {
+            closeRelocateModal();
+            isRelocateActive = true;
+            showBanner("📍 Ketuk pada layar untuk memindahkan garis ke lokasi tersebut.");
         }
 
         function saveState() {
@@ -1347,6 +1328,22 @@
         canvas.addEventListener('pointerdown', (e) => {
             if (!isImageLoaded) return;
             let pos = getCanvasPos(e);
+
+            if (isRelocateActive) {
+                saveState();
+                isRelocateActive = false;
+                let cx = pos.x;
+                let cy = pos.y;
+                if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
+                lines[activeLineIndex] = [
+                    {x: cx - 60, y: cy},
+                    {x: cx + 60, y: cy}
+                ];
+                activePointIndex = 1;
+                redraw();
+                showBanner("✨ Garis berhasil dipindahkan ke lokasi sentuhan!");
+                return;
+            }
 
             if (controlMode === 'image') {
                 isImageDragging = true;
