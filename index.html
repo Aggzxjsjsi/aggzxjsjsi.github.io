@@ -591,10 +591,10 @@
             <div class="setting-group" style="margin-top: 4px;">
                 <span>Preset Kalibrasi Instan:</span>
                 <div class="preset-grid">
-                    <div class="preset-chip active" onclick="applyPreset(14)">🖊️ Pulpen (14 cm)</div>
-                    <div class="preset-chip" onclick="applyPreset(18)">✋ Jengkal (18 cm)</div>
-                    <div class="preset-chip" onclick="applyPreset(8.56)">💳 KTP (8.5 cm)</div>
-                    <div class="preset-chip" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
+                    <div class="preset-chip active" id="preset14" onclick="applyPreset(14)">🖊️ Pulpen (14 cm)</div>
+                    <div class="preset-chip" id="preset18" onclick="applyPreset(18)">✋ Jengkal (18 cm)</div>
+                    <div class="preset-chip" id="preset8.56" onclick="applyPreset(8.56)">💳 KTP (8.5 cm)</div>
+                    <div class="preset-chip" id="preset30" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
                 </div>
             </div>
 
@@ -700,9 +700,9 @@
                             <div style="display: flex; flex-direction: column; gap: 2px;">
                                 <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
                                 <div style="display: flex; gap: 2px;">
-                                    <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
-                                    <button class="preset-chip active" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                                    <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(15)">15</button>
+                                    <button class="preset-chip" id="step1" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
+                                    <button class="preset-chip" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
+                                    <button class="preset-chip active" id="step29" style="padding: 2px 5px;" onclick="setStep(29)">29</button>
                                 </div>
                             </div>
                             <div class="dpad-grid">
@@ -777,7 +777,7 @@
         let imgOffsetX = 0;
         let imgOffsetY = 0;
         let controlMode = 'point';
-        let moveStep = 5;
+        let moveStep = 29; // Default langkah diset ke 29 sesuai permintaan
 
         let isDragging = false;
         let isImageDragging = false;
@@ -1175,8 +1175,8 @@
         function setStep(val) {
             moveStep = val;
             document.querySelectorAll('.dpad-container .preset-chip').forEach(el => {
-                if (el.innerText == val) el.classList.add('active');
-                else if (el.innerText == '1' || el.innerText == '5' || el.innerText == '15') el.classList.remove('active');
+                if (el.id === 'step' + val) el.classList.add('active');
+                else if (el.id === 'step1' || el.id === 'step5' || el.id === 'step29') el.classList.remove('active');
             });
         }
 
@@ -1205,23 +1205,22 @@
         }
 
         function formatDistance(pxDist) {
-            let pts = lines[activeLineIndex];
-            let valCm = (pxDist / 100) * calibrationScaleErrorFix();
+            let valCm = (pxDist / 100) * calibrationScaleCm;
             if (currentUnit === 'm') valCm /= 100;
             if (currentUnit === 'mm') valCm *= 10;
             if (currentUnit === 'in') valCm /= 2.54;
             return valCm.toFixed(1) + ' ' + currentUnit;
         }
 
-        function calibrationScaleErrorFix() {
-            return calibrationScaleCm;
-        }
-
         function applyPreset(actualCm) {
             calibrationScaleCm = actualCm;
             document.getElementById('actualSizeInput').value = actualCm;
+            
+            // Perbarui kelas aktif pada chip preset secara spesifik berdasarkan ID
             document.querySelectorAll('.left-drawer .preset-chip').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            let activeChip = document.getElementById('preset' + actualCm);
+            if (activeChip) activeChip.classList.add('active');
+
             redraw();
             showBanner(`✅ Skala diset ke ${actualCm} cm!`);
         }
@@ -1233,6 +1232,10 @@
                 return;
             }
             calibrationScaleCm = actualCm;
+            
+            // Hapus status aktif dari semua preset chip jika nilai kustom
+            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => el.classList.remove('active'));
+
             redraw();
             showBanner(`✅ Dikalibrasi ke ${actualCm} cm!`);
             toggleDrawer();
@@ -1319,7 +1322,6 @@
             let pos = getCanvasPos(e);
 
             if (controlMode === 'image') {
-                // Jika mode Gambar aktif, kunci titik & aktifkan geser gambar
                 isImageDragging = true;
                 dragStartX = pos.clientX;
                 dragStartY = pos.clientY;
@@ -1327,7 +1329,6 @@
                 return;
             }
 
-            // Mode Titik: cek sentuhan pada titik ukur
             let found = false;
             for (let l = 0; l < lines.length; l++) {
                 for (let p = 0; p < lines[l].length; p++) {
