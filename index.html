@@ -347,7 +347,7 @@
             padding: 12px 14px;
             padding-bottom: max(14px, env(safe-area-inset-bottom));
             gap: 8px;
-            height: 380px;
+            height: 410px;
             overflow-y: auto;
         }
 
@@ -619,7 +619,16 @@
             <div class="panel-content-wrap">
                 <div class="action-row">
                     <button class="btn-action primary" onclick="addNewLine()">➕ Tambah Garis</button>
-                    <button class="btn-action" onclick="addPointToCurrentLine()">➕ Tambah Titik</button>
+                    <button class="btn-action" onclick="addConnectedPoint()">🔗 Titik Terhubung</button>
+                </div>
+                <div class="action-row">
+                    <button class="btn-action" onclick="addFreePoint()">📍 Titik Bebas</button>
+                    <button class="btn-action danger" 
+                        onpointerdown="startDeletePress()" 
+                        onpointerup="endDeletePress()" 
+                        onpointercancel="endDeletePress()">
+                        🗑️ Hapus (Tap/Tahan)
+                    </button>
                 </div>
 
                 <div class="setting-group">
@@ -628,16 +637,6 @@
                         <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
                         <button class="btn-action" onclick="redoAction()">↪️ Redo</button>
                     </div>
-                </div>
-
-                <div class="setting-group">
-                    <span>Hapus Objek / Titik:</span>
-                    <button class="btn-action danger" 
-                        onpointerdown="startDeletePress()" 
-                        onpointerup="endDeletePress()" 
-                        onpointercancel="endDeletePress()">
-                        🗑️ Hapus (Tap/Tahan)
-                    </button>
                 </div>
 
                 <div class="setting-group">
@@ -691,7 +690,7 @@
     <div class="modal-overlay" id="confirmRelocateModal">
         <div class="modal-box">
             <div class="modal-title">Konfirmasi Lokasi</div>
-            <div class="modal-text">Anda yakin memindahkan lokasi? Garis/titik akan disesuaikan dengan skala kalibrasi.</div>
+            <div class="modal-text">Anda yakin memindahkan lokasi? Objek akan diposisikan ulang dengan ukuran tetap sesuai kalibrasi.</div>
             <div class="modal-actions">
                 <button class="btn-action" onclick="closeRelocateModal()">Batal</button>
                 <button class="btn-action primary" onclick="executeRelocateMode()">Ya</button>
@@ -916,7 +915,9 @@
                 imgScale = 1;
                 calibrationRefPx = null;
                 isRelocateActive = false;
-                lines = [[ {x: w * 0.3, y: h * 0.5}, {x: w * 0.7, y: h * 0.5} ]];
+                
+                let lenPx = 240;
+                lines = [[ {x: w * 0.3, y: h * 0.5}, {x: w * 0.3 + lenPx, y: h * 0.5} ]];
                 historyStack = [];
                 redoStack = [];
                 saveState();
@@ -956,7 +957,9 @@
                     imgScale = 1;
                     calibrationRefPx = null;
                     isRelocateActive = false;
-                    lines = [[ {x: img.width * 0.3, y: img.height * 0.5}, {x: img.width * 0.7, y: img.height * 0.5} ]];
+                    
+                    let lenPx = 240;
+                    lines = [[ {x: img.width * 0.3, y: img.height * 0.5}, {x: img.width * 0.3 + lenPx, y: img.height * 0.5} ]];
                     historyStack = [];
                     redoStack = [];
                     saveState();
@@ -999,7 +1002,7 @@
         function executeRelocateMode() {
             closeRelocateModal();
             isRelocateActive = true;
-            showBanner("📍 Ketuk pada layar untuk memindahkan garis ke lokasi tersebut.");
+            showBanner("📍 Ketuk pada layar untuk memindahkan objek ke lokasi tersebut.");
         }
 
         function saveState() {
@@ -1110,19 +1113,30 @@
             );
             activePointIndex = 1;
             redraw();
+            showBanner("➕ Garis baru dibuat sesuai ukuran kalibrasi");
         }
 
-        function addPointToCurrentLine() {
+        function addConnectedPoint() {
             saveState();
             if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
             let pts = lines[activeLineIndex];
             let last = pts[pts.length - 1] || {x: canvas.width/2, y: canvas.height/2};
             
-            let lenPx = (calibrationRefPx && calibrationRefPx > 0) ? calibrationRefPx : 80;
-            let step = lenPx * 0.7071;
-            pts.push({x: last.x + step, y: last.y + step});
+            // Lahir berhimpit persis di posisi titik terakhir / aktif
+            pts.push({x: last.x, y: last.y});
             activePointIndex = pts.length - 1;
             redraw();
+            showBanner("🔗 Titik terhubung ditambahkan");
+        }
+
+        function addFreePoint() {
+            saveState();
+            // Membuat grup garis baru yang berisi tepat 1 titik saja (titik bebas / mandiri)
+            lines.push([{x: canvas.width / 2, y: canvas.height / 2}]);
+            activeLineIndex = lines.length - 1;
+            activePointIndex = 0;
+            redraw();
+            showBanner("📍 Titik bebas ditambahkan");
         }
 
         function toggleUnitMenu() {
@@ -1188,8 +1202,16 @@
             } else if (controlMode === 'point') {
                 let pts = lines[activeLineIndex];
                 if (pts && pts[activePointIndex]) {
-                    pts[activePointIndex].x += dx;
-                    pts[activePointIndex].y += dy;
+                    // Jika elemen aktif berupa garis dengan 2 titik dan tombol lokasi digunakan, geser seluruh segmen agar panjang konstan
+                    if (pts.length === 2) {
+                        pts[0].x += dx;
+                        pts[0].y += dy;
+                        pts[1].x += dx;
+                        pts[1].y += dy;
+                    } else {
+                        pts[activePointIndex].x += dx;
+                        pts[activePointIndex].y += dy;
+                    }
                 }
             }
             redraw();
@@ -1348,22 +1370,25 @@
 
                 let targetLen = (calibrationRefPx && calibrationRefPx > 0) 
                     ? calibrationRefPx 
-                    : 120;
+                    : 240;
 
                 if (pts.length >= 2) {
                     let angle = Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
                     pts[0] = { x: cx, y: cy };
                     pts[1] = { x: cx + Math.cos(angle) * targetLen, y: cy + Math.sin(angle) * targetLen };
+                } else if (pts.length === 1) {
+                    // Jika berupa titik tunggal / bebas, cukup pindahkan posisinya ke ketukan baru tanpa mengubah wujud jadi garis
+                    pts[0] = { x: cx, y: cy };
                 } else {
                     lines[activeLineIndex] = [
-                        {x: cx - targetLen/2, y: cy},
-                        {x: cx + targetLen/2, y: cy}
+                        {x: cx, y: cy},
+                        {x: cx + targetLen, y: cy}
                     ];
                 }
 
-                activePointIndex = 1;
+                activePointIndex = pts.length > 1 ? 1 : 0;
                 redraw();
-                showBanner("✨ Garis dipindahkan & ukuran disesuaikan kalibrasi!");
+                showBanner("✨ Objek dipindahkan & panjang tetap sesuai kalibrasi!");
                 return;
             }
 
@@ -1434,7 +1459,7 @@
             magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
             magCtx.save();
             magCtx.imageSmoothingEnabled = false;
-            let zoom = 3.0; // Zoom lensa pembesar diset menjadi 3.0
+            let zoom = 3.0;
             let sw = magCanvas.width / zoom;
             let sh = magCanvas.height / zoom;
             magCtx.drawImage(canvas, x - sw/2, y - sh/2, sw, sh, 0, 0, magCanvas.width, magCanvas.height);
