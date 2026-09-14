@@ -2,1491 +2,785 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalkulator Tinggi & Panjang Pro - Light HUD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Serbaguna - Umur & Tinggi Badan</title>
     
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    <!-- Skrip Iklan Adsterra 1 -->
+    <script src="https://pl31316420.profitableratecpmnetwork.com/0f/c2/0f/0fc20ff4da59ea128cf0dfb67cff8d47.js"></script>
 
+    <!-- Load MediaPipe Hands Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: #070709;
-            color: #f3f4f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .app-container {
-            width: 100vw;
-            height: 100vh;
-            background: #0b0b0f;
+            background-color: #0b0f19;
+            color: #ffffff;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            padding-top: 65px;
             position: relative;
-            overflow: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1a365d 0%, #0b0f19 50%);
         }
 
-        /* Header Modern HUD */
-        .app-header {
+        body.in-calculator .subtitle {
+            display: none !important;
+        }
+
+        .top-badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #a0aec0;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
+            z-index: 10;
+        }
+        .top-badge span { color: #60a5fa; }
+
+        .title-container { text-align: center; margin-bottom: 25px; }
+        h1 {
+            font-size: 2rem;
+            color: #38bdf8;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+            margin-bottom: 8px;
+        }
+        .subtitle { color: #cbd5e1; font-size: 0.9rem; transition: opacity 0.3s; }
+
+        .main-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .main-container.active-mode > .card-box:not(.active) {
+            display: none !important;
+        }
+
+        .card-box {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: border-color 0.3s;
+        }
+
+        .card-toggle-header {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: #111827;
+            user-select: none;
+        }
+        .card-toggle-header h2 {
+            font-size: 1.1rem;
+            color: #38bdf8;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            background: rgba(11, 11, 15, 0.65);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
-            z-index: 50;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            gap: 10px;
         }
 
-        .header-title {
-            font-size: 0.85rem;
-            font-weight: 600;
+        .card-content {
+            display: none;
+            padding: 25px;
+            border-top: 1px solid #1f2937;
+            background: #0d1322;
+        }
+        .card-box.active .card-content {
+            display: block;
+        }
+
+        button.back-menu-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
             color: #38bdf8;
-            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button.back-menu-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: #38bdf8;
+            color: white;
+        }
+
+        .inner-header {
+            color: #f87171;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 10px 0 12px 0;
             text-transform: uppercase;
         }
 
-        .btn-header-action, .unit-btn {
-            background: rgba(56, 189, 248, 0.15);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            color: #38bdf8;
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            backdrop-filter: blur(5px);
-        }
-        .btn-header-action:active, .unit-btn:active { background: rgba(56, 189, 248, 0.4); }
-
-        /* Badge Hasil Ukur di Atas */
-        .top-result-badge {
-            position: absolute;
-            top: 62px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15, 15, 20, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            padding: 6px 16px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 60;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-        }
-
-        .result-label {
-            font-size: 0.68rem;
-            color: #9ca3af;
-            font-weight: 500;
-        }
-
-        .result-value {
-            font-size: 1rem;
-            color: #38bdf8;
-            font-weight: 700;
-        }
-
-        /* Panel Samping Kiri (Drawer Pengaturan) */
-        .left-drawer {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 300px;
-            height: 100vh;
-            background: rgba(15, 15, 20, 0.95);
-            backdrop-filter: blur(20px);
-            z-index: 110;
-            border-right: 1px solid rgba(56, 189, 248, 0.2);
-            box-shadow: 10px 0 30px rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-            padding: 20px 16px;
-            gap: 16px;
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-y: auto;
-        }
-        .left-drawer.open {
-            left: 0;
-        }
-        .drawer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
-        }
-        .drawer-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #38bdf8;
-        }
-        .drawer-close {
-            background: none;
-            border: none;
-            color: #f43f5e;
-            font-size: 1.1rem;
-            cursor: pointer;
-        }
-
-        /* Workspace Kamera & Canvas */
-        .workspace {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-            display: block;
-            touch-action: none;
-            overflow: hidden;
-        }
-
-        video, canvas {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.1s ease-out;
-        }
-
-        /* Countdown Overlay */
-        .countdown-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 150;
-        }
-        .countdown-number {
-            font-size: 6rem;
-            font-weight: 700;
-            color: #38bdf8;
-            text-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
-            animation: pulseCount 1s infinite alternate;
-        }
-        @keyframes pulseCount {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.1); opacity: 1; }
-        }
-
-        /* Lensa Pembesar (Magnifier Loupe) */
-        .magnifier {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(244, 63, 94, 0.8);
-            background: #000;
-            overflow: hidden;
-            pointer-events: none;
-            display: none;
-            z-index: 100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(244, 63, 94, 0.3);
-            transform: translate(-50%, -120px);
-        }
-        .magnifier canvas {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .magnifier::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 2px;
-            height: 2px;
-            background: #f43f5e;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: none;
-        }
-
-        /* Tombol Awal Kamera/Galeri & Kontrol Tambahan */
-        .initial-actions {
-            position: absolute;
-            bottom: 90px;
-            left: 0;
-            right: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            z-index: 40;
-            padding: 0 16px;
-        }
-
-        .camera-controls-row {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            align-items: center;
-            background: rgba(15, 15, 20, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 8px 12px;
-            border-radius: 16px;
+        .instruction-box {
+            background: rgba(56, 189, 248, 0.05);
             border: 1px solid rgba(56, 189, 248, 0.2);
-        }
-
-        .cam-tool-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #d1d5db;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .cam-tool-btn.active { background: #38bdf8; color: #070709; border-color: #38bdf8; }
-
-        .main-action-row {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
-        }
-
-        .capture-btn {
-            background: linear-gradient(135deg, #38bdf8, #0284c7);
-            color: #070709;
-            border: none;
-            border-radius: 50%;
-            width: 65px;
-            height: 65px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.4);
-            transition: transform 0.1s ease;
-        }
-        .capture-btn:active { transform: scale(0.92); }
-
-        .upload-btn-init {
-            background: rgba(24, 24, 27, 0.75);
-            backdrop-filter: blur(10px);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .upload-btn-init input { display: none; }
-
-        /* Banner Informasi */
-        .info-banner {
-            position: absolute;
-            top: 110px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(56, 189, 248, 0.9);
-            backdrop-filter: blur(8px);
-            color: #070709;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 5px 12px;
-            border-radius: 20px;
-            z-index: 85;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        /* Panel Kontrol Bawah (Permanent Height) */
-        .bottom-panel {
-            display: none;
-            flex-direction: column;
-            background: rgba(15, 15, 20, 0.96);
-            backdrop-filter: blur(16px);
-            z-index: 50;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            border-top: 1px solid rgba(56, 189, 248, 0.2);
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+            border-left: 4px solid #38bdf8;
             padding: 12px 14px;
-            padding-bottom: max(14px, env(safe-area-inset-bottom));
-            gap: 8px;
-            height: 410px;
-            overflow-y: auto;
-        }
-
-        .panel-content-wrap {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .action-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-        }
-
-        .btn-action {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #f3f4f6;
-            padding: 8px 4px;
             border-radius: 8px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            user-select: none;
-            -webkit-user-select: none;
+            margin-bottom: 12px;
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            line-height: 1.5;
         }
-        .btn-action:active { background: rgba(56, 189, 248, 0.25); }
-        .btn-action.primary { background: rgba(56, 189, 248, 0.85); color: #070709; border-color: #38bdf8; }
-        .btn-action.danger { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border-color: rgba(244, 63, 94, 0.4); }
+        .instruction-box strong { color: #38bdf8; }
+        .instruction-box ul {
+            margin-top: 6px;
+            padding-left: 18px;
+            list-style-type: disc;
+        }
+        .instruction-box li { margin-bottom: 3px; }
 
-        /* Preset & Pengaturan di Drawer */
-        .preset-grid {
+        .input-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
         }
-        .preset-chip {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #d1d5db;
-            padding: 6px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            text-align: center;
-            white-space: nowrap;
-        }
-        .preset-chip.active { background: #38bdf8; color: #070709; border-color: #38bdf8; font-weight: 600; }
-
-        .setting-group {
+        .input-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            font-size: 0.72rem;
-            color: #9ca3af;
+            gap: 6px;
+            margin-bottom: 12px;
         }
-
-        .setting-group input[type="number"] {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 6px 8px;
-            border-radius: 6px;
+        .input-group label { font-size: 0.8rem; color: #94a3b8; }
+        
+        input, select {
             width: 100%;
-            text-align: center;
-            font-size: 0.8rem;
+            background: transparent;
+            border: 1px solid #374151;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.90rem;
             outline: none;
         }
+        input:focus, select:focus { border-color: #38bdf8; }
+        select option { background: #111827; color: white; }
 
-        /* Panel D-Pad Kontrol */
-        .dpad-container {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 8px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .dpad-header {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .dpad-grid {
-            display: grid;
-            grid-template-columns: 42px 42px 42px;
-            grid-template-rows: 34px 34px;
-            gap: 3px;
-            justify-content: center;
-        }
-
-        .dpad-btn {
-            background: rgba(56, 189, 248, 0.15);
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            color: #38bdf8;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            font-weight: bold;
+        button.submit-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(90deg, #1e3a8a 0%, #7f1d1d 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .dpad-btn:active { background: rgba(56, 189, 248, 0.45); }
-
-        /* Popup Satuan */
-        .unit-popup {
-            position: absolute;
-            top: 55px;
-            right: 12px;
-            width: 150px;
-            background: rgba(24, 24, 28, 0.95);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-            display: none;
-            z-index: 100;
-            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-top: 5px;
         }
 
-        .unit-option {
-            padding: 8px 12px;
-            font-size: 0.75rem;
-            color: #d1d5db;
-            cursor: pointer;
+        .about-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed #374151;
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        .about-title { color: #38bdf8; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .about-text { color: #94a3b8; font-size: 0.85rem; line-height: 1.5; }
+        .about-list { margin-top: 6px; padding-left: 18px; color: #cbd5e1; font-size: 0.83rem; line-height: 1.6; }
+        .about-list li { margin-bottom: 6px; }
+
+        .zodiac-header { color: #f87171; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; margin: 20px 0 12px 0; }
+        
+        .zodiac-flex {
             display: flex;
             justify-content: space-between;
-        }
-        .unit-option:hover { background: rgba(255, 255, 255, 0.08); }
-        .unit-option.active { color: #38bdf8; font-weight: 600; }
-
-        /* Custom Modal Konfirmasi */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
-            z-index: 200;
-            display: none;
-            justify-content: center;
             align-items: center;
-        }
-        .modal-box {
-            background: #18181c;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 14px;
-            width: 80%;
-            max-width: 300px;
+            background: #111827;
+            border: 1px solid #1f2937;
             padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            border-radius: 14px;
+            margin-bottom: 12px;
         }
-        .modal-title { font-size: 0.9rem; font-weight: 700; color: #38bdf8; }
-        .modal-text { font-size: 0.75rem; color: #d1d5db; }
-        .modal-actions { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
+        .z-left h3 { color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px; }
+        .z-left h2 { font-size: 1.15rem; margin-bottom: 8px; color: white; }
+        .z-left p { color: #cbd5e1; font-size: 0.78rem; font-style: italic; max-width: 230px; line-height: 1.4; }
+        
+        .z-right {
+            font-size: 3.8rem;
+            display: inline-block;
+            animation: fadeGlowZodiac 3s ease-in-out infinite;
+        }
+        @keyframes fadeGlowZodiac {
+            0% { opacity: 0.15; transform: scale(0.92); filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.1)); }
+            50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.9)); }
+            100% { opacity: 0.15; transform: scale(0.92); filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.1)); }
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111827;
+            border: 1px solid #1f2937;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .stat-label { color: #cbd5e1; font-size: 0.9rem; }
+        .stat-value { font-size: 1.2rem; font-weight: 700; }
+        .val-blue { color: #38bdf8; }
+        .val-red { color: #f87171; }
+        .val-white { color: #ffffff; }
+
+        .live-sec-card {
+            text-align: center;
+            background: #111827;
+            border: 1px solid #1f2937;
+            padding: 16px;
+            border-radius: 14px;
+            margin-top: 10px;
+        }
+        .live-sec-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 8px 0;
+        }
+        .live-indicator {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .blink-dot { color: #22c55e; animation: blinkAnim 1s infinite; }
+        @keyframes blinkAnim { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+
+        .btn-upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .action-btn-upload {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .action-btn-upload input { display: none; }
+
+        #canvas-container {
+            display: none;
+            position: relative;
+            margin-bottom: 12px;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+        .status-ai {
+            font-size: 0.75rem;
+            color: #38bdf8;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .arm-flex-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .arm-flex-container input { text-align: center; }
+        .plus-sign { font-size: 1.1rem; font-weight: 700; color: #38bdf8; }
+        .footer { margin-top: 30px; font-weight: 700; color: #22c55e; letter-spacing: 1px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="app-container" id="appContainer">
-        <!-- Header -->
-        <div class="app-header">
-            <div style="display: flex; gap: 6px;">
-                <button class="btn-header-action" onclick="confirmRefresh()">🔄 Ulang</button>
-                <button class="btn-header-action" onclick="toggleDrawer()">⚙️ Menu</button>
+    <div class="top-badge">
+        <span id="live-date">Memuat...</span> <span id="live-time"></span>
+    </div>
+
+    <div class="title-container">
+        <h1>Kalkulator Serbaguna</h1>
+        <p class="subtitle">Ketuk salah satu kotak menu di bawah untuk mulai</p>
+    </div>
+
+    <div class="main-container" id="mainContainer">
+
+        <!-- KOTAK 1: UMUR -->
+        <div class="card-box" id="box-age">
+            <div class="card-toggle-header" onclick="openBox('box-age')">
+                <h2>Kalkulator Umur & Zodiak</h2>
             </div>
-            <div class="header-title">Kalkulator Tinggi Pro</div>
-            <button class="unit-btn" onclick="toggleUnitMenu()">
-                <span id="unitLabel">cm</span> ▾
-            </button>
-        </div>
-
-        <!-- Badge Hasil Ukur di Atas -->
-        <div class="top-result-badge" id="topResultBadge">
-            <span class="result-label">Hasil:</span>
-            <span class="result-value" id="resultValue">0 cm</span>
-        </div>
-
-        <!-- Panel Samping Kiri (Drawer Pengaturan) -->
-        <div class="left-drawer" id="leftDrawer">
-            <div class="drawer-header">
-                <span class="drawer-title">⚙️ Menu & Pengaturan</span>
-                <button class="drawer-close" onclick="toggleDrawer()">✕</button>
-            </div>
-
-            <div class="setting-group">
-                <span>Preset Kalibrasi Instan:</span>
-                <div class="preset-grid">
-                    <div class="preset-chip active" id="preset14" onclick="applyPreset(14)">🖊️ Pulpen (14 cm)</div>
-                    <div class="preset-chip" id="preset18" onclick="applyPreset(18)">✋ Jengkal (18 cm)</div>
-                    <div class="preset-chip" id="preset8.5" onclick="applyPreset(8.5)">💳 KTP (8.5 cm)</div>
-                    <div class="preset-chip" id="preset30" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
+            <div class="card-content">
+                <div class="inner-header">MASUKKAN TANGGAL LAHIRMU</div>
+                <div class="input-grid">
+                    <div class="input-group" style="margin-bottom:0;">
+                        <label>Tanggal</label>
+                        <input type="number" id="b-day" placeholder="Contoh: 5" min="1" max="31">
+                    </div>
+                    <div class="input-group" style="margin-bottom:0;">
+                        <label>Bulan</label>
+                        <select id="b-month">
+                            <option value="" disabled selected>Pilih...</option>
+                            <option value="1">Januari</option>
+                            <option value="2">Februari</option>
+                            <option value="3">Maret</option>
+                            <option value="4">April</option>
+                            <option value="5">Mei</option>
+                            <option value="6">Juni</option>
+                            <option value="7">Juli</option>
+                            <option value="8">Agustus</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="margin-bottom:0;">
+                        <label>Tahun</label>
+                        <input type="number" id="b-year" placeholder="Contoh: 2005" min="1900">
+                    </div>
                 </div>
-            </div>
+                <button class="submit-btn" onclick="startCalculateAge()">Hitung Umur Sekarang</button>
 
-            <div class="setting-group" style="margin-top: 4px;">
-                <span>Ukuran Asli Objek (cm):</span>
-                <div style="display: flex; gap: 5px; align-items: center;">
-                    <input type="number" id="actualSizeInput" value="14" placeholder="Mis: 14">
-                    <button class="btn-action primary" style="padding: 6px 10px;" onclick="calibrateWithRealSize()">Atur</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Popup Satuan -->
-        <div class="unit-popup" id="unitPopup">
-            <div class="unit-option active" onclick="setUnit('cm', 'cm')">Sentimeter <span>cm</span></div>
-            <div class="unit-option" onclick="setUnit('m', 'm')">Meter <span>m</span></div>
-            <div class="unit-option" onclick="setUnit('mm', 'mm')">Milimeter <span>mm</span></div>
-            <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
-        </div>
-
-        <div class="info-banner" id="infoBanner">💡 Ketuk Menu (⚙️) untuk kalibrasi!</div>
-
-        <!-- Lensa Pembesar (Magnifier) -->
-        <div class="magnifier" id="magnifier">
-            <canvas id="magCanvas" width="300" height="300"></canvas>
-        </div>
-
-        <!-- Countdown Overlay -->
-        <div class="countdown-overlay" id="countdownOverlay">
-            <div class="countdown-number" id="countdownNumber">3</div>
-        </div>
-
-        <!-- Workspace Kamera & Canvas -->
-        <div class="workspace" id="workspace">
-            <video id="videoElement" autoplay playsinline muted></video>
-            <canvas id="measCanvas"></canvas>
-        </div>
-
-        <!-- Tombol Awal Kamera/Galeri & Kontrol Tambahan -->
-        <div class="initial-actions" id="initialActions">
-            <div class="camera-controls-row">
-                <button class="cam-tool-btn" onclick="toggleCameraFacing()">🔄 <span id="facingLabel">Belakang</span></button>
-                <button class="cam-tool-btn" onclick="adjustZoom(-0.5)">➖</button>
-                <button class="cam-tool-btn active" id="zoomDisplayBtn" style="min-width: 50px; justify-content: center;">🔍 1.0x</button>
-                <button class="cam-tool-btn" onclick="adjustZoom(0.5)">➕</button>
-            </div>
-            <div class="camera-controls-row">
-                <span style="font-size: 0.65rem; color: #9ca3af; margin-right: 2px;">Timer:</span>
-                <button class="cam-tool-btn active timer-chip" id="timer0" onclick="setTimer(0)">Mati</button>
-                <button class="cam-tool-btn timer-chip" id="timer3" onclick="setTimer(3)">3d</button>
-                <button class="cam-tool-btn timer-chip" id="timer5" onclick="setTimer(5)">5d</button>
-            </div>
-            <div class="main-action-row">
-                <label class="upload-btn-init">
-                    📁 Galeri
-                    <input type="file" accept="image/*" onchange="handleImageUpload(event)">
-                </label>
-                <button class="capture-btn" onclick="triggerCapture()">📷</button>
-            </div>
-        </div>
-
-        <!-- Panel Kontrol Bawah (Permanent Height) -->
-        <div class="bottom-panel" id="bottomPanel">
-            <div class="panel-content-wrap">
-                <div class="action-row">
-                    <button class="btn-action primary" onclick="addNewLine()">➕ Tambah Garis</button>
-                    <button class="btn-action" onclick="addConnectedPoint()">🔗 Titik Terhubung</button>
-                </div>
-                <div class="action-row">
-                    <button class="btn-action" onclick="addFreePoint()">📍 Titik Bebas</button>
-                    <button class="btn-action danger" 
-                        onpointerdown="startDeletePress()" 
-                        onpointerup="endDeletePress()" 
-                        onpointercancel="endDeletePress()">
-                        🗑️ Hapus (Tap/Tahan)
-                    </button>
-                </div>
-
-                <div class="setting-group">
-                    <span>Riwayat Aksi (Undo / Sudo / Redo):</span>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                        <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
-                        <button class="btn-action" onclick="redoAction()">↪️ Sudo/Redo</button>
+                <div id="result-container-age" style="display: none; margin-top: 15px;">
+                    <div class="zodiac-header">RINCIAN WAKTU & ZODIAK</div>
+                    <div class="zodiac-flex">
+                        <div class="z-left">
+                            <h3>ZODIAK KAMU</h3>
+                            <h2 id="z-name">-</h2>
+                            <p id="z-desc">-</p>
+                        </div>
+                        <div class="z-right" id="z-emoji">✨</div>
+                    </div>
+                    <div class="stat-row"><div class="stat-label">Usia Tahun</div><div class="stat-value val-blue" id="val-year">0</div></div>
+                    <div class="stat-row"><div class="stat-label">Total Bulan</div><div class="stat-value val-blue" id="val-month">0</div></div>
+                    <div class="stat-row"><div class="stat-label">Total Hari</div><div class="stat-value val-red" id="val-day">0</div></div>
+                    <div class="stat-row"><div class="stat-label">Total Jam</div><div class="stat-value val-white" id="val-hour">0</div></div>
+                    <div class="stat-row"><div class="stat-label">Total Menit</div><div class="stat-value val-white" id="val-minute">0</div></div>
+                    <div class="live-sec-card">
+                        <div class="zodiac-header" style="margin: 0 0 5px 0;">TOTAL DETIK HIDUP</div>
+                        <div class="live-sec-value" id="val-second">0</div>
+                        <div class="live-indicator"><span class="blink-dot">●</span> Berdetak secara real-time</div>
                     </div>
                 </div>
 
-                <div class="setting-group">
-                    <div class="dpad-container">
-                        <div class="dpad-header">
-                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 4px;">
-                                <div style="display: flex; gap: 4px; align-items: center;">
-                                    <span style="font-size:0.65rem;">Mode:</span>
-                                    <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px;">📍 Titik</button>
-                                    <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px;">🖼️ Gambar</button>
-                                </div>
-                                <button class="preset-chip primary" onclick="promptRelocate()" style="font-size: 0.68rem; padding: 3px 8px; text-align: center; background: rgba(56, 189, 248, 0.25); border-color: rgba(56, 189, 248, 0.5); color: #38bdf8; font-weight: 600; white-space: nowrap;">
-                                    📍 Lokasi
-                                </button>
-                                <div style="display: flex; gap: 2px;">
-                                    <button class="preset-chip" id="step1" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
-                                    <button class="preset-chip" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                                    <button class="preset-chip active" id="step30" style="padding: 2px 5px;" onclick="setStep(30)">30</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; justify-content: flex-end; margin-top: 4px;">
-                            <div class="dpad-grid">
-                                <div></div>
-                                <button class="dpad-btn" onclick="dpadUp()">▲</button>
-                                <div></div>
-                                <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
-                                <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
-                                <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
-                            </div>
-                        </div>
+                <div class="about-box">
+                    <div class="about-title">TENTANG KALKULATOR UMUR & ZODIAK</div>
+                    <p class="about-text">
+                        Kalkulator ini menghitung durasi usia Anda secara akurat hingga tingkat detik terkecil secara real-time. Sistem juga mendeteksi zodiak Anda beserta karakteristik kepribadiannya secara otomatis.
+                    </p>
+                    
+                    <div class="about-title" style="margin-top: 14px;">CARA PENGGUNAAN</div>
+                    <ol class="about-list">
+                        <li><strong>Langkah 1:</strong> Pilih <strong>Tanggal</strong>, <strong>Bulan</strong>, dan <strong>Tahun</strong> lahir Anda pada form di atas.</li>
+                        <li><strong>Langkah 2:</strong> Klik tombol <strong>Hitung Umur Sekarang</strong>.</li>
+                        <li><strong>Langkah 3:</strong> Rincian total waktu hidup dan informasi zodiak Anda akan ditampilkan di layar.</li>
+                    </ol>
+                </div>
+
+                <button class="back-menu-btn" style="margin-top: 20px;" onclick="closeBox('box-age')">
+                    ⬅️ Kembali ke Menu Utama
+                </button>
+            </div>
+        </div>
+
+        <!-- KOTAK 2: TINGGI BADAN -->
+        <div class="card-box" id="box-height">
+            <div class="card-toggle-header" onclick="openBox('box-height')">
+                <h2>Kalkulator Tinggi Badan (Jengkal & AI)</h2>
+            </div>
+            <div class="card-content">
+                <!-- NOMOR 1 -->
+                <div class="inner-header">1. FOTO JENGKAL UNTUK KALIBRASI AI</div>
+                <div class="instruction-box">
+                    📸 <strong>Petunjuk Foto Jengkal:</strong><br>
+                    Pastikan posisi HP/kamera <strong>tegak lurus</strong> berhadapan dengan telapak tangan dan <strong>hasil foto terlihat jelas</strong> (tidak buram). Rentangkan tangan selebar-lebarnya dari ujung jempol sampai ujung kelingking.
+                </div>
+                <div class="btn-upload-grid">
+                    <label class="action-btn-upload">📸 Buka Kamera<input type="file" accept="image/*" capture="environment" onchange="processImage(event)"></label>
+                    <label class="action-btn-upload">🖼️ Pilih Galeri<input type="file" accept="image/*" onchange="processImage(event)"></label>
+                </div>
+                <div id="canvas-container">
+                    <div class="status-ai" id="ai-status">🤖 Memindai tangan dengan AI...</div>
+                    <canvas id="output-canvas"></canvas>
+                </div>
+                <div class="input-group">
+                    <label>Hasil Deteksi Ukuran 1 Jengkal (cm)</label>
+                    <input type="text" id="jengkal-cm" inputmode="decimal" value="18">
+                </div>
+
+                <!-- NOMOR 2 -->
+                <div class="inner-header" style="margin-top: 20px;">2. JUMLAH JENGKAL LENGAN</div>
+                <div class="instruction-box">
+                    ⚠️ <strong>Cara Mengukur:</strong><br>
+                    Rapatkan lengan ke perut atau samping badan. <strong>Mulai mengukur jengkal dari lengan paling atas (ujung pundak/bahu) turun sampai ke ujung jari tengah.</strong><br><br>
+                    📝 <strong>Contoh Penulisan Desimal (Gunakan Titik):</strong>
+                    <ul>
+                        <li><strong>3 Jengkal Pas</strong> &rarr; Tulis <code>3</code></li>
+                        <li><strong>3 Jengkal Lebih Sedikit Sekali</strong> &rarr; Tulis <code>3.1</code> atau <code>3.2</code></li>
+                        <li><strong>3 Jengkal Lebih Sedikit</strong> &rarr; Tulis <code>3.3</code> atau <code>3.4</code></li>
+                        <li><strong>3 Jengkal Lebih Setengah</strong> &rarr; Tulis <code>3.5</code></li>
+                        <li><strong>3 Jengkal Lebih Banyak</strong> &rarr; Tulis <code>3.6</code> atau <code>3.7</code></li>
+                        <li><strong>3 Jengkal Lebih Banyak Sekali</strong> (Hampir 4 Jengkal) &rarr; Tulis <code>3.8</code> atau <code>3.9</code></li>
+                    </ul>
+                </div>
+                <div class="input-group">
+                    <label>Jumlah Jengkal Lengan (Kanan + Kiri)</label>
+                    <div class="arm-flex-container">
+                        <input type="text" id="jengkal-right" inputmode="decimal" value="3.5" placeholder="Kanan" oninput="syncLeftArm(this.value)">
+                        <span class="plus-sign">+</span>
+                        <input type="text" id="jengkal-left" inputmode="decimal" value="3.5" placeholder="Kiri">
                     </div>
                 </div>
+
+                <!-- NOMOR 3 -->
+                <div class="inner-header" style="margin-top: 20px;">3. JUMLAH JENGKAL BAHU / DADA</div>
+                <div class="instruction-box">
+                    ⚠️ <strong>Cara Mengukur:</strong><br>
+                    Ukur lebar dada/bahu dari ujung bahu kanan ke ujung bahu kiri.<br><br>
+                    📝 <strong>Contoh Penulisan Desimal (Gunakan Titik):</strong>
+                    <ul>
+                        <li><strong>2 Jengkal Pas</strong> &rarr; Tulis <code>2</code></li>
+                        <li><strong>2 Jengkal Lebih Sedikit Sekali</strong> &rarr; Tulis <code>2.1</code> atau <code>2.2</code></li>
+                        <li><strong>2 Jengkal Lebih Setengah</strong> &rarr; Tulis <code>2.5</code></li>
+                        <li><strong>2 Jengkal Lebih Banyak Sekali</strong> (Hampir 3 Jengkal) &rarr; Tulis <code>2.8</code> atau <code>2.9</code></li>
+                    </ul>
+                </div>
+                <div class="input-group">
+                    <label>Jumlah Jengkal Bahu / Dada</label>
+                    <input type="text" id="jengkal-chest" inputmode="decimal" value="2" placeholder="Contoh: 2 atau 2.5">
+                </div>
+
+                <button class="submit-btn" onclick="calculateJengkalSystem()">Hitung Tinggi Badan</button>
+
+                <div id="result-container-height" style="display: none; margin-top: 15px;">
+                    <div style="padding: 16px; background: #111827; border: 1px solid #1f2937; border-radius: 14px;">
+                        <div class="inner-header" style="margin: 0 0 10px 0;">Hasil Kalkulasi Tinggi Badan</div>
+                        <div class="stat-row"><div class="stat-label">Total Jengkal Keseluruhan</div><div class="stat-value" id="res-jengkal">0 Jengkal</div></div>
+                        <div class="stat-row"><div class="stat-label">Panjang Lengan</div><div class="stat-value" id="res-total-arm">0 cm</div></div>
+                        <div class="stat-row"><div class="stat-label">Lebar Bahu / Dada</div><div class="stat-value" id="res-total-chest">0 cm</div></div>
+                        <div class="stat-row"><div class="stat-label">Estimasi Tinggi Badan</div><div class="stat-value" id="res-height" style="color: #22c55e;">0 cm</div></div>
+                    </div>
+                </div>
+
+                <div class="about-box">
+                    <div class="about-title">TENTANG KALKULATOR TINGGI BADAN</div>
+                    <p class="about-text">
+                        Kalkulator ini memperkirakan tinggi badan menggunakan metode rasio rentangan jengkal tangan dan bahu yang dikalibrasi secara otomatis dengan teknologi AI (MediaPipe Hands).
+                    </p>
+
+                    <div class="about-title" style="margin-top: 14px;">CARA PENGGUNAAN</div>
+                    <ol class="about-list">
+                        <li><strong>1. Kalibrasi Jengkal AI (Opsional):</strong> Ambil foto tangan yang direntangkan via kamera/galeri untuk menghitung panjang 1 jengkal Anda (cm) secara otomatis, atau ketik nilainya secara manual.</li>
+                        <li><strong>2. Masukkan Jengkal Lengan & Bahu:</strong> Isi jumlah jengkal rentangan lengan kanan, lengan kiri, serta lebar bahu/dada Anda pada kolom input yang tersedia.</li>
+                        <li><strong>3. Hitung Tinggi Badan:</strong> Klik tombol <strong>Hitung Tinggi Badan</strong> untuk melihat hasil estimasi total jengkal dan perkiraan tinggi badan Anda dalam sentimeter (cm).</li>
+                    </ol>
+                </div>
+
+                <button class="back-menu-btn" style="margin-top: 20px;" onclick="closeBox('box-height')">
+                    ⬅️ Kembali ke Menu Utama
+                </button>
             </div>
         </div>
+
     </div>
 
-    <!-- Modal Konfirmasi Hapus Semua -->
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal-box">
-            <div class="modal-title">Konfirmasi Hapus Semua</div>
-            <div class="modal-text">Yakin ingin menghapus seluruh titik dan garis yang ada?</div>
-            <div class="modal-actions">
-                <button class="btn-action" onclick="closeModal()">Batal</button>
-                <button class="btn-action danger" onclick="executeClearAll()">Ya, Hapus Semua</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Pindah Lokasi -->
-    <div class="modal-overlay" id="confirmRelocateModal">
-        <div class="modal-box">
-            <div class="modal-title">Konfirmasi Lokasi</div>
-            <div class="modal-text">Anda yakin memindahkan lokasi? Objek akan diposisikan ulang dengan ukuran tetap sesuai kalibrasi.</div>
-            <div class="modal-actions">
-                <button class="btn-action" onclick="closeRelocateModal()">Batal</button>
-                <button class="btn-action primary" onclick="executeRelocateMode()">Ya</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Konfirmasi Refresh Ulang -->
-    <div class="modal-overlay" id="confirmRefreshModal">
-        <div class="modal-box">
-            <div class="modal-title">Konfirmasi Refresh</div>
-            <div class="modal-text">Anda yakin ingin refresh ulang aplikasi?</div>
-            <div class="modal-actions">
-                <button class="btn-action" onclick="closeRefreshModal()">Batal</button>
-                <button class="btn-action primary" onclick="executeRefresh()">Ya, Refresh</button>
-            </div>
-        </div>
-    </div>
+    <div class="footer">Created by_aggx</div>
 
     <script>
-        let video = document.getElementById('videoElement');
-        let canvas = document.getElementById('measCanvas');
-        let ctx = canvas.getContext('2d');
-        
-        let magDiv = document.getElementById('magnifier');
-        let magCanvas = document.getElementById('magCanvas');
-        let magCtx = magCanvas.getContext('2d');
+        function openBox(boxId) {
+            document.getElementById('mainContainer').classList.add('active-mode');
+            document.body.classList.add('in-calculator');
+            document.getElementById(boxId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-        let img = new Image();
-        let isImageLoaded = false;
-        let currentUnit = 'cm';
-        let isDrawerOpen = false;
-        
-        let calibrationScaleCm = 14; 
-        let calibrationRefPx = null;
-        
-        let currentFacingMode = 'environment';
-        let currentZoom = 1;
-        let minZoom = 1;
-        let maxZoom = 4;
-        let zoomStep = 0.5;
-        let timerSeconds = 0;
+        function closeBox(boxId) {
+            document.getElementById(boxId).classList.remove('active');
+            document.getElementById('mainContainer').classList.remove('active-mode');
+            document.body.classList.remove('in-calculator');
+        }
 
-        let lines = [[]];
-        let activeLineIndex = 0;
-        let activePointIndex = 0;
+        const zodiacs = [
+            { name: "Capricorn (Kambing Gunung)", emoji: "🐐", desc: "Sangat disiplin, pekerja keras, berorientasi target, bertanggung jawab, sabar, dan memiliki jiwa kepemimpinan yang tenang.", start: [1,1], end: [1,19] },
+            { name: "Aquarius (Pembawa Air)", emoji: "🌊", desc: "Mandiri, inovatif, berpemikiran terbuka, humanis, sangat menyukai kebebasan, kreatif, dan unik.", start: [1,20], end: [2,18] },
+            { name: "Pisces (Ikan)", emoji: "🐟", desc: "Sangat empati, intuitif, artistik, penuh kasih sayang, imajinatif, serta pemimpi yang memiliki ketulusan hati tinggi.", start: [2,19], end: [3,20] },
+            { name: "Aries (Domba Jantan)", emoji: "🐏", desc: "Pemberani, energik, berjiwa pemimpin, penuh semangat, percaya diri, kompetitif, dan pantang menyerah.", start: [3,21], end: [4,19] },
+            { name: "Taurus (Banteng)", emoji: "🐂", desc: "Setia, teguh pada pendirian, sabar, dapat diandalkan, menyukai kenyamanan, tekun, dan realistis.", start: [4,20], end: [5,20] },
+            { name: "Gemini (Si Kembar)", emoji: "👯", desc: "Komunikatif, adaptif, cepat belajar, serba bisa, cerdas, humoris, dan penuh rasa ingin tahu.", start: [5,21], end: [6,20] },
+            { name: "Cancer (Kepiting)", emoji: "🦀", desc: "Protektif, setia, berjiwa pengasuh, intuitif, sangat menyayangi keluarga, empati tinggi, dan peka.", start: [6,21], end: [7,22] },
+            { name: "Leo (Singa)", emoji: "🦁", desc: "Percaya diri, karismatik, pemurah, berjiwa pemimpin kuat, optimis, penuh energi, serta suka menjadi pusat perhatian.", start: [7,23], end: [8,22] },
+            { name: "Virgo (Gadis)", emoji: "👱‍♀️", desc: "Perfeksionis, analitis, teliti, rapi, pekerja keras, sangat peduli detail, dan suka membantu orang lain.", start: [8,23], end: [9,22] },
+            { name: "Libra (Timbangan)", emoji: "⚖️", desc: "Diplomatis, adil, menyukai keharmonisan, menawan, romantis, bijaksana dalam mengambil keputusan tengah.", start: [9,23], end: [10,22] },
+            { name: "Scorpio (Kalajengking)", emoji: "🦂", desc: "Intens, misterius, memiliki intuisi tajam, sangat setia, bersemangat tinggi, fokus, dan tangguh.", start: [10,23], end: [11,21] },
+            { name: "Sagittarius (Pemanah)", emoji: "🏹", desc: "Petualang sejati, optimis, jujur, berjiwa bebas, antusias, filosofis, dan menyukai wawasan baru.", start: [11,22], end: [12,21] },
+            { name: "Capricorn (Kambing Gunung)", emoji: "🐐", desc: "Sangat disiplin, pekerja keras, berorientasi target, bertanggung jawab, sabar, dan memiliki jiwa kepemimpinan yang tenang.", start: [12,22], end: [12,31] }
+        ];
 
-        let historyStack = [];
-        let redoStack = [];
+        function formatNum(num) { return num.toLocaleString('id-ID'); }
 
-        let imgOffsetX = 0;
-        let imgOffsetY = 0;
-        let imgScale = 1;
-        let controlMode = 'point';
-        let moveStep = 30; 
+        setInterval(() => {
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const dateEl = document.getElementById('live-date');
+            const timeEl = document.getElementById('live-time');
+            if(dateEl && timeEl) {
+                dateEl.innerText = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+                timeEl.innerText = now.toLocaleTimeString('id-ID', {hour12: false});
+            }
+        }, 1000);
 
-        let isDragging = false;
-        let isImageDragging = false;
-        let isRelocateActive = false;
-        let dragStartX = 0;
-        let dragStartY = 0;
-        let draggedLineIdx = null;
-        let draggedPointIdx = null;
-        let grabOffsetX = 0;
-        let grabOffsetY = 0;
+        let calcInterval;
+        function startCalculateAge() {
+            const d = parseInt(document.getElementById('b-day').value);
+            const m = parseInt(document.getElementById('b-month').value);
+            const y = parseInt(document.getElementById('b-year').value);
 
-        let deletePressTimer = null;
-        let isLongPressTriggered = false;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            startCamera();
-        });
-
-        async function startCamera() {
-            isImageLoaded = false;
-            lines = [[]];
-            historyStack = [];
-            redoStack = [];
-            activeLineIndex = 0;
-            activePointIndex = 0;
-            imgOffsetX = 0;
-            imgOffsetY = 0;
-            imgScale = 1;
-            currentZoom = 1;
-            calibrationRefPx = null;
-            isRelocateActive = false;
-            applyCssZoom();
-
-            document.getElementById('bottomPanel').style.display = 'none';
-            document.getElementById('initialActions').style.display = 'flex';
-            canvas.style.display = 'none';
-            video.style.display = 'block';
-
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null;
+            if(!d || !m || !y) {
+                alert("Harap masukkan tanggal, bulan, dan tahun lahir terlebih dahulu!");
+                return;
             }
 
-            try {
-                let stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: currentFacingMode, 
-                        width: { ideal: 1280 }, 
-                        height: { ideal: 720 } 
-                    } 
-                });
-                video.srcObject = stream;
-                video.play();
-
-                video.onloadedmetadata = () => {
-                    const track = stream.getVideoTracks()[0];
-                    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-                    if (capabilities.zoom) {
-                        minZoom = capabilities.zoom.min || 1;
-                        maxZoom = capabilities.zoom.max || 5;
-                        currentZoom = capabilities.zoom.min || 1;
-                    }
-                    updateZoomUI();
-                };
-            } catch(e) {
-                console.log("Kamera tidak diizinkan.", e);
-                showBanner("⚠️ Gagal mengakses kamera.");
+            const now = new Date();
+            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
+            if (birthDate > now) {
+                alert("Tanggal lahir tidak boleh melebihi waktu sekarang!");
+                return;
             }
-        }
 
-        function toggleCameraFacing() {
-            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-            document.getElementById('facingLabel').innerText = currentFacingMode === 'user' ? 'Depan' : 'Belakang';
-            showBanner(`🔄 Beralih ke kamera ${currentFacingMode === 'user' ? 'Depan' : 'Belakang'}`);
-            startCamera();
-        }
+            const resContainerAge = document.getElementById('result-container-age');
+            resContainerAge.style.display = 'block';
 
-        function adjustZoom(delta) {
-            currentZoom += delta * zoomStep;
-            if (currentZoom < minZoom) currentZoom = minZoom;
-            if (currentZoom > maxZoom) currentZoom = maxZoom;
-
-            if (video.srcObject) {
-                const track = video.srcObject.getVideoTracks()[0];
-                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-                if (capabilities.zoom) {
-                    track.applyConstraints({ advanced: [{ zoom: currentZoom }] }).catch(() => {
-                        applyCssZoom();
-                    });
-                } else {
-                    applyCssZoom();
-                }
+            let z = zodiacs.find(zod => {
+                if(m===12 && d>=22) return zod.name.includes("Capricorn");
+                if(m===1 && d<=19) return zod.name.includes("Capricorn");
+                return (m === zod.start[0] && d >= zod.start[1]) || (m === zod.end[0] && d <= zod.end[1]);
+            });
+            if(z) {
+                document.getElementById('z-name').innerText = z.name;
+                document.getElementById('z-emoji').innerText = z.emoji;
+                document.getElementById('z-desc').innerText = z.desc;
             }
-            updateZoomUI();
+
+            clearInterval(calcInterval);
+            runCalcAge(d, m, y);
+            calcInterval = setInterval(() => runCalcAge(d, m, y), 1000);
+
+            resContainerAge.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        function applyCssZoom() {
-            video.style.transform = `scale(${currentZoom})`;
-        }
-
-        function updateZoomUI() {
-            document.getElementById('zoomDisplayBtn').innerText = `🔍 ${currentZoom.toFixed(1)}x`;
-        }
-
-        function setTimer(sec) {
-            timerSeconds = sec;
-            document.querySelectorAll('.timer-chip').forEach(el => el.classList.remove('active'));
-            document.getElementById(`timer${sec}`).classList.add('active');
-            showBanner(sec === 0 ? "⏱️ Timer dimatikan" : `⏱️ Timer ${sec} detik aktif`);
-        }
-
-        function triggerCapture() {
-            if (timerSeconds > 0) {
-                startCountdown(timerSeconds, () => {
-                    executeCapture();
-                });
-            } else {
-                executeCapture();
-            }
-        }
-
-        function startCountdown(seconds, callback) {
-            let overlay = document.getElementById('countdownOverlay');
-            let numberEl = document.getElementById('countdownNumber');
-            overlay.style.display = 'flex';
-            let timeLeft = seconds;
-            numberEl.innerText = timeLeft;
-
-            let timer = setInterval(() => {
-                timeLeft--;
-                if (timeLeft > 0) {
-                    numberEl.innerText = timeLeft;
-                } else {
-                    clearInterval(timer);
-                    overlay.style.display = 'none';
-                    callback();
-                }
-            }, 1000);
-        }
-
-        function executeCapture() {
-            let w = video.videoWidth || window.innerWidth;
-            let h = video.videoHeight || window.innerHeight;
-            canvas.width = w;
-            canvas.height = h;
-
-            let currentTransform = video.style.transform;
-            video.style.transform = 'none';
-
-            ctx.drawImage(video, 0, 0, w, h);
+        function runCalcAge(d, m, y) {
+            const now = new Date();
+            const birthDate = new Date(y, m - 1, d, 0, 0, 0);
+            const diffMs = now - birthDate;
             
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null;
-            }
+            let ageY = now.getFullYear() - y;
+            let ageM = now.getMonth() - (m - 1);
+            if(now.getDate() < d) { ageM--; }
+            if(ageM < 0) { ageY--; }
 
-            video.style.transform = currentTransform;
+            const totalMonths = (now.getFullYear() - y) * 12 + (now.getMonth() - (m - 1));
+            const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const totalMinutes = Math.floor(diffMs / (1000 * 60));
+            const totalSeconds = Math.floor(diffMs / 1000);
 
-            img.onload = () => {
-                isImageLoaded = true;
-                video.style.display = 'none';
-                canvas.style.display = 'block';
-                document.getElementById('initialActions').style.display = 'none';
-                document.getElementById('bottomPanel').style.display = 'flex';
-                
-                imgOffsetX = 0;
-                imgOffsetY = 0;
-                imgScale = 1;
-                calibrationRefPx = null;
-                isRelocateActive = false;
-                
-                let lenPx = 240;
-                lines = [[ {x: w * 0.3, y: h * 0.5}, {x: w * 0.3 + lenPx, y: h * 0.5} ]];
-                activeLineIndex = 0;
-                activePointIndex = 1;
-                
-                historyStack = [];
-                redoStack = [];
-                saveState();
-
-                redraw();
-                showBanner("✨ Foto siap diukur!");
-            };
-            img.src = canvas.toDataURL('image/png');
+            document.getElementById('val-year').innerText = formatNum(ageY);
+            document.getElementById('val-month').innerText = formatNum(totalMonths);
+            document.getElementById('val-day').innerText = formatNum(totalDays);
+            document.getElementById('val-hour').innerText = formatNum(totalHours);
+            document.getElementById('val-minute').innerText = formatNum(totalMinutes);
+            document.getElementById('val-second').innerText = formatNum(totalSeconds);
         }
 
-        function handleImageUpload(e) {
-            let file = e.target.files[0];
-            if (!file) return;
+        function parseVal(id) {
+            const el = document.getElementById(id);
+            if (!el || !el.value) return 0;
+            const cleaned = el.value.toString().replace(',', '.');
+            const parsed = parseFloat(cleaned);
+            return isNaN(parsed) ? 0 : parsed;
+        }
 
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null;
+        function syncLeftArm(val) {
+            const elLeft = document.getElementById('jengkal-left');
+            if (elLeft) elLeft.value = val;
+        }
+
+        const canvasElement = document.getElementById('output-canvas');
+        const canvasCtx = canvasElement ? canvasElement.getContext('2d') : null;
+        const aiStatus = document.getElementById('ai-status');
+
+        let hands = null;
+        try {
+            if (typeof Hands !== 'undefined') {
+                hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+                hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+                hands.onResults(onHandResults);
             }
+        } catch (e) {
+            console.log("MediaPipe fallback mode.");
+        }
 
-            let reader = new FileReader();
-            reader.onload = (event) => {
-                img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    isImageLoaded = true;
+        function processImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            document.getElementById('canvas-container').style.display = 'block';
+            if (aiStatus) aiStatus.innerText = "🤖 Memindai tangan dengan AI...";
 
-                    video.style.display = 'none';
-                    canvas.style.display = 'block';
-                    document.getElementById('initialActions').style.display = 'none';
-                    document.getElementById('bottomPanel').style.display = 'flex';
-
-                    imgOffsetX = 0;
-                    imgOffsetY = 0;
-                    imgScale = 1;
-                    calibrationRefPx = null;
-                    isRelocateActive = false;
-                    
-                    let lenPx = 240;
-                    lines = [[ {x: img.width * 0.3, y: img.height * 0.5}, {x: img.width * 0.3 + lenPx, y: img.height * 0.5} ]];
-                    activeLineIndex = 0;
-                    activePointIndex = 1;
-
-                    historyStack = [];
-                    redoStack = [];
-                    saveState();
-
-                    redraw();
-                    showBanner("✨ Gambar dimuat!");
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    if (canvasElement && canvasCtx) {
+                        canvasElement.width = img.width;
+                        canvasElement.height = img.height;
+                        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                        canvasCtx.drawImage(img, 0, 0, img.width, img.height);
+                        if (hands) {
+                            hands.send({image: img});
+                        } else if (aiStatus) {
+                            aiStatus.innerText = "⚠️ AI tidak aktif, silakan isi manual.";
+                        }
+                    }
                 }
-                img.src = event.target.result;
+                img.src = e.target.result;
             }
             reader.readAsDataURL(file);
         }
 
-        function confirmRefresh() {
-            document.getElementById('confirmRefreshModal').style.display = 'flex';
-        }
-
-        function closeRefreshModal() {
-            document.getElementById('confirmRefreshModal').style.display = 'none';
-        }
-
-        function executeRefresh() {
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null;
-            }
-            location.reload();
-        }
-
-        function promptRelocate() {
-            document.getElementById('confirmRelocateModal').style.display = 'flex';
-        }
-
-        function closeRelocateModal() {
-            document.getElementById('confirmRelocateModal').style.display = 'none';
-        }
-
-        function executeRelocateMode() {
-            closeRelocateModal();
-            isRelocateActive = true;
-            showBanner("📍 Ketuk pada layar untuk memindahkan objek ke lokasi tersebut.");
-        }
-
-        // Simpan State Lengkap (Termasuk posisi titik aktif agar Undo/Redo tidak error/melompat)
-        function saveState() {
-            let snapshot = JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm, activeLineIndex, activePointIndex }));
-            historyStack.push(snapshot);
-            if (historyStack.length > 30) historyStack.shift();
-            redoStack = [];
-        }
-
-        function undoAction() {
-            if (historyStack.length === 0) {
-                showBanner("⚠️ Tidak ada aksi untuk di-undo");
-                return;
-            }
-            redoStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm, activeLineIndex, activePointIndex })));
-            let state = historyStack.pop();
-            lines = state.lines;
-            calibrationRefPx = state.calibrationRefPx;
-            calibrationScaleCm = state.calibrationScaleCm;
-            activeLineIndex = state.activeLineIndex !== undefined ? state.activeLineIndex : 0;
-            activePointIndex = state.activePointIndex !== undefined ? state.activePointIndex : 0;
-            redraw();
-            showBanner("↩️ Undo berhasil");
-        }
-
-        function redoAction() {
-            if (redoStack.length === 0) {
-                showBanner("⚠️ Tidak ada aksi untuk di-redo/sudo");
-                return;
-            }
-            historyStack.push(JSON.parse(JSON.stringify({ lines, calibrationRefPx, calibrationScaleCm, activeLineIndex, activePointIndex })));
-            let state = redoStack.pop();
-            lines = state.lines;
-            calibrationRefPx = state.calibrationRefPx;
-            calibrationScaleCm = state.calibrationScaleCm;
-            activeLineIndex = state.activeLineIndex !== undefined ? state.activeLineIndex : 0;
-            activePointIndex = state.activePointIndex !== undefined ? state.activePointIndex : 0;
-            redraw();
-            showBanner("↪️ Sudo/Redo berhasil");
-        }
-
-        function showBanner(text, duration = 3000) {
-            let b = document.getElementById('infoBanner');
-            b.innerText = text;
-            b.style.display = 'block';
-            setTimeout(() => { b.style.display = 'none'; }, duration);
-        }
-
-        function toggleDrawer() {
-            isDrawerOpen = !isDrawerOpen;
-            document.getElementById('leftDrawer').classList.toggle('open', isDrawerOpen);
-        }
-
-        function startDeletePress() {
-            isLongPressTriggered = false;
-            deletePressTimer = setTimeout(() => {
-                isLongPressTriggered = true;
-                document.getElementById('confirmModal').style.display = 'flex';
-            }, 600);
-        }
-
-        function endDeletePress() {
-            clearTimeout(deletePressTimer);
-            if (!isLongPressTriggered) {
-                deleteLatestItem();
-            }
-        }
-
-        function deleteLatestItem() {
-            if (!lines || lines.length === 0) return;
-            saveState();
-            let currentLine = lines[activeLineIndex];
-            if (currentLine && currentLine.length > 0) {
-                currentLine.pop();
-                showBanner("🗑️ Titik terbaru dihapus");
-                if (currentLine.length === 0 && lines.length > 1) {
-                    lines.splice(activeLineIndex, 1);
-                    activeLineIndex = lines.length - 1;
-                }
-                activePointIndex = Math.max(0, (lines[activeLineIndex] ? lines[activeLineIndex].length - 1 : 0));
-            } else {
-                lines = [[]];
-            }
-            redraw();
-        }
-
-        function closeModal() {
-            document.getElementById('confirmModal').style.display = 'none';
-        }
-
-        function executeClearAll() {
-            closeModal();
-            saveState();
-            lines = [[]];
-            calibrationRefPx = null;
-            activeLineIndex = 0;
-            activePointIndex = 0;
-            redraw();
-            showBanner("🗑️ Semua dihapus.");
-        }
-
-        function addNewLine() {
-            saveState();
-            lines.push([]);
-            activeLineIndex = lines.length - 1;
-            let cx = canvas.width / 2;
-            let cy = canvas.height / 2 + (activeLineIndex * 20);
-            
-            let lenPx = (calibrationRefPx && calibrationRefPx > 0) ? calibrationRefPx : 240;
-            lines[activeLineIndex].push(
-                {x: cx - (lenPx / 2), y: cy},
-                {x: cx + (lenPx / 2), y: cy}
-            );
-            activePointIndex = 1;
-            redraw();
-            showBanner("➕ Garis baru dibuat sesuai ukuran kalibrasi");
-        }
-
-        function addConnectedPoint() {
-            saveState();
-            if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
-            let pts = lines[activeLineIndex];
-            
-            // Mengambil posisi dari titik yang sedang aktif (dipencet)
-            let activePt = pts[activePointIndex] || pts[pts.length - 1];
-            
-            if (activePt) {
-                let newPoint = { x: activePt.x + 40, y: activePt.y };
-                pts.splice(activePointIndex + 1, 0, newPoint);
-                activePointIndex = activePointIndex + 1; // Otomatis aktifkan titik baru
-            } else {
-                pts.push({x: canvas.width / 2, y: canvas.height / 2});
-                activePointIndex = pts.length - 1;
-            }
-            
-            redraw();
-            showBanner("🔗 Titik terhubung ditambahkan di sebelah titik aktif");
-        }
-
-        function addFreePoint() {
-            saveState();
-            lines.push([{x: canvas.width / 2, y: canvas.height / 2}]);
-            activeLineIndex = lines.length - 1;
-            activePointIndex = 0;
-            redraw();
-            showBanner("📍 Titik bebas ditambahkan");
-        }
-
-        function toggleUnitMenu() {
-            let p = document.getElementById('unitPopup');
-            p.style.display = p.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function setUnit(unit, label) {
-            currentUnit = unit;
-            document.getElementById('unitLabel').innerText = label;
-            document.getElementById('unitPopup').style.display = 'none';
-            document.querySelectorAll('.unit-option').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            redraw();
-        }
-
-        function setControlMode(mode) {
-            controlMode = mode;
-            let pBtn = document.getElementById('modePointBtn');
-            let iBtn = document.getElementById('modeImgBtn');
-
-            if (pBtn) pBtn.classList.toggle('active', mode === 'point');
-            if (iBtn) iBtn.classList.toggle('active', mode === 'image');
-
-            if (mode === 'point') {
-                showBanner("Mode: Geser Titik Aktif");
-            } else if (mode === 'image') {
-                showBanner("Mode: Geser Gambar Saja");
-            }
-        }
-
-        function setStep(val) {
-            moveStep = val;
-            [1, 5, 30].forEach(s => {
-                let btn = document.getElementById('step' + s);
-                if (btn) {
-                    if (s === val) btn.classList.add('active');
-                    else btn.classList.remove('active');
-                }
-            });
-            showBanner(`⚙️ Langkah diatur: ${val} px`);
-        }
-
-        function dpadUp() {
-            moveDirection(0, -1);
-        }
-
-        function moveDirection(dirX, dirY) {
-            saveState();
-            let dx = dirX * moveStep;
-            let dy = dirY * moveStep;
-
-            if (controlMode === 'image') {
-                imgOffsetX += dx;
-                imgOffsetY += dy;
-                for (let l = 0; l < lines.length; l++) {
-                    for (let p = 0; p < lines[l].length; p++) {
-                        lines[l][p].x += dx;
-                        lines[l][p].y += dy;
+        function onHandResults(results) {
+            try {
+                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                    if (aiStatus) aiStatus.innerText = "✅ Tangan berhasil dideteksi AI!";
+                    const landmarks = results.multiHandLandmarks[0];
+                    
+                    // Garis konektor dipertebal menjadi 6px dan warna cyan terang
+                    if (typeof drawConnectors !== 'undefined' && typeof HAND_CONNECTIONS !== 'undefined') {
+                        drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FFFF', lineWidth: 6});
                     }
-                }
-            } else if (controlMode === 'point') {
-                let pts = lines[activeLineIndex];
-                if (pts && pts[activePointIndex]) {
-                    if (pts.length === 2) {
-                        pts[0].x += dx;
-                        pts[0].y += dy;
-                        pts[1].x += dx;
-                        pts[1].y += dy;
-                    } else {
-                        pts[activePointIndex].x += dx;
-                        pts[activePointIndex].y += dy;
+                    // Titik landmarker diperbesar ukurannya menjadi radius 6px
+                    if (typeof drawLandmarks !== 'undefined') {
+                        drawLandmarks(canvasCtx, landmarks, {color: '#FF0055', lineWidth: 3, radius: 6});
                     }
-                }
-            }
-            redraw();
-        }
 
-        function formatDistance(pxDist) {
-            let valCm;
-            if (calibrationRefPx && calibrationRefPx > 0) {
-                valCm = (pxDist / calibrationRefPx) * calibrationScaleCm;
-            } else {
-                valCm = (pxDist / 100) * calibrationScaleCm;
-            }
+                    const x1 = landmarks[4].x * canvasElement.width;
+                    const y1 = landmarks[4].y * canvasElement.height;
+                    const x2 = landmarks[20].x * canvasElement.width;
+                    const y2 = landmarks[20].y * canvasElement.height;
 
-            if (currentUnit === 'm') valCm /= 100;
-            if (currentUnit === 'mm') valCm *= 10;
-            if (currentUnit === 'in') valCm /= 2.54;
-            return valCm.toFixed(1) + ' ' + currentUnit;
-        }
-
-        function applyPreset(actualCm) {
-            saveState();
-            calibrationScaleCm = actualCm;
-            document.getElementById('actualSizeInput').value = actualCm;
-            
-            let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
-            if (targetLine && targetLine.length >= 2) {
-                let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
-                if (pxDist > 0) calibrationRefPx = pxDist;
-            }
-
-            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => {
-                if (el.id.startsWith('preset')) el.classList.remove('active');
-            });
-            let activeChip = document.getElementById('preset' + (actualCm === 8.5 ? '8.5' : actualCm));
-            if (activeChip) activeChip.classList.add('active');
-
-            redraw();
-            showBanner(`✅ Skala diset ke ${actualCm} cm!`);
-        }
-
-        function calibrateWithRealSize() {
-            let actualCm = parseFloat(document.getElementById('actualSizeInput').value);
-            if (!actualCm || actualCm <= 0) {
-                showBanner("⚠️ Masukkan angka ukuran asli!");
-                return;
-            }
-            saveState();
-            calibrationScaleCm = actualCm;
-            
-            let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
-            if (targetLine && targetLine.length >= 2) {
-                let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
-                if (pxDist > 0) {
-                    calibrationRefPx = pxDist;
-                }
-            } else {
-                calibrationRefPx = 100;
-            }
-
-            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => {
-                if (el.id.startsWith('preset')) el.classList.remove('active');
-            });
-
-            redraw();
-            showBanner(`✅ Dikalibrasi ke ${actualCm} cm!`);
-            toggleDrawer();
-        }
-
-        function redraw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (isImageLoaded && img.src) {
-                let drawW = canvas.width * imgScale;
-                let drawH = canvas.height * imgScale;
-                ctx.drawImage(img, imgOffsetX, imgOffsetY, drawW, drawH);
-            }
-
-            let totalPx = 0;
-            for (let l = 0; l < lines.length; l++) {
-                let pts = lines[l];
-                if (!pts) continue;
-
-                for (let i = 0; i < pts.length - 1; i++) {
-                    let p1 = pts[i];
-                    let p2 = pts[i+1];
-
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = (l === activeLineIndex) ? '#38bdf8' : '#f43f5e';
-                    ctx.lineWidth = 4;
-                    ctx.stroke();
-
-                    let dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-                    totalPx += dist;
-
-                    if (!isDragging) {
-                        let mx = (p1.x + p2.x) / 2;
-                        let my = (p1.y + p2.y) / 2;
-
-                        ctx.fillStyle = 'rgba(11, 11, 15, 0.85)';
-                        ctx.fillRect(mx - 34, my - 13, 68, 26);
-                        ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-                        ctx.strokeRect(mx - 34, my - 13, 68, 26);
-
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = '600 11px Inter';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(formatDistance(dist), mx, my);
+                    if (canvasCtx) {
+                        canvasCtx.beginPath();
+                        canvasCtx.moveTo(x1, y1);
+                        canvasCtx.lineTo(x2, y2);
+                        canvasCtx.strokeStyle = '#00FF00'; // Hijau neon terang untuk jarak jengkal
+                        canvasCtx.lineWidth = 8;          // Sangat tebal dan terlihat jelas
+                        canvasCtx.stroke();
                     }
-                }
 
-                for (let i = 0; i < pts.length; i++) {
-                    let isActivePoint = (l === activeLineIndex && i === activePointIndex);
-                    ctx.fillStyle = isActivePoint ? '#f43f5e' : ((l === activeLineIndex) ? '#38bdf8' : '#a1a1aa');
-                    ctx.beginPath();
-                    ctx.arc(pts[i].x, pts[i].y, isActivePoint ? 9 : 6, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-            }
-            document.getElementById('resultValue').innerText = formatDistance(totalPx);
-        }
-
-        function getCanvasPos(e) {
-            let rect = canvas.getBoundingClientRect();
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            let rx = rect.width, ry = rect.height;
-            
-            let scale = Math.max(rx / canvas.width, ry / canvas.height);
-            let ox = (rx - canvas.width * scale) / 2;
-            let oy = (ry - canvas.height * scale) / 2;
-            
-            return {
-                x: (clientX - rect.left - ox) / scale,
-                y: (clientY - rect.top - oy) / scale,
-                clientX, clientY, scale
-            };
-        }
-
-        canvas.addEventListener('pointerdown', (e) => {
-            if (!isImageLoaded) return;
-            let pos = getCanvasPos(e);
-
-            if (isRelocateActive) {
-                saveState();
-                isRelocateActive = false;
-                let cx = pos.x;
-                let cy = pos.y;
-                
-                if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
-                let pts = lines[activeLineIndex];
-
-                let targetLen = (calibrationRefPx && calibrationRefPx > 0) 
-                    ? calibrationRefPx 
-                    : 240;
-
-                if (pts.length >= 2) {
-                    let angle = Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
-                    pts[0] = { x: cx, y: cy };
-                    pts[1] = { x: cx + Math.cos(angle) * targetLen, y: cy + Math.sin(angle) * targetLen };
-                } else if (pts.length === 1) {
-                    pts[0] = { x: cx, y: cy };
+                    const pixelDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                    let estimatedCm = Math.round((pixelDistance / canvasElement.width) * 35);
+                    if (estimatedCm < 12) estimatedCm = 17;
+                    if (estimatedCm > 25) estimatedCm = 20;
+                    const jengkalInput = document.getElementById('jengkal-cm');
+                    if (jengkalInput) jengkalInput.value = estimatedCm;
                 } else {
-                    lines[activeLineIndex] = [
-                        {x: cx, y: cy},
-                        {x: cx + targetLen, y: cy}
-                    ];
+                    if (aiStatus) aiStatus.innerText = "⚠️ Tangan tidak terdeteksi jelas.";
                 }
-
-                activePointIndex = pts.length > 1 ? 1 : 0;
-                redraw();
-                showBanner("✨ Objek dipindahkan & panjang tetap sesuai kalibrasi!");
-                return;
+            } catch(e) {
+                console.log("Error in AI hand result rendering:", e);
             }
-
-            if (controlMode === 'image') {
-                isImageDragging = true;
-                dragStartX = pos.clientX;
-                dragStartY = pos.clientY;
-                saveState();
-                return;
-            }
-
-            let found = false;
-            for (let l = 0; l < lines.length; l++) {
-                for (let p = 0; p < lines[l].length; p++) {
-                    if (Math.hypot(pos.x - lines[l][p].x, pos.y - lines[l][p].y) < 50) {
-                        saveState();
-                        isDragging = true;
-                        draggedLineIdx = l;
-                        draggedPointIdx = p;
-                        activeLineIndex = l;
-                        activePointIndex = p; // Titik yang disentuh otomatis menjadi aktif
-                        grabOffsetX = lines[l][p].x - pos.x;
-                        grabOffsetY = lines[l][p].y - pos.y;
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) break;
-            }
-            if (isDragging) {
-                magDiv.style.display = 'block';
-                updateMagnifier(lines[draggedLineIdx][draggedPointIdx].x, lines[draggedLineIdx][draggedPointIdx].y, pos.clientX, pos.clientY);
-                redraw();
-            }
-        });
-
-        canvas.addEventListener('pointermove', (e) => {
-            let pos = getCanvasPos(e);
-
-            if (isImageDragging) {
-                let dx = (pos.clientX - dragStartX) / pos.scale;
-                let dy = (pos.clientY - dragStartY) / pos.scale;
-                dragStartX = pos.clientX;
-                dragStartY = pos.clientY;
-
-                imgOffsetX += dx;
-                imgOffsetY += dy;
-                for (let l = 0; l < lines.length; l++) {
-                    for (let p = 0; p < lines[l].length; p++) {
-                        lines[l][p].x += dx;
-                        lines[l][p].y += dy;
-                    }
-                }
-                redraw();
-                return;
-            }
-
-            if (!isDragging || draggedLineIdx === null || draggedPointIdx === null) return;
-            let tx = pos.x + grabOffsetX;
-            let ty = pos.y + grabOffsetY;
-            lines[draggedLineIdx][draggedPointIdx] = {x: tx, y: ty};
-            redraw();
-            magDiv.style.display = 'block';
-            updateMagnifier(tx, ty, pos.clientX, pos.clientY);
-        });
-
-        function updateMagnifier(x, y, cx, cy) {
-            magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
-            magCtx.save();
-            magCtx.imageSmoothingEnabled = false;
-            let zoom = 3.0;
-            let sw = magCanvas.width / zoom;
-            let sh = magCanvas.height / zoom;
-            magCtx.drawImage(canvas, x - sw/2, y - sh/2, sw, sh, 0, 0, magCanvas.width, magCanvas.height);
-            magCtx.restore();
-            magDiv.style.left = cx + 'px';
-            magDiv.style.top = cy + 'px';
         }
 
-        canvas.addEventListener('pointerup', () => {
-            isDragging = false;
-            isImageDragging = false;
-            draggedLineIdx = null;
-            draggedPointIdx = null;
-            magDiv.style.display = 'none';
-            redraw();
-        });
+        function calculateJengkalSystem() {
+            try {
+                const jengkalCm = parseVal('jengkal-cm');
+                const rArm = parseVal('jengkal-right');
+                const lArm = parseVal('jengkal-left');
+                const chest = parseVal('jengkal-chest');
+
+                if (jengkalCm <= 0) {
+                    alert("Masukkan panjang 1 jengkal dengan benar!");
+                    return;
+                }
+
+                const totalJengkal = rArm + lArm + chest;
+                const totalSpanCm = totalJengkal * jengkalCm;
+                const totalArmCm = (rArm + lArm) * jengkalCm;
+                const totalChestCm = chest * jengkalCm;
+
+                const resContainerHeight = document.getElementById('result-container-height');
+                if (resContainerHeight) {
+                    resContainerHeight.style.display = 'block';
+                }
+
+                const elJengkal = document.getElementById('res-jengkal');
+                const elArm = document.getElementById('res-total-arm');
+                const elChest = document.getElementById('res-total-chest');
+                const elHeight = document.getElementById('res-height');
+
+                if (elJengkal) elJengkal.innerText = totalJengkal.toFixed(1) + " Jengkal";
+                if (elArm) elArm.innerText = totalArmCm.toFixed(1) + " cm";
+                if (elChest) elChest.innerText = totalChestCm.toFixed(1) + " cm";
+                if (elHeight) elHeight.innerText = Math.round(totalSpanCm) + " cm";
+
+                if (resContainerHeight) {
+                    resContainerHeight.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            } catch (err) {
+                alert("Terjadi masalah saat menghitung.");
+            }
+        }
     </script>
+
+    <!-- Skrip Iklan Adsterra 2 -->
+    <script src="https://pl31316421.profitableratecpmnetwork.com/74/bb/70/74bb704fc94d0ac5fc75c7aae9081643.js"></script>
 </body>
 </html>
