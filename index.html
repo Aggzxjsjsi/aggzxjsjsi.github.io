@@ -225,10 +225,10 @@
             box-shadow: 0 0 5px #fff;
         }
 
-        /* Tombol Awal Kamera/Galeri & Kontrol Tambahan */
+        /* Tombol Awal Kamera/Galeri & Kontrol Tambahan (Dinaikkan Posisinya) */
         .initial-actions {
             position: absolute;
-            bottom: 30px;
+            bottom: 90px;
             left: 0;
             right: 0;
             display: flex;
@@ -574,10 +574,13 @@
                 <button class="drawer-close" onclick="toggleDrawer()">✕</button>
             </div>
 
-            <!-- HANYA Tombol Panel (Garisan) yang ditaruh di dalam Setting -->
+            <!-- Tombol Cepat Atur Tinggi Panel (Naik & Turun) -->
             <div class="setting-group">
-                <span>Mode Pengaturan Tinggi Panel:</span>
-                <button class="preset-chip" id="modePanelBtn" onclick="setControlMode('panel')">📐 Panel (Atur Tinggi Bawah)</button>
+                <span>Atur Tinggi Panel (Naik / Turun):</span>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <button class="btn-action primary" onclick="adjustPanelHeight(1)">▲ Naik</button>
+                    <button class="btn-action primary" onclick="adjustPanelHeight(-1)">▼ Turun</button>
+                </div>
             </div>
 
             <div class="setting-group">
@@ -625,7 +628,7 @@
             <canvas id="measCanvas"></canvas>
         </div>
 
-        <!-- Tombol Awal Kamera/Galeri & Kontrol Tambahan -->
+        <!-- Tombol Awal Kamera/Galeri & Kontrol Tambahan (Dinaikkan Posisinya) -->
         <div class="initial-actions" id="initialActions">
             <div class="camera-controls-row">
                 <button class="cam-tool-btn" onclick="toggleCameraFacing()">🔄 <span id="facingLabel">Belakang</span></button>
@@ -682,7 +685,6 @@
                 <div class="setting-group">
                     <div class="dpad-container">
                         <div class="dpad-header">
-                            <!-- Tombol Titik & Gambar berada di luar (di D-pad utama) -->
                             <div style="display: flex; gap: 4px; align-items: center;">
                                 <span style="font-size:0.65rem;">Mode:</span>
                                 <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px;">📍 Titik</button>
@@ -694,10 +696,7 @@
                                 <button class="preset-chip active" id="step30" style="padding: 2px 5px;" onclick="setStep(30)">30</button>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
-                            <div style="font-size: 0.62rem; color: #38bdf8;" id="activeModeStatus">
-                                📍 Geser Titik Aktif
-                            </div>
+                        <div style="display: flex; align-items: center; justify-content: flex-end; margin-top: 6px;">
                             <div class="dpad-grid">
                                 <div></div>
                                 <button class="dpad-btn" onclick="dpadUp()">▲</button>
@@ -770,7 +769,7 @@
 
         let imgOffsetX = 0;
         let imgOffsetY = 0;
-        let controlMode = 'point'; // 'point', 'image', 'panel'
+        let controlMode = 'point'; // 'point' atau 'image'
         let moveStep = 30; 
         let currentPanelHeight = 320; 
 
@@ -1149,27 +1148,16 @@
         function setControlMode(mode) {
             controlMode = mode;
             
-            // Atur status aktif pada tombol luar (Titik & Gambar)
             let pBtn = document.getElementById('modePointBtn');
             let iBtn = document.getElementById('modeImgBtn');
-            let panelBtn = document.getElementById('modePanelBtn');
 
             if (pBtn) pBtn.classList.toggle('active', mode === 'point');
             if (iBtn) iBtn.classList.toggle('active', mode === 'image');
-            if (panelBtn) panelBtn.classList.toggle('active', mode === 'panel');
 
-            let statusEl = document.getElementById('activeModeStatus');
             if (mode === 'point') {
-                if (statusEl) statusEl.innerText = "📍 Geser Titik Aktif";
                 showBanner("Mode: Geser Titik Aktif");
             } else if (mode === 'image') {
-                if (statusEl) statusEl.innerText = "🖼️ Geser Gambar";
                 showBanner("Mode: Geser Gambar");
-            } else if (mode === 'panel') {
-                if (statusEl) statusEl.innerText = "📐 Atur Tinggi Panel";
-                showBanner("Mode: Atur Tinggi Panel");
-                // Tutup drawer otomatis setelah memilih panel agar mudah langsung dicoba
-                toggleDrawer();
             }
         }
 
@@ -1186,19 +1174,11 @@
         }
 
         function dpadUp() {
-            if (controlMode === 'panel') {
-                adjustPanelHeight(1);
-            } else {
-                moveDirection(0, -1);
-            }
+            moveDirection(0, -1);
         }
 
         function dpadDown() {
-            if (controlMode === 'panel') {
-                adjustPanelHeight(-1);
-            } else {
-                moveDirection(0, 1);
-            }
+            moveDirection(0, 1);
         }
 
         function moveDirection(dirX, dirY) {
