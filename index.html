@@ -106,7 +106,7 @@
             font-weight: 700;
         }
 
-        /* Panel Samping Kiri (Drawer Pengaturan & Kontrol Penuh) */
+        /* Panel Samping Kiri (Drawer Pengaturan) */
         .left-drawer {
             position: absolute;
             top: 0;
@@ -266,11 +266,11 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah Ringkas */
+        /* Panel Kontrol Bawah */
         .bottom-panel {
             display: none;
             flex-direction: column;
-            background: rgba(15, 15, 20, 0.92);
+            background: rgba(15, 15, 20, 0.94);
             backdrop-filter: blur(16px);
             z-index: 50;
             position: absolute;
@@ -285,6 +285,7 @@
             padding-bottom: max(14px, env(safe-area-inset-bottom));
             gap: 8px;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 80vh;
         }
 
         .panel-handle-bar {
@@ -336,6 +337,9 @@
             flex-direction: column;
             gap: 8px;
             transition: opacity 0.2s ease;
+            overflow-y: auto;
+            max-height: calc(75vh - 30px);
+            padding-bottom: 6px;
         }
 
         .action-row {
@@ -542,7 +546,7 @@
             <span class="result-value" id="resultValue">0 cm</span>
         </div>
 
-        <!-- Panel Samping Kiri (Drawer Pengaturan, D-Pad, Undo/Redo, Hapus, & Panel Height Controls) -->
+        <!-- Panel Samping Kiri (Drawer Pengaturan) -->
         <div class="left-drawer" id="leftDrawer">
             <div class="drawer-header">
                 <span class="drawer-title">⚙️ Menu & Pengaturan</span>
@@ -555,58 +559,6 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
                     <button class="btn-action" onclick="shiftPanelHeight(1)">▲ Tinggikan</button>
                     <button class="btn-action" onclick="shiftPanelHeight(-1)">▼ Turunkan</button>
-                </div>
-            </div>
-
-            <!-- Riwayat Aksi (Undo / Redo) -->
-            <div class="setting-group">
-                <span>Riwayat Aksi (Undo / Redo):</span>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                    <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
-                    <button class="btn-action" onclick="redoAction()">↪️ Redo</button>
-                </div>
-            </div>
-
-            <!-- Tombol Hapus -->
-            <div class="setting-group">
-                <span>Hapus Objek / Titik:</span>
-                <button class="btn-action danger" 
-                    onpointerdown="startDeletePress()" 
-                    onpointerup="endDeletePress()" 
-                    onpointercancel="endDeletePress()"
-                    title="Tekan 1x untuk hapus titik terakhir. Tahan untuk hapus semua.">
-                    🗑️ Hapus (Tap/Tahan)
-                </button>
-            </div>
-
-            <!-- Panel D-Pad Kontrol Arah -->
-            <div class="setting-group">
-                <div class="dpad-container">
-                    <div class="dpad-header">
-                        <span>Tombol Arah (D-Pad):</span>
-                        <div style="display: flex; gap: 3px;">
-                            <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px; font-size: 0.62rem;">📍 Titik</button>
-                            <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px; font-size: 0.62rem;">🖼️ Gambar</button>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
-                        <div style="display: flex; flex-direction: column; gap: 2px;">
-                            <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
-                            <div style="display: flex; gap: 2px;">
-                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
-                                <button class="preset-chip active" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                                <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(15)">15</button>
-                            </div>
-                        </div>
-                        <div class="dpad-grid">
-                            <div></div>
-                            <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
-                            <div></div>
-                            <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
-                            <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
-                            <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -637,7 +589,7 @@
             <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="info-banner" id="infoBanner">💡 Tap Menu (⚙️) di kiri atas untuk pengaturan kalibrasi & tombol kontrol!</div>
+        <div class="info-banner" id="infoBanner">💡 Tap Menu (⚙️) di kiri atas untuk pengaturan kalibrasi!</div>
 
         <!-- Lensa Pembesar (Magnifier) -->
         <div class="magnifier" id="magnifier">
@@ -659,7 +611,7 @@
             <button class="capture-btn" onclick="capturePhoto()">📷</button>
         </div>
 
-        <!-- Panel Kontrol Bawah (Ringkas) -->
+        <!-- Panel Kontrol Bawah (Termasuk Undo/Redo, Hapus, & D-Pad) -->
         <div class="bottom-panel level-1" id="bottomPanel">
             <div class="panel-handle-bar" onclick="toggleCollapsePanel()">
                 <div class="handle-pill"></div>
@@ -670,6 +622,58 @@
                 <div class="action-row">
                     <button class="btn-action primary" onclick="addNewLine()">➕ Tambah Garis</button>
                     <button class="btn-action" onclick="addPointToCurrentLine()">➕ Tambah Titik</button>
+                </div>
+
+                <!-- Riwayat Aksi (Undo / Redo) -->
+                <div class="setting-group">
+                    <span>Riwayat Aksi (Undo / Redo):</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                        <button class="btn-action" onclick="undoAction()">↩️ Undo</button>
+                        <button class="btn-action" onclick="redoAction()">↪️ Redo</button>
+                    </div>
+                </div>
+
+                <!-- Tombol Hapus -->
+                <div class="setting-group">
+                    <span>Hapus Objek / Titik:</span>
+                    <button class="btn-action danger" 
+                        onpointerdown="startDeletePress()" 
+                        onpointerup="endDeletePress()" 
+                        onpointercancel="endDeletePress()"
+                        title="Tekan 1x untuk hapus titik terakhir. Tahan untuk hapus semua.">
+                        🗑️ Hapus (Tap/Tahan)
+                    </button>
+                </div>
+
+                <!-- Panel D-Pad Kontrol Arah -->
+                <div class="setting-group">
+                    <div class="dpad-container">
+                        <div class="dpad-header">
+                            <span>Tombol Arah (D-Pad):</span>
+                            <div style="display: flex; gap: 3px;">
+                                <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px; font-size: 0.62rem;">📍 Titik</button>
+                                <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px; font-size: 0.62rem;">🖼️ Gambar</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-size: 0.6rem; color: #9ca3af;">Langkah:</span>
+                                <div style="display: flex; gap: 2px;">
+                                    <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
+                                    <button class="preset-chip active" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
+                                    <button class="preset-chip" style="padding: 2px 5px;" onclick="setStep(15)">15</button>
+                                </div>
+                            </div>
+                            <div class="dpad-grid">
+                                <div></div>
+                                <button class="dpad-btn" onclick="moveDirection(0, -1)">▲</button>
+                                <div></div>
+                                <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
+                                <button class="dpad-btn" onclick="moveDirection(0, 1)">▼</button>
+                                <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -947,7 +951,7 @@
                 activePointIndex = 1;
 
                 redraw();
-                showBanner("✨ Foto siap! Buka Menu (⚙️) untuk pengaturan tinggi panel & kontrol.");
+                showBanner("✨ Foto siap! Panel kontrol bawah kini berisi Undo, Hapus, & D-Pad.");
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -984,7 +988,7 @@
                     activePointIndex = 1;
 
                     redraw();
-                    showBanner("✨ Gambar dimuat! Buka Menu (⚙️) untuk pengaturan tinggi panel & kontrol.");
+                    showBanner("✨ Gambar dimuat! Panel kontrol bawah kini berisi Undo, Hapus, & D-Pad.");
                 }
                 img.src = event.target.result;
             }
