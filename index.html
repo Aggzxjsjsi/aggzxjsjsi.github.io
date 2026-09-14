@@ -327,7 +327,7 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah (Tinggi Dinamis Bebas) */
+        /* Panel Kontrol Bawah */
         .bottom-panel {
             display: none;
             flex-direction: column;
@@ -574,6 +574,12 @@
                 <button class="drawer-close" onclick="toggleDrawer()">✕</button>
             </div>
 
+            <!-- HANYA Tombol Panel (Garisan) yang ditaruh di dalam Setting -->
+            <div class="setting-group">
+                <span>Mode Pengaturan Tinggi Panel:</span>
+                <button class="preset-chip" id="modePanelBtn" onclick="setControlMode('panel')">📐 Panel (Atur Tinggi Bawah)</button>
+            </div>
+
             <div class="setting-group">
                 <span>Preset Kalibrasi Instan:</span>
                 <div class="preset-grid">
@@ -676,21 +682,21 @@
                 <div class="setting-group">
                     <div class="dpad-container">
                         <div class="dpad-header">
-                            <span>Kontrol D-Pad:</span>
+                            <!-- Tombol Titik & Gambar berada di luar (di D-pad utama) -->
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <span style="font-size:0.65rem;">Mode:</span>
+                                <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 6px;">📍 Titik</button>
+                                <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 6px;">🖼️ Gambar</button>
+                            </div>
                             <div style="display: flex; gap: 2px;">
-                                <button class="preset-chip active" id="modePointBtn" onclick="setControlMode('point')" style="padding: 2px 5px; font-size: 0.6rem;">📍 Titik</button>
-                                <button class="preset-chip" id="modeImgBtn" onclick="setControlMode('image')" style="padding: 2px 5px; font-size: 0.6rem;">🖼️ Gambar</button>
-                                <button class="preset-chip" id="modePanelBtn" onclick="setControlMode('panel')" style="padding: 2px 5px; font-size: 0.6rem;">📐 Panel</button>
+                                <button class="preset-chip" id="step1" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
+                                <button class="preset-chip" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
+                                <button class="preset-chip active" id="step30" style="padding: 2px 5px;" onclick="setStep(30)">30</button>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
-                            <div style="display: flex; flex-direction: column; gap: 2px;">
-                                <span style="font-size: 0.6rem; color: #9ca3af;">Langkah (Step):</span>
-                                <div style="display: flex; gap: 2px;">
-                                    <button class="preset-chip" id="step1" style="padding: 2px 5px;" onclick="setStep(1)">1</button>
-                                    <button class="preset-chip" id="step5" style="padding: 2px 5px;" onclick="setStep(5)">5</button>
-                                    <button class="preset-chip active" id="step30" style="padding: 2px 5px;" onclick="setStep(30)">30</button>
-                                </div>
+                            <div style="font-size: 0.62rem; color: #38bdf8;" id="activeModeStatus">
+                                📍 Geser Titik Aktif
                             </div>
                             <div class="dpad-grid">
                                 <div></div>
@@ -1142,13 +1148,29 @@
 
         function setControlMode(mode) {
             controlMode = mode;
-            document.getElementById('modePointBtn').classList.toggle('active', mode === 'point');
-            document.getElementById('modeImgBtn').classList.toggle('active', mode === 'image');
-            document.getElementById('modePanelBtn').classList.toggle('active', mode === 'panel');
+            
+            // Atur status aktif pada tombol luar (Titik & Gambar)
+            let pBtn = document.getElementById('modePointBtn');
+            let iBtn = document.getElementById('modeImgBtn');
+            let panelBtn = document.getElementById('modePanelBtn');
 
-            if (mode === 'point') showBanner("Mode: Geser Titik / Garis");
-            else if (mode === 'image') showBanner("Mode: Geser Gambar");
-            else if (mode === 'panel') showBanner("Mode: Atur Tinggi Panel");
+            if (pBtn) pBtn.classList.toggle('active', mode === 'point');
+            if (iBtn) iBtn.classList.toggle('active', mode === 'image');
+            if (panelBtn) panelBtn.classList.toggle('active', mode === 'panel');
+
+            let statusEl = document.getElementById('activeModeStatus');
+            if (mode === 'point') {
+                if (statusEl) statusEl.innerText = "📍 Geser Titik Aktif";
+                showBanner("Mode: Geser Titik Aktif");
+            } else if (mode === 'image') {
+                if (statusEl) statusEl.innerText = "🖼️ Geser Gambar";
+                showBanner("Mode: Geser Gambar");
+            } else if (mode === 'panel') {
+                if (statusEl) statusEl.innerText = "📐 Atur Tinggi Panel";
+                showBanner("Mode: Atur Tinggi Panel");
+                // Tutup drawer otomatis setelah memilih panel agar mudah langsung dicoba
+                toggleDrawer();
+            }
         }
 
         function setStep(val) {
@@ -1193,12 +1215,11 @@
                         lines[l][p].y += dy;
                     }
                 }
-            } else {
-                if (!lines[activeLineIndex] || lines[activeLineIndex].length === 0) return;
+            } else if (controlMode === 'point') {
                 let pts = lines[activeLineIndex];
-                for (let p = 0; p < pts.length; p++) {
-                    pts[p].x += dx;
-                    pts[p].y += dy;
+                if (pts && pts[activePointIndex]) {
+                    pts[activePointIndex].x += dx;
+                    pts[activePointIndex].y += dy;
                 }
             }
             redraw();
