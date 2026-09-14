@@ -158,6 +158,7 @@
             background: #000;
             display: block;
             touch-action: none;
+            overflow: hidden;
         }
 
         video, canvas {
@@ -165,6 +166,30 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Countdown Overlay */
+        .countdown-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 150;
+        }
+        .countdown-number {
+            font-size: 6rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
+            animation: pulseCount 1s infinite alternate;
+        }
+        @keyframes pulseCount {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.1); opacity: 1; }
         }
 
         /* Lensa Pembesar (Magnifier Loupe) */
@@ -200,17 +225,53 @@
             box-shadow: 0 0 5px #fff;
         }
 
-        /* Tombol Awal Kamera/Galeri */
+        /* Tombol Awal Kamera/Galeri & Kontrol Tambahan */
         .initial-actions {
             position: absolute;
-            bottom: 40px;
+            bottom: 30px;
             left: 0;
             right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            z-index: 40;
+            padding: 0 16px;
+        }
+
+        .camera-controls-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 15, 20, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 8px 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .cam-tool-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #d1d5db;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .cam-tool-btn.active { background: #38bdf8; color: #070709; border-color: #38bdf8; }
+
+        .main-action-row {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
-            z-index: 40;
+            width: 100%;
         }
 
         .capture-btn {
@@ -218,9 +279,9 @@
             color: #070709;
             border: none;
             border-radius: 50%;
-            width: 70px;
-            height: 70px;
-            font-size: 1.6rem;
+            width: 65px;
+            height: 65px;
+            font-size: 1.5rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -236,8 +297,8 @@
             color: #38bdf8;
             border: 1px solid rgba(56, 189, 248, 0.3);
             border-radius: 12px;
-            padding: 10px 16px;
-            font-size: 0.8rem;
+            padding: 10px 14px;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -312,25 +373,11 @@
         }
 
         /* Tingkatan Posisi Panel */
-        .bottom-panel.level-0 {
-            transform: translateY(calc(100% - 28px));
-        }
-        .bottom-panel.level-0 .panel-content-wrap {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .bottom-panel.level-1 {
-            transform: translateY(0px);
-        }
-
-        .bottom-panel.level-2 {
-            transform: translateY(-45px);
-        }
-
-        .bottom-panel.level-3 {
-            transform: translateY(-90px);
-        }
+        .bottom-panel.level-0 { transform: translateY(calc(100% - 28px)); }
+        .bottom-panel.level-0 .panel-content-wrap { opacity: 0; pointer-events: none; }
+        .bottom-panel.level-1 { transform: translateY(0px); }
+        .bottom-panel.level-2 { transform: translateY(-45px); }
+        .bottom-panel.level-3 { transform: translateY(-90px); }
 
         .panel-content-wrap {
             display: flex;
@@ -366,16 +413,8 @@
             -webkit-user-select: none;
         }
         .btn-action:active { background: rgba(56, 189, 248, 0.25); }
-        .btn-action.primary {
-            background: rgba(56, 189, 248, 0.85);
-            color: #070709;
-            border-color: #38bdf8;
-        }
-        .btn-action.danger {
-            background: rgba(244, 63, 94, 0.2);
-            color: #f43f5e;
-            border-color: rgba(244, 63, 94, 0.4);
-        }
+        .btn-action.primary { background: rgba(56, 189, 248, 0.85); color: #070709; border-color: #38bdf8; }
+        .btn-action.danger { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border-color: rgba(244, 63, 94, 0.4); }
 
         /* Preset & Pengaturan di Drawer */
         .preset-grid {
@@ -508,21 +547,9 @@
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.9);
         }
-        .modal-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #f43f5e;
-        }
-        .modal-text {
-            font-size: 0.75rem;
-            color: #d1d5db;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 4px;
-        }
+        .modal-title { font-size: 0.9rem; font-weight: 700; color: #f43f5e; }
+        .modal-text { font-size: 0.75rem; color: #d1d5db; }
+        .modal-actions { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -553,7 +580,6 @@
                 <button class="drawer-close" onclick="toggleDrawer()">✕</button>
             </div>
 
-            <!-- Kontrol Posisi Tinggi Panel (Tinggikan & Turunkan) -->
             <div class="setting-group">
                 <span>Atur Ketinggian Panel:</span>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
@@ -596,22 +622,41 @@
             <canvas id="magCanvas" width="300" height="300"></canvas>
         </div>
 
+        <!-- Countdown Overlay -->
+        <div class="countdown-overlay" id="countdownOverlay">
+            <div class="countdown-number" id="countdownNumber">3</div>
+        </div>
+
         <!-- Workspace Kamera & Canvas -->
         <div class="workspace" id="workspace">
             <video id="videoElement" autoplay playsinline muted></video>
             <canvas id="measCanvas"></canvas>
         </div>
 
-        <!-- Tombol Awal Kamera/Galeri -->
+        <!-- Tombol Awal Kamera/Galeri & Kontrol Tambahan (Zoom, Kamera Depan/Belakang, Timer) -->
         <div class="initial-actions" id="initialActions">
-            <label class="upload-btn-init">
-                📁 Galeri
-                <input type="file" accept="image/*" onchange="handleImageUpload(event)">
-            </label>
-            <button class="capture-btn" onclick="capturePhoto()">📷</button>
+            <div class="camera-controls-row">
+                <button class="cam-tool-btn" onclick="toggleCameraFacing()">🔄 <span id="facingLabel">Belakang</span></button>
+                <button class="cam-tool-btn" onclick="adjustZoom(-0.5)">➖</button>
+                <button class="cam-tool-btn active" id="zoomDisplayBtn" style="min-width: 50px; justify-content: center;">🔍 1.0x</button>
+                <button class="cam-tool-btn" onclick="adjustZoom(0.5)">➕</button>
+            </div>
+            <div class="camera-controls-row">
+                <span style="font-size: 0.65rem; color: #9ca3af; margin-right: 2px;">Timer:</span>
+                <button class="cam-tool-btn active timer-chip" id="timer0" onclick="setTimer(0)">Mati</button>
+                <button class="cam-tool-btn timer-chip" id="timer3" onclick="setTimer(3)">3d</button>
+                <button class="cam-tool-btn timer-chip" id="timer5" onclick="setTimer(5)">5d</button>
+            </div>
+            <div class="main-action-row">
+                <label class="upload-btn-init">
+                    📁 Galeri
+                    <input type="file" accept="image/*" onchange="handleImageUpload(event)">
+                </label>
+                <button class="capture-btn" onclick="triggerCapture()">📷</button>
+            </div>
         </div>
 
-        <!-- Panel Kontrol Bawah (Termasuk Undo/Redo, Hapus, & D-Pad) -->
+        <!-- Panel Kontrol Bawah (Undo, Hapus, D-Pad) -->
         <div class="bottom-panel level-1" id="bottomPanel">
             <div class="panel-handle-bar" onclick="toggleCollapsePanel()">
                 <div class="handle-pill"></div>
@@ -624,7 +669,6 @@
                     <button class="btn-action" onclick="addPointToCurrentLine()">➕ Tambah Titik</button>
                 </div>
 
-                <!-- Riwayat Aksi (Undo / Redo) -->
                 <div class="setting-group">
                     <span>Riwayat Aksi (Undo / Redo):</span>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
@@ -633,19 +677,16 @@
                     </div>
                 </div>
 
-                <!-- Tombol Hapus -->
                 <div class="setting-group">
                     <span>Hapus Objek / Titik:</span>
                     <button class="btn-action danger" 
                         onpointerdown="startDeletePress()" 
                         onpointerup="endDeletePress()" 
-                        onpointercancel="endDeletePress()"
-                        title="Tekan 1x untuk hapus titik terakhir. Tahan untuk hapus semua.">
+                        onpointercancel="endDeletePress()">
                         🗑️ Hapus (Tap/Tahan)
                     </button>
                 </div>
 
-                <!-- Panel D-Pad Kontrol Arah -->
                 <div class="setting-group">
                     <div class="dpad-container">
                         <div class="dpad-header">
@@ -704,9 +745,15 @@
         let isImageLoaded = false;
         let currentUnit = 'cm';
         let isDrawerOpen = false;
-        
         let currentPanelLevel = 1;
         
+        let currentFacingMode = 'environment'; // 'environment' (belakang) atau 'user' (depan)
+        let currentZoom = 1;
+        let minZoom = 1;
+        let maxZoom = 4;
+        let zoomStep = 0.5;
+        let timerSeconds = 0; // 0 = mati, 3, 5
+
         let lines = [[]];
         let activeLineIndex = 0;
         let activePointIndex = 0;
@@ -732,161 +779,6 @@
             startCamera();
         });
 
-        function shiftPanelHeight(direction) {
-            currentPanelLevel += direction;
-            if (currentPanelLevel > 3) currentPanelLevel = 3;
-            if (currentPanelLevel < 0) currentPanelLevel = 0;
-            applyPanelLevel();
-        }
-
-        function toggleCollapsePanel() {
-            if (currentPanelLevel === 0) {
-                currentPanelLevel = 1;
-            } else {
-                currentPanelLevel = 0;
-            }
-            applyPanelLevel();
-        }
-
-        function applyPanelLevel() {
-            let panel = document.getElementById('bottomPanel');
-            let handleText = document.getElementById('handleText');
-
-            panel.classList.remove('level-0', 'level-1', 'level-2', 'level-3');
-            panel.classList.add('level-' + currentPanelLevel);
-
-            if (currentPanelLevel === 0) {
-                handleText.innerText = 'Panel Terlipat (Buka ▴)';
-            } else if (currentPanelLevel === 1) {
-                handleText.innerText = 'Panel Standar';
-            } else if (currentPanelLevel === 2) {
-                handleText.innerText = 'Panel Naik Sedikit';
-            } else if (currentPanelLevel === 3) {
-                handleText.innerText = 'Panel Paling Tinggi';
-            }
-        }
-
-        function saveState() {
-            let snapshot = JSON.parse(JSON.stringify(lines));
-            historyStack.push(snapshot);
-            if (historyStack.length > 30) historyStack.shift();
-            redoStack = [];
-        }
-
-        function undoAction() {
-            if (historyStack.length === 0) {
-                showBanner("⚠️ Tidak ada aksi untuk di-undo");
-                return;
-            }
-            let currentState = JSON.parse(JSON.stringify(lines));
-            redoStack.push(currentState);
-
-            lines = historyStack.pop();
-            
-            if (activeLineIndex >= lines.length) activeLineIndex = Math.max(0, lines.length - 1);
-            if (lines[activeLineIndex] && activePointIndex >= lines[activeLineIndex].length) {
-                activePointIndex = Math.max(0, lines[activeLineIndex].length - 1);
-            }
-            redraw();
-            showBanner("↩️ Undo berhasil");
-        }
-
-        function redoAction() {
-            if (redoStack.length === 0) {
-                showBanner("⚠️ Tidak ada aksi untuk di-redo");
-                return;
-            }
-            let currentState = JSON.parse(JSON.stringify(lines));
-            historyStack.push(currentState);
-
-            lines = redoStack.pop();
-
-            if (activeLineIndex >= lines.length) activeLineIndex = Math.max(0, lines.length - 1);
-            if (lines[activeLineIndex] && activePointIndex >= lines[activeLineIndex].length) {
-                activePointIndex = Math.max(0, lines[activeLineIndex].length - 1);
-            }
-            redraw();
-            showBanner("↪️ Redo berhasil");
-        }
-
-        function showBanner(text, duration = 3000) {
-            let b = document.getElementById('infoBanner');
-            b.innerText = text;
-            b.style.display = 'block';
-            setTimeout(() => { b.style.display = 'none'; }, duration);
-        }
-
-        function toggleDrawer() {
-            isDrawerOpen = !isDrawerOpen;
-            let drawer = document.getElementById('leftDrawer');
-            if (isDrawerOpen) {
-                drawer.classList.add('open');
-            } else {
-                drawer.classList.remove('open');
-            }
-        }
-
-        function startDeletePress() {
-            isLongPressTriggered = false;
-            deletePressTimer = setTimeout(() => {
-                isLongPressTriggered = true;
-                confirmClearAll();
-            }, 600);
-        }
-
-        function endDeletePress() {
-            clearTimeout(deletePressTimer);
-            if (!isLongPressTriggered) {
-                deleteLatestItem();
-            }
-        }
-
-        function deleteLatestItem() {
-            if (!lines || lines.length === 0) return;
-
-            saveState();
-
-            let currentLine = lines[activeLineIndex];
-            if (currentLine && currentLine.length > 0) {
-                currentLine.pop();
-                showBanner("🗑️ Titik terbaru dihapus");
-                if (currentLine.length === 0 && lines.length > 1) {
-                    lines.splice(activeLineIndex, 1);
-                    activeLineIndex = lines.length - 1;
-                }
-            } else if (lines.length > 1) {
-                lines.pop();
-                activeLineIndex = lines.length - 1;
-                showBanner("🗑️ Garis kosong dihapus");
-            } else {
-                lines = [[]];
-            }
-            if (lines[activeLineIndex] && lines[activeLineIndex].length > 0) {
-                activePointIndex = lines[activeLineIndex].length - 1;
-            } else {
-                activePointIndex = 0;
-            }
-            redraw();
-        }
-
-        function confirmClearAll() {
-            document.getElementById('confirmModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('confirmModal').style.display = 'none';
-        }
-
-        function executeClearAll() {
-            closeModal();
-            saveState();
-            lines = [[]];
-            activeLineIndex = 0;
-            activePointIndex = 0;
-            redraw();
-            showBanner("🗑️ Semua titik dan garis berhasil dihapus.");
-        }
-
         async function startCamera() {
             isImageLoaded = false;
             lines = [[]];
@@ -895,36 +787,124 @@
             activeLineIndex = 0;
             imgOffsetX = 0;
             imgOffsetY = 0;
+            currentZoom = 1;
+            applyCssZoom();
 
             document.getElementById('bottomPanel').style.display = 'none';
             document.getElementById('initialActions').style.display = 'flex';
             canvas.style.display = 'none';
             video.style.display = 'block';
 
-            try {
-                let stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } 
-                });
-                video.srcObject = stream;
-                video.play();
-            } catch(e) {
-                console.log("Kamera tidak diizinkan.");
-            }
-        }
-
-        function refreshApp() {
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(t => t.stop());
                 video.srcObject = null;
             }
-            location.reload();
+
+            try {
+                let stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: currentFacingMode, 
+                        width: { ideal: 1280 }, 
+                        height: { ideal: 720 } 
+                    } 
+                });
+                video.srcObject = stream;
+                video.play();
+
+                video.onloadedmetadata = () => {
+                    const track = stream.getVideoTracks()[0];
+                    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                    if (capabilities.zoom) {
+                        minZoom = capabilities.zoom.min || 1;
+                        maxZoom = capabilities.zoom.max || 5;
+                        currentZoom = capabilities.zoom.min || 1;
+                    }
+                    updateZoomUI();
+                };
+            } catch(e) {
+                console.log("Kamera tidak diizinkan.", e);
+                showBanner("⚠️ Gagal mengakses kamera.");
+            }
         }
 
-        function capturePhoto() {
+        function toggleCameraFacing() {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            document.getElementById('facingLabel').innerText = currentFacingMode === 'user' ? 'Depan' : 'Belakang';
+            showBanner(`🔄 Beralih ke kamera ${currentFacingMode === 'user' ? 'Depan' : 'Belakang'}`);
+            startCamera();
+        }
+
+        function adjustZoom(delta) {
+            currentZoom += delta * zoomStep;
+            if (currentZoom < minZoom) currentZoom = minZoom;
+            if (currentZoom > maxZoom) currentZoom = maxZoom;
+
+            if (video.srcObject) {
+                const track = video.srcObject.getVideoTracks()[0];
+                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                if (capabilities.zoom) {
+                    track.applyConstraints({ advanced: [{ zoom: currentZoom }] }).catch(() => {
+                        applyCssZoom();
+                    });
+                } else {
+                    applyCssZoom();
+                }
+            }
+            updateZoomUI();
+        }
+
+        function applyCssZoom() {
+            video.style.transform = `scale(${currentZoom})`;
+        }
+
+        function updateZoomUI() {
+            document.getElementById('zoomDisplayBtn').innerText = `🔍 ${currentZoom.toFixed(1)}x`;
+        }
+
+        function setTimer(sec) {
+            timerSeconds = sec;
+            document.querySelectorAll('.timer-chip').forEach(el => el.classList.remove('active'));
+            document.getElementById(`timer${sec}`).classList.add('active');
+            showBanner(sec === 0 ? "⏱️ Timer dimatikan" : `⏱️ Timer ${sec} detik aktif`);
+        }
+
+        function triggerCapture() {
+            if (timerSeconds > 0) {
+                startCountdown(timerSeconds, () => {
+                    executeCapture();
+                });
+            } else {
+                executeCapture();
+            }
+        }
+
+        function startCountdown(seconds, callback) {
+            let overlay = document.getElementById('countdownOverlay');
+            let numberEl = document.getElementById('countdownNumber');
+            overlay.style.display = 'flex';
+            let timeLeft = seconds;
+            numberEl.innerText = timeLeft;
+
+            let timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    numberEl.innerText = timeLeft;
+                } else {
+                    clearInterval(timer);
+                    overlay.style.display = 'none';
+                    callback();
+                }
+            }, 1000);
+        }
+
+        function executeCapture() {
             let w = video.videoWidth || window.innerWidth;
             let h = video.videoHeight || window.innerHeight;
             canvas.width = w;
             canvas.height = h;
+
+            let currentTransform = video.style.transform;
+            video.style.transform = 'none';
 
             ctx.drawImage(video, 0, 0, w, h);
             
@@ -932,6 +912,8 @@
                 video.srcObject.getTracks().forEach(t => t.stop());
                 video.srcObject = null;
             }
+
+            video.style.transform = currentTransform;
 
             img.onload = () => {
                 isImageLoaded = true;
@@ -951,7 +933,7 @@
                 activePointIndex = 1;
 
                 redraw();
-                showBanner("✨ Foto siap! Panel kontrol bawah kini berisi Undo, Hapus, & D-Pad.");
+                showBanner("✨ Foto siap diukur!");
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -988,11 +970,132 @@
                     activePointIndex = 1;
 
                     redraw();
-                    showBanner("✨ Gambar dimuat! Panel kontrol bawah kini berisi Undo, Hapus, & D-Pad.");
+                    showBanner("✨ Gambar dimuat!");
                 }
                 img.src = event.target.result;
             }
             reader.readAsDataURL(file);
+        }
+
+        function refreshApp() {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(t => t.stop());
+                video.srcObject = null;
+            }
+            location.reload();
+        }
+
+        function shiftPanelHeight(direction) {
+            currentPanelLevel += direction;
+            if (currentPanelLevel > 3) currentPanelLevel = 3;
+            if (currentPanelLevel < 0) currentPanelLevel = 0;
+            applyPanelLevel();
+        }
+
+        function toggleCollapsePanel() {
+            currentPanelLevel = currentPanelLevel === 0 ? 1 : 0;
+            applyPanelLevel();
+        }
+
+        function applyPanelLevel() {
+            let panel = document.getElementById('bottomPanel');
+            let handleText = document.getElementById('handleText');
+
+            panel.classList.remove('level-0', 'level-1', 'level-2', 'level-3');
+            panel.classList.add('level-' + currentPanelLevel);
+
+            if (currentPanelLevel === 0) {
+                handleText.innerText = 'Panel Terlipat (Buka ▴)';
+            } else {
+                handleText.innerText = 'Panel Standar';
+            }
+        }
+
+        function saveState() {
+            let snapshot = JSON.parse(JSON.stringify(lines));
+            historyStack.push(snapshot);
+            if (historyStack.length > 30) historyStack.shift();
+            redoStack = [];
+        }
+
+        function undoAction() {
+            if (historyStack.length === 0) {
+                showBanner("⚠️ Tidak ada aksi untuk di-undo");
+                return;
+            }
+            redoStack.push(JSON.parse(JSON.stringify(lines)));
+            lines = historyStack.pop();
+            redraw();
+            showBanner("↩️ Undo berhasil");
+        }
+
+        function redoAction() {
+            if (redoStack.length === 0) {
+                showBanner("⚠️ Tidak ada aksi untuk di-redo");
+                return;
+            }
+            historyStack.push(JSON.parse(JSON.stringify(lines)));
+            lines = redoStack.pop();
+            redraw();
+            showBanner("↪️ Redo berhasil");
+        }
+
+        function showBanner(text, duration = 3000) {
+            let b = document.getElementById('infoBanner');
+            b.innerText = text;
+            b.style.display = 'block';
+            setTimeout(() => { b.style.display = 'none'; }, duration);
+        }
+
+        function toggleDrawer() {
+            isDrawerOpen = !isDrawerOpen;
+            document.getElementById('leftDrawer').classList.toggle('open', isDrawerOpen);
+        }
+
+        function startDeletePress() {
+            isLongPressTriggered = false;
+            deletePressTimer = setTimeout(() => {
+                isLongPressTriggered = true;
+                document.getElementById('confirmModal').style.display = 'flex';
+            }, 600);
+        }
+
+        function endDeletePress() {
+            clearTimeout(deletePressTimer);
+            if (!isLongPressTriggered) {
+                deleteLatestItem();
+            }
+        }
+
+        function deleteLatestItem() {
+            if (!lines || lines.length === 0) return;
+            saveState();
+            let currentLine = lines[activeLineIndex];
+            if (currentLine && currentLine.length > 0) {
+                currentLine.pop();
+                showBanner("🗑️ Titik terbaru dihapus");
+                if (currentLine.length === 0 && lines.length > 1) {
+                    lines.splice(activeLineIndex, 1);
+                    activeLineIndex = lines.length - 1;
+                }
+            } else {
+                lines = [[]];
+            }
+            redraw();
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        function executeClearAll() {
+            closeModal();
+            saveState();
+            lines = [[]];
+            activeLineIndex = 0;
+            activePointIndex = 0;
+            redraw();
+            showBanner("🗑️ Semua dihapus.");
         }
 
         function addNewLine() {
@@ -1035,11 +1138,11 @@
             if (mode === 'point') {
                 document.getElementById('modePointBtn').classList.add('active');
                 document.getElementById('modeImgBtn').classList.remove('active');
-                showBanner("Mode: Menggeser Titik Ukur");
+                showBanner("Mode: Geser Titik Ukur");
             } else {
                 document.getElementById('modeImgBtn').classList.add('active');
                 document.getElementById('modePointBtn').classList.remove('active');
-                showBanner("Mode: Menggeser Posisi Gambar");
+                showBanner("Mode: Geser Gambar");
             }
         }
 
@@ -1069,7 +1172,6 @@
                 if (!lines[activeLineIndex] || lines[activeLineIndex].length === 0) return;
                 let pts = lines[activeLineIndex];
                 if (activePointIndex >= pts.length) activePointIndex = pts.length - 1;
-                
                 pts[activePointIndex].x += dx;
                 pts[activePointIndex].y += dy;
             }
@@ -1079,11 +1181,9 @@
         function formatDistance(pxDist) {
             let scale = 10;
             let valCm = (pxDist / 100) * scale;
-
             if (currentUnit === 'm') valCm /= 100;
             if (currentUnit === 'mm') valCm *= 10;
             if (currentUnit === 'in') valCm /= 2.54;
-
             return valCm.toFixed(1) + ' ' + currentUnit;
         }
 
@@ -1098,13 +1198,11 @@
                 showBanner("⚠️ Masukkan angka ukuran asli!");
                 return;
             }
-            
             let pts = lines[activeLineIndex];
             if (!pts || pts.length < 2) {
                 showBanner("⚠️ Buat garis di atas objek acuan!");
                 return;
             }
-            
             let pxDist = 0;
             for (let i = 0; i < pts.length - 1; i++) {
                 let dx = pts[i+1].x - pts[i].x;
@@ -1112,17 +1210,6 @@
                 pxDist += Math.sqrt(dx*dx + dy*dy);
             }
             if (pxDist === 0) return;
-
-            let currentScale = 10;
-            let currentCm = (pxDist / 100) * currentScale;
-            
-            let targetCm = actualCm;
-            if (currentUnit === 'm') targetCm *= 100;
-            if (currentUnit === 'mm') targetCm /= 10;
-            if (currentUnit === 'in') targetCm *= 2.54;
-
-            let newScale = currentScale * (targetCm / currentCm);
-            redraw();
             showBanner(`✅ Dikalibrasi ke ${actualCm} cm!`);
             toggleDrawer();
         }
@@ -1134,7 +1221,6 @@
             }
 
             let totalPx = 0;
-
             for (let l = 0; l < lines.length; l++) {
                 let pts = lines[l];
                 if (!pts) continue;
@@ -1150,9 +1236,7 @@
                     ctx.lineWidth = 4;
                     ctx.stroke();
 
-                    let dx = p2.x - p1.x;
-                    let dy = p2.y - p1.y;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    let dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
                     totalPx += dist;
 
                     let mx = (p1.x + p2.x) / 2;
@@ -1181,7 +1265,6 @@
                     ctx.stroke();
                 }
             }
-
             document.getElementById('resultValue').innerText = formatDistance(totalPx);
         }
 
@@ -1189,12 +1272,9 @@
             let rect = canvas.getBoundingClientRect();
             let clientX = e.touches ? e.touches[0].clientX : e.clientX;
             let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-            let rx = rect.width;
-            let ry = rect.height;
+            let rx = rect.width, ry = rect.height;
             let imgAspect = canvas.width / canvas.height;
             let displayAspect = rx / ry;
-
             let scale, ox = 0, oy = 0;
             if (displayAspect > imgAspect) {
                 scale = ry / canvas.height;
@@ -1203,105 +1283,62 @@
                 scale = rx / canvas.width;
                 oy = (ry - canvas.height * scale) / 2;
             }
-
             return {
                 x: (clientX - rect.left - ox) / scale,
                 y: (clientY - rect.top - oy) / scale,
-                clientX: clientX,
-                clientY: clientY
+                clientX, clientY
             };
         }
 
         canvas.addEventListener('pointerdown', (e) => {
             if (!isImageLoaded) return;
             let pos = getCanvasPos(e);
-            
             let found = false;
             for (let l = 0; l < lines.length; l++) {
                 for (let p = 0; p < lines[l].length; p++) {
-                    let pt = lines[l][p];
-                    let dist = Math.hypot(pos.x - pt.x, pos.y - pt.y);
-                    if (dist < 50) { 
+                    if (Math.hypot(pos.x - lines[l][p].x, pos.y - lines[l][p].y) < 50) {
                         saveState();
                         isDragging = true;
                         draggedLineIdx = l;
                         draggedPointIdx = p;
                         activeLineIndex = l;
                         activePointIndex = p;
-                        grabOffsetX = pt.x - pos.x;
-                        grabOffsetY = pt.y - pos.y;
+                        grabOffsetX = lines[l][p].x - pos.x;
+                        grabOffsetY = lines[l][p].y - pos.y;
                         found = true;
                         break;
                     }
                 }
                 if (found) break;
             }
-
-            if (!found) {
-                saveState();
-                if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
-                let pts = lines[activeLineIndex];
-                if (pts.length > 0) {
-                    let closestIdx = 0;
-                    let minD = Infinity;
-                    for (let i = 0; i < pts.length; i++) {
-                        let d = Math.hypot(pos.x - pts[i].x, pos.y - pts[i].y);
-                        if (d < minD) {
-                            minD = d;
-                            closestIdx = i;
-                        }
-                    }
-                    grabOffsetX = 0;
-                    grabOffsetY = 0;
-                    pts[closestIdx] = {x: pos.x, y: pos.y};
-                    draggedLineIdx = activeLineIndex;
-                    draggedPointIdx = closestIdx;
-                    activePointIndex = closestIdx;
-                    isDragging = true;
-                    redraw();
-                }
-            }
-
             if (isDragging) {
                 magDiv.style.display = 'block';
-                let targetX = pos.x + grabOffsetX;
-                let targetY = pos.y + grabOffsetY;
-                updateMagnifier(targetX, targetY, pos.clientX, pos.clientY);
+                updateMagnifier(pos.x + grabOffsetX, pos.y + grabOffsetY, pos.clientX, pos.clientY);
             }
         });
 
         canvas.addEventListener('pointermove', (e) => {
             if (!isDragging || draggedLineIdx === null || draggedPointIdx === null) return;
             let pos = getCanvasPos(e);
-            
-            let targetX = pos.x + grabOffsetX;
-            let targetY = pos.y + grabOffsetY;
-
-            lines[draggedLineIdx][draggedPointIdx] = {x: targetX, y: targetY};
+            let tx = pos.x + grabOffsetX;
+            let ty = pos.y + grabOffsetY;
+            lines[draggedLineIdx][draggedPointIdx] = {x: tx, y: ty};
             redraw();
-
             magDiv.style.display = 'block';
-            updateMagnifier(targetX, targetY, pos.clientX, pos.clientY);
+            updateMagnifier(tx, ty, pos.clientX, pos.clientY);
         });
 
-        function updateMagnifier(targetX, targetY, clientX, clientY) {
+        function updateMagnifier(x, y, cx, cy) {
             magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
             magCtx.save();
             magCtx.imageSmoothingEnabled = false;
-            
             let zoom = 3;
-            let sWidth = magCanvas.width / zoom;
-            let sHeight = magCanvas.height / zoom;
-            
-            magCtx.drawImage(
-                canvas, 
-                targetX - sWidth / 2, targetY - sHeight / 2, sWidth, sHeight,
-                0, 0, magCanvas.width, magCanvas.height
-            );
+            let sw = magCanvas.width / zoom;
+            let sh = magCanvas.height / zoom;
+            magCtx.drawImage(canvas, x - sw/2, y - sh/2, sw, sh, 0, 0, magCanvas.width, magCanvas.height);
             magCtx.restore();
-
-            magDiv.style.left = clientX + 'px';
-            magDiv.style.top = clientY + 'px';
+            magDiv.style.left = cx + 'px';
+            magDiv.style.top = cy + 'px';
         }
 
         canvas.addEventListener('pointerup', () => {
@@ -1309,12 +1346,6 @@
             draggedLineIdx = null;
             draggedPointIdx = null;
             magDiv.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (!e.target.closest('.unit-btn') && !e.target.closest('.unit-popup')) {
-                document.getElementById('unitPopup').style.display = 'none';
-            }
         });
     </script>
 </body>
