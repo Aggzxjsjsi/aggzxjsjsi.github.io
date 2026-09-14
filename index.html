@@ -1120,18 +1120,22 @@
             saveState();
             if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
             let pts = lines[activeLineIndex];
-            let last = pts[pts.length - 1] || {x: canvas.width/2, y: canvas.height/2};
+            let last = pts[pts.length - 1];
             
-            // Lahir berhimpit persis di posisi titik terakhir / aktif
-            pts.push({x: last.x, y: last.y});
+            if (last) {
+                // Titik baru bergeser 40px ke samping agar mudah diseret
+                pts.push({x: last.x + 40, y: last.y});
+            } else {
+                pts.push({x: canvas.width / 2, y: canvas.height / 2});
+            }
+            
             activePointIndex = pts.length - 1;
             redraw();
-            showBanner("🔗 Titik terhubung ditambahkan");
+            showBanner("🔗 Titik terhubung ditambahkan di samping");
         }
 
         function addFreePoint() {
             saveState();
-            // Membuat grup garis baru yang berisi tepat 1 titik saja (titik bebas / mandiri)
             lines.push([{x: canvas.width / 2, y: canvas.height / 2}]);
             activeLineIndex = lines.length - 1;
             activePointIndex = 0;
@@ -1202,7 +1206,6 @@
             } else if (controlMode === 'point') {
                 let pts = lines[activeLineIndex];
                 if (pts && pts[activePointIndex]) {
-                    // Jika elemen aktif berupa garis dengan 2 titik dan tombol lokasi digunakan, geser seluruh segmen agar panjang konstan
                     if (pts.length === 2) {
                         pts[0].x += dx;
                         pts[0].y += dy;
@@ -1377,7 +1380,6 @@
                     pts[0] = { x: cx, y: cy };
                     pts[1] = { x: cx + Math.cos(angle) * targetLen, y: cy + Math.sin(angle) * targetLen };
                 } else if (pts.length === 1) {
-                    // Jika berupa titik tunggal / bebas, cukup pindahkan posisinya ke ketukan baru tanpa mengubah wujud jadi garis
                     pts[0] = { x: cx, y: cy };
                 } else {
                     lines[activeLineIndex] = [
