@@ -192,11 +192,11 @@
             100% { transform: scale(1.1); opacity: 1; }
         }
 
-        /* Lensa Pembesar (Magnifier Loupe) - Diperbesar 5% */
+        /* Lensa Pembesar (Magnifier Loupe) */
         .magnifier {
             position: absolute;
-            width: 105px;
-            height: 105px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 1.5px solid rgba(244, 63, 94, 0.8);
             background: #000;
@@ -214,14 +214,13 @@
             top: 0;
             left: 0;
         }
-        /* Titik merah kecil di dalam magnifier (diperkecil 80% dari sebelumnya -> 0.08px / 0.1px) */
         .magnifier::after {
             content: '';
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 0.08px;
-            height: 0.08px;
+            width: 0.1px;
+            height: 0.1px;
             background: #f43f5e;
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -1097,7 +1096,6 @@
             showBanner("🗑️ Semua dihapus.");
         }
 
-        // --- TAMBAH GARIS SESUAI KALIBRASI ---
         function addNewLine() {
             saveState();
             lines.push([]);
@@ -1114,7 +1112,6 @@
             redraw();
         }
 
-        // --- TAMBAH TITIK SESUAI KALIBRASI ---
         function addPointToCurrentLine() {
             saveState();
             if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
@@ -1203,7 +1200,7 @@
             if (calibrationRefPx && calibrationRefPx > 0) {
                 valCm = (pxDist / calibrationRefPx) * calibrationScaleCm;
             } else {
-                valCm = (pxDist / 100) * calibrationScaleCm; ketu
+                valCm = (pxDist / 100) * calibrationScaleCm;
             }
 
             if (currentUnit === 'm') valCm /= 100;
@@ -1281,9 +1278,8 @@
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
-                    // Garis merah (yang digaris kuning) diperbesar 5% dari sebelumnya (4 * 1.05 = 4.2)
                     ctx.strokeStyle = (l === activeLineIndex) ? '#38bdf8' : '#f43f5e';
-                    ctx.lineWidth = (l === activeLineIndex) ? 4.2 : 4.2;
+                    ctx.lineWidth = 4;
                     ctx.stroke();
 
                     let dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -1438,7 +1434,7 @@
             magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
             magCtx.save();
             magCtx.imageSmoothingEnabled = false;
-            let zoom = 3;
+            let zoom = 2.0; // Zoom lensa pembesar dikembalikan normal agar tetap memperbesar detail
             let sw = magCanvas.width / zoom;
             let sh = magCanvas.height / zoom;
             magCtx.drawImage(canvas, x - sw/2, y - sh/2, sw, sh, 0, 0, magCanvas.width, magCanvas.height);
