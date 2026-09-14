@@ -49,7 +49,9 @@
     </div>
 
     <div class="header">
-        <button class="btn" onclick="location.reload()">🔄 Ulang</button>
+        <!-- Diperbaiki: Tidak pakai reload halaman lagi, tapi reset instan -->
+        <button class="btn" onclick="resetApp()">🔄 Ulang</button>
+        
         <div style="font-weight: bold; color: #fff; align-self: center;">Alat Ukur Pro</div>
         <button class="btn" onclick="calibrate()">⚙️ Kalibrasi</button>
     </div>
@@ -91,8 +93,8 @@
         let activePointIdx = -1;
         let img = new Image();
         
-        let calibrationRefPx = 150; // Jarak pixel default
-        let calibrationScaleCm = 14; // Panjang asli cm default
+        let calibrationRefPx = 150; 
+        let calibrationScaleCm = 14; 
         let isRelocateActive = false;
         let facingMode = 'environment';
         let draggedPoint = null;
@@ -116,6 +118,30 @@
             startCamera();
         }
 
+        // FUNGSI BARU: Reset Aplikasi Tanpa Reload Halaman
+        function resetApp() {
+            // Sembunyikan canvas gambar, tampilkan video
+            document.getElementById('editorUi').style.display = 'none';
+            document.getElementById('cameraUi').style.display = 'flex';
+            canvas.style.display = 'none';
+            video.style.display = 'block';
+
+            // Reset data garis & ukuran
+            lines = [];
+            activeLineIdx = 0;
+            activePointIdx = -1;
+            calibrationRefPx = 150;
+            calibrationScaleCm = 14;
+            isRelocateActive = false;
+            
+            resultValue.innerText = "0.0 cm";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Nyalakan ulang kamera jika mati
+            startCamera();
+            showBanner("🔄 Kembali ke kamera");
+        }
+
         // Tangkap Foto
         function capturePhoto() {
             canvas.width = video.videoWidth || window.innerWidth;
@@ -129,7 +155,7 @@
                 document.getElementById('cameraUi').style.display = 'none';
                 document.getElementById('editorUi').style.display = 'flex';
                 
-                // Tambah garis pertama
+                // Tambah garis pertama otomatis
                 lines = [[
                     {x: canvas.width/2 - 75, y: canvas.height/2},
                     {x: canvas.width/2 + 75, y: canvas.height/2}
@@ -139,7 +165,6 @@
             };
         }
 
-        // Fungsi Fitur Baru Sesuai Permintaan
         function addNewLine() {
             let cx = canvas.width / 2;
             let cy = canvas.height / 2 + (lines.length * 40);
@@ -187,7 +212,6 @@
             }
         }
 
-        // Kalkulasi Jarak & Gambar (Render)
         function getDistance(p1, p2) {
             if (!p1 || !p2) return 0;
             return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
@@ -225,7 +249,6 @@
                 }
             });
 
-            // Update Text Hasil
             if (calibrationRefPx > 0) {
                 let ratio = calibrationScaleCm / calibrationRefPx;
                 resultValue.innerText = (totalDist * ratio).toFixed(1) + ' cm';
@@ -238,11 +261,9 @@
             magDiv.style.display = 'block';
 
             magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
-            // Zoom factor = 2
             magCtx.drawImage(canvas, x - 37.5, y - 37.5, 75, 75, 0, 0, 150, 150);
         }
 
-        // Interaksi Sentuh (Touch Events)
         canvas.addEventListener('pointerdown', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left) * (canvas.width / rect.width);
@@ -267,7 +288,6 @@
                 return;
             }
 
-            // Cek tap titik
             draggedPoint = null;
             for(let l=0; l<lines.length; l++){
                 for(let p=0; p<lines[l].length; p++){
