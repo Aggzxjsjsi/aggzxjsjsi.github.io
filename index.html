@@ -192,19 +192,19 @@
             100% { transform: scale(1.1); opacity: 1; }
         }
 
-        /* Lensa Pembesar (Magnifier Loupe) - Titik diperkecil seukuran titik "*" */
+        /* Lensa Pembesar (Magnifier Loupe) - Titik merah sudah diperkecil 80% */
         .magnifier {
             position: absolute;
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            border: 3px solid #38bdf8;
+            border: 1.5px solid rgba(244, 63, 94, 0.8);
             background: #000;
             overflow: hidden;
             pointer-events: none;
             display: none;
             z-index: 100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(56, 189, 248, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(244, 63, 94, 0.3);
             transform: translate(-50%, -120px);
         }
         .magnifier canvas {
@@ -219,12 +219,12 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 2px;
-            height: 2px;
+            width: 0.5px;
+            height: 0.5px;
             background: #f43f5e;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 3px #fff;
+            box-shadow: 0 0 1px rgba(255, 255, 255, 0.8);
         }
 
         /* Tombol Awal Kamera/Galeri & Kontrol Tambahan */
@@ -329,7 +329,7 @@
             white-space: nowrap;
         }
 
-        /* Panel Kontrol Bawah (Permanent Height) */
+        /* Panel Kontrol Bawah */
         .bottom-panel {
             display: none;
             flex-direction: column;
@@ -665,7 +665,7 @@
                                 <button class="dpad-btn" onclick="dpadUp()">▲</button>
                                 <div></div>
                                 <button class="dpad-btn" onclick="moveDirection(-1, 0)">◄</button>
-                                <button class="dpad-btn" onclick="dpadDown()">▼</button>
+                                <button class="dpad-btn" onclick="moveDirection(1, 0)">▼</button>
                                 <button class="dpad-btn" onclick="moveDirection(1, 0)">►</button>
                             </div>
                         </div>
@@ -1096,23 +1096,40 @@
             showBanner("🗑️ Semua dihapus.");
         }
 
+        /* 
+           UPDATED: Fungsi addNewLine sekarang otomatis menyesuaikan panjang
+           jika ada nilai kalibrasi yang tersimpan 
+        */
         function addNewLine() {
             saveState();
             lines.push([]);
             activeLineIndex = lines.length - 1;
             let cx = canvas.width / 2;
             let cy = canvas.height / 2 + (activeLineIndex * 40);
-            lines[activeLineIndex].push({x: cx - 120, y: cy}, {x: cx + 120, y: cy});
+            
+            // Gunakan panjang kalibrasi jika tersedia, default 240px
+            let lenPx = (calibrationRefPx && calibrationRefPx > 0) ? calibrationRefPx : 240; 
+            
+            lines[activeLineIndex].push({x: cx - (lenPx/2), y: cy}, {x: cx + (lenPx/2), y: cy});
             activePointIndex = 1;
             redraw();
         }
 
+        /* 
+           UPDATED: Fungsi addPointToCurrentLine sekarang otomatis menyesuaikan jarak
+           berdasarkan referensi kalibrasi
+        */
         function addPointToCurrentLine() {
             saveState();
             if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
             let pts = lines[activeLineIndex];
             let last = pts[pts.length - 1] || {x: canvas.width/2, y: canvas.height/2};
-            pts.push({x: last.x + 60, y: last.y + 60});
+            
+            // Gunakan panjang kalibrasi jika tersedia
+            let lenPx = (calibrationRefPx && calibrationRefPx > 0) ? calibrationRefPx : 84.85; 
+            
+            // Membentuk kemiringan diagonal 45 derajat (0.707 dari Sin/Cos)
+            pts.push({x: last.x + (lenPx * 0.707), y: last.y + (lenPx * 0.707)}); 
             activePointIndex = pts.length - 1;
             redraw();
         }
@@ -1191,258 +1208,10 @@
             redraw();
         }
 
-        function formatDistance(pxDist) {
-            let valCm;
-            if (calibrationRefPx && calibrationRefPx > 0) {
-                valCm = (pxDist / calibrationRefPx) * calibrationScaleCm;
-            } else {
-                valCm = (pxDist / 100) * calibrationScaleCm;
-            }
+        function formatDistance(pxDistSaya paham, kamu butuh satu blok kode final yang siap pakai tanpa dipecah-pecah. Namun, di sesi pesan ini saya tidak memiliki akses ke riwayat kode awal yang kamu bagikan beserta daftar perubahannya.
 
-            if (currentUnit === 'm') valCm /= 100;
-            if (currentUnit === 'mm') valCm *= 10;
-            if (currentUnit === 'in') valCm /= 2.54;
-            return valCm.toFixed(1) + ' ' + currentUnit;
-        }
+**Agar saya bisa merakit kode utuhnya, tolong bagikan kembali:**
+*   Kode lengkap versi awalmu.
+*   Detail bagian mana saja yang perlu di-update.
 
-        function applyPreset(actualCm) {
-            saveState();
-            calibrationScaleCm = actualCm;
-            document.getElementById('actualSizeInput').value = actualCm;
-            
-            let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
-            if (targetLine && targetLine.length >= 2) {
-                let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
-                if (pxDist > 0) calibrationRefPx = pxDist;
-            }
-
-            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => {
-                if (el.id.startsWith('preset')) el.classList.remove('active');
-            });
-            let activeChip = document.getElementById('preset' + (actualCm === 8.5 ? '8.5' : actualCm));
-            if (activeChip) activeChip.classList.add('active');
-
-            redraw();
-            showBanner(`✅ Skala diset ke ${actualCm} cm!`);
-        }
-
-        function calibrateWithRealSize() {
-            let actualCm = parseFloat(document.getElementById('actualSizeInput').value);
-            if (!actualCm || actualCm <= 0) {
-                showBanner("⚠️ Masukkan angka ukuran asli!");
-                return;
-            }
-            saveState();
-            calibrationScaleCm = actualCm;
-            
-            let targetLine = lines[activeLineIndex] && lines[activeLineIndex].length >= 2 ? lines[activeLineIndex] : (lines[0] && lines[0].length >= 2 ? lines[0] : null);
-            if (targetLine && targetLine.length >= 2) {
-                let pxDist = Math.hypot(targetLine[1].x - targetLine[0].x, targetLine[1].y - targetLine[0].y);
-                if (pxDist > 0) {
-                    calibrationRefPx = pxDist;
-                }
-            } else {
-                calibrationRefPx = 100;
-            }
-
-            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => {
-                if (el.id.startsWith('preset')) el.classList.remove('active');
-            });
-
-            redraw();
-            showBanner(`✅ Dikalibrasi ke ${actualCm} cm!`);
-            toggleDrawer();
-        }
-
-        function redraw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (isImageLoaded && img.src) {
-                let drawW = canvas.width * imgScale;
-                let drawH = canvas.height * imgScale;
-                ctx.drawImage(img, imgOffsetX, imgOffsetY, drawW, drawH);
-            }
-
-            let totalPx = 0;
-            for (let l = 0; l < lines.length; l++) {
-                let pts = lines[l];
-                if (!pts) continue;
-
-                for (let i = 0; i < pts.length - 1; i++) {
-                    let p1 = pts[i];
-                    let p2 = pts[i+1];
-
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.strokeStyle = (l === activeLineIndex) ? '#38bdf8' : '#f43f5e';
-                    ctx.lineWidth = 4;
-                    ctx.stroke();
-
-                    let dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-                    totalPx += dist;
-
-                    let mx = (p1.x + p2.x) / 2;
-                    let my = (p1.y + p2.y) / 2;
-
-                    ctx.fillStyle = 'rgba(11, 11, 15, 0.85)';
-                    ctx.fillRect(mx - 34, my - 13, 68, 26);
-                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-                    ctx.strokeRect(mx - 34, my - 13, 68, 26);
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '600 11px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(formatDistance(dist), mx, my);
-                }
-
-                for (let i = 0; i < pts.length; i++) {
-                    let isActivePoint = (l === activeLineIndex && i === activePointIndex);
-                    ctx.fillStyle = isActivePoint ? '#f43f5e' : ((l === activeLineIndex) ? '#38bdf8' : '#a1a1aa');
-                    ctx.beginPath();
-                    ctx.arc(pts[i].x, pts[i].y, isActivePoint ? 9 : 6, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-            }
-            document.getElementById('resultValue').innerText = formatDistance(totalPx);
-        }
-
-        function getCanvasPos(e) {
-            let rect = canvas.getBoundingClientRect();
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            let rx = rect.width, ry = rect.height;
-            
-            let scale = Math.max(rx / canvas.width, ry / canvas.height);
-            let ox = (rx - canvas.width * scale) / 2;
-            let oy = (ry - canvas.height * scale) / 2;
-            
-            return {
-                x: (clientX - rect.left - ox) / scale,
-                y: (clientY - rect.top - oy) / scale,
-                clientX, clientY, scale
-            };
-        }
-
-        canvas.addEventListener('pointerdown', (e) => {
-            if (!isImageLoaded) return;
-            let pos = getCanvasPos(e);
-
-            if (isRelocateActive) {
-                saveState();
-                isRelocateActive = false;
-                let cx = pos.x;
-                let cy = pos.y;
-                
-                if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
-                let pts = lines[activeLineIndex];
-
-                if (pts.length >= 2) {
-                    // Hitung panjang jarak garis yang lama agar ukuran tetap sama persis
-                    let oldLen = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-                    let angle = Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
-                    
-                    // Pindahkan titik 0 ke sentuhan baru, dan titik 1 mengikuti arah sudut dengan panjang semula
-                    pts[0] = { x: cx, y: cy };
-                    pts[1] = { x: cx + Math.cos(angle) * oldLen, y: cy + Math.sin(angle) * oldLen };
-                } else {
-                    lines[activeLineIndex] = [
-                        {x: cx - 60, y: cy},
-                        {x: cx + 60, y: cy}
-                    ];
-                }
-
-                activePointIndex = 1;
-                redraw();
-                showBanner("✨ Garis dipindahkan dengan ukuran tetap dipertahankan!");
-                return;
-            }
-
-            if (controlMode === 'image') {
-                isImageDragging = true;
-                dragStartX = pos.clientX;
-                dragStartY = pos.clientY;
-                saveState();
-                return;
-            }
-
-            let found = false;
-            for (let l = 0; l < lines.length; l++) {
-                for (let p = 0; p < lines[l].length; p++) {
-                    if (Math.hypot(pos.x - lines[l][p].x, pos.y - lines[l][p].y) < 50) {
-                        saveState();
-                        isDragging = true;
-                        draggedLineIdx = l;
-                        draggedPointIdx = p;
-                        activeLineIndex = l;
-                        activePointIndex = p;
-                        grabOffsetX = lines[l][p].x - pos.x;
-                        grabOffsetY = lines[l][p].y - pos.y;
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) break;
-            }
-            if (isDragging) {
-                magDiv.style.display = 'block';
-                updateMagnifier(lines[draggedLineIdx][draggedPointIdx].x, lines[draggedLineIdx][draggedPointIdx].y, pos.clientX, pos.clientY);
-            }
-        });
-
-        canvas.addEventListener('pointermove', (e) => {
-            let pos = getCanvasPos(e);
-
-            if (isImageDragging) {
-                let dx = (pos.clientX - dragStartX) / pos.scale;
-                let dy = (pos.clientY - dragStartY) / pos.scale;
-                dragStartX = pos.clientX;
-                dragStartY = pos.clientY;
-
-                imgOffsetX += dx;
-                imgOffsetY += dy;
-                for (let l = 0; l < lines.length; l++) {
-                    for (let p = 0; p < lines[l].length; p++) {
-                        lines[l][p].x += dx;
-                        lines[l][p].y += dy;
-                    }
-                }
-                redraw();
-                return;
-            }
-
-            if (!isDragging || draggedLineIdx === null || draggedPointIdx === null) return;
-            let tx = pos.x + grabOffsetX;
-            let ty = pos.y + grabOffsetY;
-            lines[draggedLineIdx][draggedPointIdx] = {x: tx, y: ty};
-            redraw();
-            magDiv.style.display = 'block';
-            updateMagnifier(tx, ty, pos.clientX, pos.clientY);
-        });
-
-        function updateMagnifier(x, y, cx, cy) {
-            magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
-            magCtx.save();
-            magCtx.imageSmoothingEnabled = false;
-            let zoom = 3;
-            let sw = magCanvas.width / zoom;
-            let sh = magCanvas.height / zoom;
-            magCtx.drawImage(canvas, x - sw/2, y - sh/2, sw, sh, 0, 0, magCanvas.width, magCanvas.height);
-            magCtx.restore();
-            magDiv.style.left = cx + 'px';
-            magDiv.style.top = cy + 'px';
-        }
-
-        canvas.addEventListener('pointerup', () => {
-            isDragging = false;
-            isImageDragging = false;
-            draggedLineIdx = null;
-            draggedPointIdx = null;
-            magDiv.style.display = 'none';
-        });
-    </script>
-</body>
-</html>
+Silakan tempelkan (paste) kodenya di bawah, dan saya akan langsung berikan satu skrip penuh yang sudah diperbaiki sesuai keinginanmu.
