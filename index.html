@@ -192,11 +192,11 @@
             100% { transform: scale(1.1); opacity: 1; }
         }
 
-        /* Lensa Pembesar (Magnifier Loupe) */
+        /* Lensa Pembesar (Magnifier Loupe) - Diperbesar 5% */
         .magnifier {
             position: absolute;
-            width: 100px;
-            height: 100px;
+            width: 105px;
+            height: 105px;
             border-radius: 50%;
             border: 1.5px solid rgba(244, 63, 94, 0.8);
             background: #000;
@@ -214,14 +214,14 @@
             top: 0;
             left: 0;
         }
-        /* Titik merah diperkecil 80% (0.4px) */
+        /* Titik merah kecil di dalam magnifier (diperkecil 80% dari sebelumnya -> 0.08px / 0.1px) */
         .magnifier::after {
             content: '';
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 0.4px;
-            height: 0.4px;
+            width: 0.08px;
+            height: 0.08px;
             background: #f43f5e;
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -1105,7 +1105,6 @@
             let cx = canvas.width / 2;
             let cy = canvas.height / 2 + (activeLineIndex * 20);
             
-            // Menggunakan piksel sesuai ukuran kalibrasi (jika sudah dikalibrasi)
             let lenPx = (calibrationRefPx && calibrationRefPx > 0) ? calibrationRefPx : 240;
             lines[activeLineIndex].push(
                 {x: cx - (lenPx / 2), y: cy},
@@ -1122,7 +1121,6 @@
             let pts = lines[activeLineIndex];
             let last = pts[pts.length - 1] || {x: canvas.width/2, y: canvas.height/2};
             
-            // Panjang penambahan titik baru mengikuti skala kalibrasi (sama persis dengan 1x ukuran kalibrasi)
             let lenPx = (calibrationRefPx && calibrationRefPx > 0) ? calibrationRefPx : 80;
             let step = lenPx * 0.7071;
             pts.push({x: last.x + step, y: last.y + step});
@@ -1205,7 +1203,7 @@
             if (calibrationRefPx && calibrationRefPx > 0) {
                 valCm = (pxDist / calibrationRefPx) * calibrationScaleCm;
             } else {
-                valCm = (pxDist / 100) * calibrationScaleCm;
+                valCm = (pxDist / 100) * calibrationScaleCm; ketu
             }
 
             if (currentUnit === 'm') valCm /= 100;
@@ -1283,8 +1281,9 @@
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     ctx.lineTo(p2.x, p2.y);
+                    // Garis merah (yang digaris kuning) diperbesar 5% dari sebelumnya (4 * 1.05 = 4.2)
                     ctx.strokeStyle = (l === activeLineIndex) ? '#38bdf8' : '#f43f5e';
-                    ctx.lineWidth = 4;
+                    ctx.lineWidth = (l === activeLineIndex) ? 4.2 : 4.2;
                     ctx.stroke();
 
                     let dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -1338,7 +1337,6 @@
             };
         }
 
-        // --- PINDAH LOKASI SESUAI SKALA KALIBRASI ---
         canvas.addEventListener('pointerdown', (e) => {
             if (!isImageLoaded) return;
             let pos = getCanvasPos(e);
@@ -1352,7 +1350,6 @@
                 if (!lines[activeLineIndex]) lines[activeLineIndex] = [];
                 let pts = lines[activeLineIndex];
 
-                // Panjang persis mengikuti kalibrasi piksel terakhir
                 let targetLen = (calibrationRefPx && calibrationRefPx > 0) 
                     ? calibrationRefPx 
                     : 120;
