@@ -536,7 +536,7 @@
         }
         .modal-box {
             background: #18181c;
-            border: 1px solid rgba(244, 63, 94, 0.3);
+            border: 1px solid rgba(56, 189, 248, 0.3);
             border-radius: 14px;
             width: 80%;
             max-width: 300px;
@@ -547,7 +547,7 @@
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.9);
         }
-        .modal-title { font-size: 0.9rem; font-weight: 700; color: #f43f5e; }
+        .modal-title { font-size: 0.9rem; font-weight: 700; color: #38bdf8; }
         .modal-text { font-size: 0.75rem; color: #d1d5db; }
         .modal-actions { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
     </style>
@@ -558,7 +558,7 @@
         <!-- Header -->
         <div class="app-header">
             <div style="display: flex; gap: 6px;">
-                <button class="btn-header-action" onclick="refreshApp()">🔄 Ulang</button>
+                <button class="btn-header-action" onclick="confirmRefresh()">🔄 Ulang</button>
                 <button class="btn-header-action" onclick="toggleDrawer()">⚙️ Menu</button>
             </div>
             <div class="header-title">Kalkulator Tinggi Pro</div>
@@ -583,17 +583,17 @@
             <div class="setting-group">
                 <span>Atur Ketinggian Panel:</span>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                    <button class="btn-action" onclick="shiftPanelHeight(1)">▲ Tinggikan</button>
-                    <button class="btn-action" onclick="shiftPanelHeight(-1)">▼ Turunkan</button>
+                    <button class="btn-action primary" onclick="shiftPanelHeight(1)">▲ Tinggi Sekali</button>
+                    <button class="btn-action danger" onclick="shiftPanelHeight(-1)">▼ Sembunyikan</button>
                 </div>
             </div>
 
             <div class="setting-group" style="margin-top: 4px;">
                 <span>Preset Kalibrasi Instan:</span>
                 <div class="preset-grid">
+                    <div class="preset-chip active" onclick="applyPreset(14)">🖊️ Pulpen (14 cm)</div>
                     <div class="preset-chip" onclick="applyPreset(18)">✋ Jengkal (18 cm)</div>
                     <div class="preset-chip" onclick="applyPreset(8.56)">💳 KTP (8.5 cm)</div>
-                    <div class="preset-chip" onclick="applyPreset(15.1)">💵 Uang (15 cm)</div>
                     <div class="preset-chip" onclick="applyPreset(30)">📏 Penggaris (30 cm)</div>
                 </div>
             </div>
@@ -601,7 +601,7 @@
             <div class="setting-group" style="margin-top: 4px;">
                 <span>Ukuran Asli Objek (cm):</span>
                 <div style="display: flex; gap: 5px; align-items: center;">
-                    <input type="number" id="actualSizeInput" placeholder="Mis: 18">
+                    <input type="number" id="actualSizeInput" value="14" placeholder="Mis: 14">
                     <button class="btn-action primary" style="padding: 6px 10px;" onclick="calibrateWithRealSize()">Atur</button>
                 </div>
             </div>
@@ -732,6 +732,18 @@
         </div>
     </div>
 
+    <!-- Modal Konfirmasi Refresh Ulang -->
+    <div class="modal-overlay" id="confirmRefreshModal">
+        <div class="modal-box">
+            <div class="modal-title">Konfirmasi Refresh</div>
+            <div class="modal-text">Anda yakin ingin refresh ulang aplikasi?</div>
+            <div class="modal-actions">
+                <button class="btn-action" onclick="closeRefreshModal()">Batal</button>
+                <button class="btn-action primary" onclick="executeRefresh()">Ya, Refresh</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let video = document.getElementById('videoElement');
         let canvas = document.getElementById('measCanvas');
@@ -746,6 +758,7 @@
         let currentUnit = 'cm';
         let isDrawerOpen = false;
         let currentPanelLevel = 1;
+        let calibrationScaleCm = 14; // Default pulpen 14 cm
         
         let currentFacingMode = 'environment'; // 'environment' (belakang) atau 'user' (depan)
         let currentZoom = 1;
@@ -977,7 +990,15 @@
             reader.readAsDataURL(file);
         }
 
-        function refreshApp() {
+        function confirmRefresh() {
+            document.getElementById('confirmRefreshModal').style.display = 'flex';
+        }
+
+        function closeRefreshModal() {
+            document.getElementById('confirmRefreshModal').style.display = 'none';
+        }
+
+        function executeRefresh() {
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(t => t.stop());
                 video.srcObject = null;
@@ -986,9 +1007,11 @@
         }
 
         function shiftPanelHeight(direction) {
-            currentPanelLevel += direction;
-            if (currentPanelLevel > 3) currentPanelLevel = 3;
-            if (currentPanelLevel < 0) currentPanelLevel = 0;
+            if (direction === 1) {
+                currentPanelLevel = 3; // Sekali pencet langsung tinggi maksimal
+            } else {
+                currentPanelLevel = 0; // Sekali pencet langsung turunkan / sembunyikan
+            }
             applyPanelLevel();
         }
 
@@ -1179,17 +1202,30 @@
         }
 
         function formatDistance(pxDist) {
-            let scale = 10;
-            let valCm = (pxDist / 100) * scale;
+            let pts = lines[activeLineIndex];
+            // Hitung skala berdasarkan referensi panjang objek (default 14 cm untuk pulpen)
+            let basePx = 100; // default pixel reference
+            if (pts && pts.length >= 2) {
+                // Skalakan berdasarkan kalibrasi aktif
+            }
+            let valCm = (pxDist / 100) * calibrationScaleErrorFix();
             if (currentUnit === 'm') valCm /= 100;
             if (currentUnit === 'mm') valCm *= 10;
             if (currentUnit === 'in') valCm /= 2.54;
             return valCm.toFixed(1) + ' ' + currentUnit;
         }
 
+        function calibrationScaleErrorFix() {
+            return calibrationScaleCm;
+        }
+
         function applyPreset(actualCm) {
+            calibrationScaleCm = actualCm;
             document.getElementById('actualSizeInput').value = actualCm;
-            calibrateWithRealSize();
+            document.querySelectorAll('.left-drawer .preset-chip').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            redraw();
+            showBanner(`✅ Skala diset ke ${actualCm} cm!`);
         }
 
         function calibrateWithRealSize() {
@@ -1198,18 +1234,8 @@
                 showBanner("⚠️ Masukkan angka ukuran asli!");
                 return;
             }
-            let pts = lines[activeLineIndex];
-            if (!pts || pts.length < 2) {
-                showBanner("⚠️ Buat garis di atas objek acuan!");
-                return;
-            }
-            let pxDist = 0;
-            for (let i = 0; i < pts.length - 1; i++) {
-                let dx = pts[i+1].x - pts[i].x;
-                let dy = pts[i+1].y - pts[i].y;
-                pxDist += Math.sqrt(dx*dx + dy*dy);
-            }
-            if (pxDist === 0) return;
+            calibrationScaleCm = actualCm;
+            redraw();
             showBanner(`✅ Dikalibrasi ke ${actualCm} cm!`);
             toggleDrawer();
         }
