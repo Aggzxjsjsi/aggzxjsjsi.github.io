@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kalkulator Tinggi & Panjang Pro - Light HUD + Night Vision</title>
+    <title>Kalkulator Tinggi & Panjang Pro - Military NVG Mode</title>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -169,10 +169,23 @@
             transition: transform 0.1s ease-out, filter 0.2s ease;
         }
 
-        /* Efek Mode Kamera Malam / Night Vision */
+        /* EFEK MILITARY GREEN NIGHT VISION (NVG) */
         .night-vision-active video, 
         .night-vision-active canvas {
-            filter: brightness(2.5) contrast(1.6) saturate(0.3) drop-shadow(0 0 10px rgba(34, 197, 94, 0.4));
+            filter: grayscale(100%) brightness(2.3) contrast(1.9) sepia(100%) hue-rotate(75deg) saturate(500%);
+        }
+        
+        /* Bingkai Gelap / Vignette Khas Teropong NVG */
+        .night-vision-vignette {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 35;
+            display: none;
+            box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.9), inset 0 0 50px rgba(34, 197, 94, 0.2);
+        }
+        .night-vision-active .night-vision-vignette {
+            display: block;
         }
 
         /* Countdown Overlay */
@@ -273,7 +286,7 @@
             gap: 4px;
         }
         .cam-tool-btn.active { background: #38bdf8; color: #070709; border-color: #38bdf8; }
-        .cam-tool-btn.night-active { background: #22c55e; color: #070709; border-color: #22c55e; }
+        .cam-tool-btn.nvg-active { background: #22c55e; color: #070709; border-color: #22c55e; font-weight: 700; box-shadow: 0 0 12px rgba(34, 197, 94, 0.6); }
 
         .main-action-row {
             display: flex;
@@ -532,7 +545,7 @@
                 <button class="btn-header-action" onclick="confirmRefresh()">🔄 Ulang</button>
                 <button class="btn-header-action" onclick="toggleDrawer()">⚙️ Menu</button>
             </div>
-            <div class="header-title">Kamera Pro + Night Vision</div>
+            <div class="header-title">Military NVG Camera</div>
             <button class="unit-btn" onclick="toggleUnitMenu()">
                 <span id="unitLabel">cm</span> ▾
             </button>
@@ -578,7 +591,7 @@
             <div class="unit-option" onclick="setUnit('in', 'in')">Inci <span>in</span></div>
         </div>
 
-        <div class="info-banner" id="infoBanner">💡 Tips: Aktifkan Kamera Malam di tempat gelap!</div>
+        <div class="info-banner" id="infoBanner">💡 Tips: Aktifkan NVG Hijau untuk nuansa malam ala militer!</div>
 
         <!-- Lensa Pembesar (Magnifier) -->
         <div class="magnifier" id="magnifier">
@@ -592,6 +605,7 @@
 
         <!-- Workspace Kamera & Canvas -->
         <div class="workspace" id="workspace">
+            <div class="night-vision-vignette"></div>
             <video id="videoElement" autoplay playsinline muted></video>
             <canvas id="measCanvas"></canvas>
         </div>
@@ -600,7 +614,7 @@
         <div class="initial-actions" id="initialActions">
             <div class="camera-controls-row">
                 <button class="cam-tool-btn" onclick="toggleCameraFacing()">🔄 <span id="facingLabel">Belakang</span></button>
-                <button class="cam-tool-btn" id="nightVisionBtn" onclick="toggleNightVision()">🌙 Malam</button>
+                <button class="cam-tool-btn" id="nightVisionBtn" onclick="toggleNightVision()">🟢 NVG Hijau</button>
                 <button class="cam-tool-btn" onclick="adjustZoom(-0.5)">➖</button>
                 <button class="cam-tool-btn active" id="zoomDisplayBtn" style="min-width: 50px; justify-content: center;">🔍 1.0x</button>
                 <button class="cam-tool-btn" onclick="adjustZoom(0.5)">➕</button>
@@ -822,7 +836,7 @@
             }
         }
 
-        // Fitur Kamera Malam (Night Vision & Senter/Torch)
+        // Fitur NVG Hijau & Senter (Torch)
         async function toggleNightVision() {
             isNightVisionActive = !isNightVisionActive;
             let btn = document.getElementById('nightVisionBtn');
@@ -830,10 +844,10 @@
 
             if (isNightVisionActive) {
                 container.classList.add('night-vision-active');
-                btn.classList.add('night-active');
-                showBanner("🌙 Kamera Malam (Night Vision) Aktif");
+                btn.classList.add('nvg-active');
+                showBanner("🟢 Mode NVG Hijau Militer Aktif");
                 
-                // Coba nyalakan lampu senter perangkat (torch) jika didukung browser
+                // Nyalakan senter (torch) otomatis jika didukung perangkat
                 if (video.srcObject) {
                     const track = video.srcObject.getVideoTracks()[0];
                     const capabilities = track.getCapabilities ? track.getCapabilities() : {};
@@ -848,8 +862,8 @@
                 }
             } else {
                 container.classList.remove('night-vision-active');
-                btn.classList.remove('night-active');
-                showBanner("☀️ Kamera Malam Dimatikan");
+                btn.classList.remove('nvg-active');
+                showBanner("☀️ Mode NVG Dimatikan");
 
                 if (video.srcObject) {
                     const track = video.srcObject.getVideoTracks()[0];
@@ -873,7 +887,7 @@
             if (isNightVisionActive) {
                 isNightVisionActive = false;
                 document.getElementById('appContainer').classList.remove('night-vision-active');
-                document.getElementById('nightVisionBtn').classList.remove('night-active');
+                document.getElementById('nightVisionBtn').classList.remove('nvg-active');
             }
             startCamera();
         }
@@ -950,13 +964,13 @@
             let currentTransform = video.style.transform;
             video.style.transform = 'none';
 
-            // Jika night vision aktif saat ditangkap, terapkan filter penambahan kecerahan pada canvas juga
+            // Jika NVG Hijau aktif saat ditangkap, terapkan filter hijau monokrom pada canvas
             if (isNightVisionActive) {
-                ctx.filter = 'brightness(2.5) contrast(1.6) saturate(0.3)';
+                ctx.filter = 'grayscale(100%) brightness(2.3) contrast(1.9) sepia(100%) hue-rotate(75deg) saturate(500%)';
             }
 
             ctx.drawImage(video, 0, 0, w, h);
-            ctx.filter = 'none'; // reset filter ctx
+            ctx.filter = 'none'; 
             
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(t => t.stop());
@@ -988,7 +1002,7 @@
                 saveState();
 
                 redraw();
-                showBanner("✨ Foto malam berhasil ditangkap & siap diukur!");
+                showBanner("✨ Foto NVG berhasil ditangkap & siap diukur!");
             };
             img.src = canvas.toDataURL('image/png');
         }
@@ -1497,14 +1511,14 @@
                 dragStartX = pos.clientX;
                 dragStartY = pos.clientY;
 
-                    imgOffsetX += dx;
-                    imgOffsetY += dy;
-                    for (let l = 0; l < lines.length; l++) {
-                        for (let p = 0; p < lines[l].length; p++) {
-                            lines[l][p].x += dx;
-                            lines[l][p].y += dy;
-                        }
+                imgOffsetX += dx;
+                imgOffsetY += dy;
+                for (let l = 0; l < lines.length; l++) {
+                    for (let p = 0; p < lines[l].length; p++) {
+                        lines[l][p].x += dx;
+                        lines[l][p].y += dy;
                     }
+                }
                 redraw();
                 return;
             }
@@ -1532,7 +1546,8 @@
         }
 
         canvas.addEventListener('pointerup', () => {
-            isDragging, isImageDragging = false, false;
+            isDragging = false;
+            isImageDragging = false;
             draggedLineIdx = null;
             draggedPointIdx = null;
             magDiv.style.display = 'none';
