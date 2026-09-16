@@ -249,6 +249,9 @@
 </head>
 <body>
 
+    <!-- Elemen Audio Utama -->
+    <audio id="audioElement"></audio>
+
     <!-- Sidebar -->
     <aside>
         <div class="logo">Spotifaux<span>.</span></div>
@@ -266,22 +269,22 @@
         </header>
         
         <div class="grid-container">
-            <div class="card" onclick="playTrack('Lofi Sleep Beats', 'Chillhop Music', 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300')">
+            <div class="card" onclick="playTrack('Lofi Sleep Beats', 'Chillhop Music', 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')">
                 <img src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300" alt="Cover">
                 <div class="card-title">Lofi Sleep Beats</div>
                 <div class="card-artist">Chillhop Music</div>
             </div>
-            <div class="card" onclick="playTrack('Synthwave Cyber', 'Neon Runner', 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300')">
+            <div class="card" onclick="playTrack('Synthwave Cyber', 'Neon Runner', 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3')">
                 <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300" alt="Cover">
                 <div class="card-title">Synthwave Cyber</div>
                 <div class="card-artist">Neon Runner</div>
             </div>
-            <div class="card" onclick="playTrack('Acoustic Morning', 'Coffee Notes', 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300')">
+            <div class="card" onclick="playTrack('Acoustic Morning', 'Coffee Notes', 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3')">
                 <img src="https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300" alt="Cover">
                 <div class="card-title">Acoustic Morning</div>
                 <div class="card-artist">Coffee Notes</div>
             </div>
-            <div class="card" onclick="playTrack('Deep Focus', 'Brainwave AI', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300')">
+            <div class="card" onclick="playTrack('Deep Focus', 'Brainwave AI', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3')">
                 <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300" alt="Cover">
                 <div class="card-title">Deep Focus</div>
                 <div class="card-artist">Brainwave AI</div>
@@ -308,33 +311,80 @@
                 <button>🔁</button>
             </div>
             <div class="progress-bar-wrapper">
-                <span>0:00</span>
-                <input type="range" class="progress-bar" value="0" min="0" max="100">
-                <span>3:45</span>
+                <span id="currentTime">0:00</span>
+                <input type="range" id="progressBar" class="progress-bar" value="0" min="0" max="100" oninput="seekAudio()">
+                <span id="durationTime">0:00</span>
             </div>
         </div>
 
         <div class="extra-controls">
-            <span>🔊 Volume Optimal</span>
+            <span>🔊 Audio Aktif</span>
         </div>
     </footer>
 
     <script>
-        let isPlaying = false;
+        const audio = document.getElementById('audioElement');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationTimeEl = document.getElementById('durationTime');
 
-        function playTrack(title, artist, coverUrl) {
+        let currentAudioUrl = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+
+        // Set lagu awal tanpa langsung memutarnya otomatis
+        audio.src = currentAudioUrl;
+
+        function playTrack(title, artist, coverUrl, audioUrl) {
             document.getElementById('currentTitle').innerText = title;
             document.getElementById('currentArtist').innerText = artist;
             document.getElementById('currentCover').src = coverUrl;
             
-            isPlaying = true;
-            document.getElementById('playPauseBtn').innerText = '❚❚';
+            if (currentAudioUrl !== audioUrl) {
+                currentAudioUrl = audioUrl;
+                audio.src = audioUrl;
+            }
+
+            audio.play().then(() => {
+                playPauseBtn.innerText = '❚❚';
+            }).catch(e => {
+                console.log("Gagal memutar audio:", e);
+            });
         }
 
         function togglePlay() {
-            isPlaying = !isPlaying;
-            const btn = document.getElementById('playPauseBtn');
-            btn.innerText = isPlaying ? '❚❚' : '▶';
+            if (audio.paused) {
+                audio.play().then(() => {
+                    playPauseBtn.innerText = '❚❚';
+                });
+            } else {
+                audio.pause();
+                playPauseBtn.innerText = '▶';
+            }
+        }
+
+        // Update progress bar seiring berjalannya lagu
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const progressPercent = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = progressPercent;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+                durationTimeEl.innerText = formatTime(audio.duration);
+            }
+        });
+
+        // Fungsi geser durasi lagu (Seek)
+        function seekAudio() {
+            if (audio.duration) {
+                const seekTime = (progressBar.value / 100) * audio.duration;
+                audio.currentTime = seekTime;
+            }
+        }
+
+        // Format waktu detik ke menit:detik
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
     </script>
 </body>
