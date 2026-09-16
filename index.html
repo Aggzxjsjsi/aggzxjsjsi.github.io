@@ -3,201 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tactical Surveillance HUD</title>
+    <title>Web Music Player - Spotify Clone</title>
     <style>
+        :root {
+            --bg-base: #121212;
+            --bg-sidebar: #000000;
+            --bg-card: #181818;
+            --bg-card-hover: #282828;
+            --accent-green: #1db954;
+            --text-main: #ffffff;
+            --text-sub: #b3b3b3;
+        }
+
         body {
-            background-color: #0b0f0c;
-            color: #00ff66;
-            font-family: 'Courier New', Courier, monospace;
             margin: 0;
-            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            display: grid;
+            grid-template-rows: 1fr 90px;
+            grid-template-columns: 240px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigasi */
+        aside {
+            background-color: var(--bg-sidebar);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: var(--accent-green);
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .nav-links li a {
+            color: var(--text-sub);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-links li a:hover, .nav-links li a.active {
+            color: var(--text-main);
+        }
+
+        /* Konten Utama */
+        main {
+            background: linear-gradient(to bottom, #202020, var(--bg-base));
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            padding: 16px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card:hover {
+            background-color: var(--bg-card-hover);
+        }
+
+        .card img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-artist {
+            color: var(--text-sub);
+            font-size: 0.85rem;
+        }
+
+        /* Player Bar di Bawah */
+        footer {
+            grid-column: span 2;
+            background-color: var(--bg-sidebar);
+            border-top: 1px solid #282828;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 10;
+        }
+
+        .now-playing {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 30%;
+        }
+
+        .now-playing img {
+            width: 56px;
+            height: 56px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .track-info .title {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .track-info .artist {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+
+        .player-controls {
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 8px;
+            width: 40%;
         }
 
-        h2 {
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
-            margin-bottom: 15px;
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
-        .tactical-wrapper {
-            border: 2px solid #00ff66;
-            background: #111;
-            padding: 15px;
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
-            max-width: 640px;
-            width: 100%;
-        }
-
-        .camera-container {
-            position: relative;
-            width: 100%;
-            height: 360px;
-            background: #000;
-            overflow: hidden;
-            border: 1px solid #00ff66;
-        }
-
-        .camera-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: filter 0.3s ease;
-        }
-
-        /* Lapisan Overlay HUD Tambahan */
-        .hud-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            box-sizing: border-box;
-            border: 10px solid rgba(0, 255, 102, 0.05);
-        }
-        
-        .hud-crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 1px dashed rgba(0, 255, 102, 0.6);
-            border-radius: 50%;
-        }
-
-        /* Panel Kontrol Mode Taktis */
-        .tactical-controls {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .tactical-controls button {
-            background: #002208;
-            color: #00ff66;
-            border: 1px solid #00ff66;
-            padding: 10px;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
+        .control-buttons button {
+            background: none;
+            border: none;
+            color: var(--text-sub);
             cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.2s ease-in-out;
+            font-size: 1.1rem;
+            transition: color 0.2s;
         }
 
-        .tactical-controls button:hover {
-            background: #00ff66;
+        .control-buttons button:hover {
+            color: var(--text-main);
+        }
+
+        .control-buttons .play-btn {
+            background-color: var(--text-main);
             color: #000;
-            box-shadow: 0 0 10px #00ff66;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
         }
 
-        .full-width {
-            grid-column: span 2;
+        .control-buttons .play-btn:hover {
+            transform: scale(1.05);
+            color: #000;
         }
 
-        /* Efek Termal Pasif: Kontras tinggi dengan palet panas (Invert & Hue) */
-        .thermal-mode {
-            filter: invert(100%) hue-rotate(180deg) contrast(200%);
+        .progress-bar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            font-size: 0.75rem;
+            color: var(--text-sub);
         }
 
-        /* Efek Night Vision Pasif: Nuansa hijau fosfor khas penglihatan malam */
-        .night-vision-mode {
-            filter: sepia(100%) hue-rotate(60deg) saturate(500%) brightness(120%) contrast(150%);
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background-color: #535353;
+            border-radius: 2px;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
         }
 
-        /* Efek Sensor Ultra-Sensitif: Hitam putih beresolusi tinggi dan terang */
-        .ultra-sensitive-mode {
-            filter: grayscale(100%) brightness(150%) contrast(200%);
+        .progress-bar::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--text-main);
+            display: none;
+        }
+
+        .progress-bar:hover::-webkit-slider-thumb {
+            display: block;
+        }
+
+        .extra-controls {
+            width: 30%;
+            display: flex;
+            justify-content: flex-end;
+            color: var(--text-sub);
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
 
-    <h2>Military Tactical Feed</h2>
+    <!-- Sidebar -->
+    <aside>
+        <div class="logo">Spotifaux<span>.</span></div>
+        <ul class="nav-links">
+            <li><a href="#" class="active">🏠 Beranda</a></li>
+            <li><a href="#">🔍 Cari</a></li>
+            <li><a href="#">📚 Koleksi Kamu</a></li>
+        </ul>
+    </aside>
 
-    <div class="tactical-wrapper">
-        <div class="camera-container">
-            <!-- Elemen Video Live dari Kamera Perangkat -->
-            <video id="cameraStream" autoplay playsinline muted></video>
-            
-            <!-- Elemen HUD Taktis -->
-            <div class="hud-overlay">
-                <div class="hud-crosshair"></div>
+    <!-- Main Content -->
+    <main>
+        <header>
+            <h1>Selamat Pagi</h1>
+        </header>
+        
+        <div class="grid-container">
+            <div class="card" onclick="playTrack('Lofi Sleep Beats', 'Chillhop Music', 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300')">
+                <img src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300" alt="Cover">
+                <div class="card-title">Lofi Sleep Beats</div>
+                <div class="card-artist">Chillhop Music</div>
+            </div>
+            <div class="card" onclick="playTrack('Synthwave Cyber', 'Neon Runner', 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300')">
+                <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=300" alt="Cover">
+                <div class="card-title">Synthwave Cyber</div>
+                <div class="card-artist">Neon Runner</div>
+            </div>
+            <div class="card" onclick="playTrack('Acoustic Morning', 'Coffee Notes', 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300')">
+                <img src="https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300" alt="Cover">
+                <div class="card-title">Acoustic Morning</div>
+                <div class="card-artist">Coffee Notes</div>
+            </div>
+            <div class="card" onclick="playTrack('Deep Focus', 'Brainwave AI', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300')">
+                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300" alt="Cover">
+                <div class="card-title">Deep Focus</div>
+                <div class="card-artist">Brainwave AI</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Player Bar -->
+    <footer>
+        <div class="now-playing">
+            <img id="currentCover" src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300" alt="Now Playing">
+            <div class="track-info">
+                <div id="currentTitle" class="title">Lofi Sleep Beats</div>
+                <div id="currentArtist" class="artist">Chillhop Music</div>
             </div>
         </div>
         
-        <!-- Panel Kontrol Mode Taktis -->
-        <div class="tactical-controls">
-            <button class="full-width" onclick="toggleCamera()" id="camToggleBtn">🔄 Kamera: Belakang (Environment)</button>
-            <button onclick="setMode('normal')">Sensor Normal</button>
-            <button onclick="setMode('thermal')">Termal Pasif</button>
-            <button onclick="setMode('nightvision')">Night Vision Pasif</button>
-            <button onclick="setMode('ultrasensitive')">Ultra-Sensitif</button>
+        <div class="player-controls">
+            <div class="control-buttons">
+                <button>🔀</button>
+                <button>⏮</button>
+                <button class="play-btn" id="playPauseBtn" onclick="togglePlay()">▶</button>
+                <button>⏭</button>
+                <button>🔁</button>
+            </div>
+            <div class="progress-bar-wrapper">
+                <span>0:00</span>
+                <input type="range" class="progress-bar" value="0" min="0" max="100">
+                <span>3:45</span>
+            </div>
         </div>
-    </div>
+
+        <div class="extra-controls">
+            <span>🔊 Volume Optimal</span>
+        </div>
+    </footer>
 
     <script>
-        let currentFacingMode = 'environment'; // 'environment' untuk kamera belakang, 'user' untuk kamera depan
-        let currentStream = null;
+        let isPlaying = false;
 
-        // Fungsi untuk mengaktifkan kamera secara live dengan dukungan pilihan facingMode
-        async function initCamera() {
-            const videoElement = document.getElementById('cameraStream');
+        function playTrack(title, artist, coverUrl) {
+            document.getElementById('currentTitle').innerText = title;
+            document.getElementById('currentArtist').innerText = artist;
+            document.getElementById('currentCover').src = coverUrl;
             
-            // Hentikan stream kamera sebelumnya jika ada agar tidak bentrok
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-
-            try {
-                currentStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: { ideal: currentFacingMode },
-                        width: { ideal: 1280 }, 
-                        height: { ideal: 720 } 
-                    }, 
-                    audio: false 
-                });
-                videoElement.srcObject = currentStream;
-            } catch (error) {
-                console.error("Gagal mengakses kamera: ", error);
-                alert("Tidak dapat mengakses kamera. Pastikan izin kamera aktif dan dibuka via HTTPS/Localhost.");
-            }
+            isPlaying = true;
+            document.getElementById('playPauseBtn').innerText = '❚❚';
         }
 
-        // Fungsi untuk tombol ganti kamera (Belakang <-> Depan)
-        function toggleCamera() {
-            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-            const label = currentFacingMode === 'environment' ? 'Belakang (Environment)' : 'Depan (User)';
-            document.getElementById('camToggleBtn').innerText = `🔄 Kamera: ${label}`;
-            initCamera();
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playPauseBtn');
+            btn.innerText = isPlaying ? '❚❚' : '▶';
         }
-
-        // Fungsi mengganti mode sensor visual
-        function setMode(mode) {
-            const stream = document.getElementById('cameraStream');
-            
-            // Bersihkan semua mode kelas sebelumnya
-            stream.className = '';
-            
-            // Terapkan mode baru sesuai pilihan
-            if (mode === 'thermal') {
-                stream.classList.add('thermal-mode');
-            } else if (mode === 'nightvision') {
-                stream.classList.add('night-vision-mode');
-            } else if (mode === 'ultrasensitive') {
-                stream.classList.add('ultra-sensitive-mode');
-            }
-        }
-
-        // Jalankan inisialisasi kamera saat halaman dimuat
-        window.addEventListener('DOMContentLoaded', initCamera);
     </script>
 </body>
 </html>
