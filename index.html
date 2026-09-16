@@ -97,6 +97,10 @@
             box-shadow: 0 0 10px #00ff66;
         }
 
+        .full-width {
+            grid-column: span 2;
+        }
+
         /* Efek Termal Pasif: Kontras tinggi dengan palet panas (Invert & Hue) */
         .thermal-mode {
             filter: invert(100%) hue-rotate(180deg) contrast(200%);
@@ -130,6 +134,7 @@
         
         <!-- Panel Kontrol Mode Taktis -->
         <div class="tactical-controls">
+            <button class="full-width" onclick="toggleCamera()" id="camToggleBtn">🔄 Kamera: Belakang (Environment)</button>
             <button onclick="setMode('normal')">Sensor Normal</button>
             <button onclick="setMode('thermal')">Termal Pasif</button>
             <button onclick="setMode('nightvision')">Night Vision Pasif</button>
@@ -138,29 +143,50 @@
     </div>
 
     <script>
-        // Fungsi untuk mengaktifkan kamera secara live
+        let currentFacingMode = 'environment'; // 'environment' untuk kamera belakang, 'user' untuk kamera depan
+        let currentStream = null;
+
+        // Fungsi untuk mengaktifkan kamera secara live dengan dukungan pilihan facingMode
         async function initCamera() {
             const videoElement = document.getElementById('cameraStream');
+            
+            // Hentikan stream kamera sebelumnya jika ada agar tidak bentrok
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: { ideal: currentFacingMode },
+                        width: { ideal: 1280 }, 
+                        height: { ideal: 720 } 
+                    }, 
                     audio: false 
                 });
-                videoElement.srcObject = stream;
+                videoElement.srcObject = currentStream;
             } catch (error) {
                 console.error("Gagal mengakses kamera: ", error);
-                alert("Tidak dapat mengakses kamera. Pastikan Anda memberi izin akses kamera.");
+                alert("Tidak dapat mengakses kamera. Pastikan izin kamera aktif dan dibuka via HTTPS/Localhost.");
             }
         }
 
-        // Fungsi mengganti mode sensor
+        // Fungsi untuk tombol ganti kamera (Belakang <-> Depan)
+        function toggleCamera() {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            const label = currentFacingMode === 'environment' ? 'Belakang (Environment)' : 'Depan (User)';
+            document.getElementById('camToggleBtn').innerText = `🔄 Kamera: ${label}`;
+            initCamera();
+        }
+
+        // Fungsi mengganti mode sensor visual
         function setMode(mode) {
             const stream = document.getElementById('cameraStream');
             
-            // Bersihkan semua mode sebelumnya
+            // Bersihkan semua mode kelas sebelumnya
             stream.className = '';
             
-            // Terapkan mode baru
+            // Terapkan mode baru sesuai pilihan
             if (mode === 'thermal') {
                 stream.classList.add('thermal-mode');
             } else if (mode === 'nightvision') {
@@ -170,7 +196,7 @@
             }
         }
 
-        // Jalankan kamera saat halaman dimuat
+        // Jalankan inisialisasi kamera saat halaman dimuat
         window.addEventListener('DOMContentLoaded', initCamera);
     </script>
 </body>
