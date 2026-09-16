@@ -119,8 +119,8 @@
 
     <div class="tactical-wrapper">
         <div class="camera-container">
-            <!-- Elemen Video atau Gambar Kamera -->
-            <video id="cameraStream" autoplay playsinline muted loop src="your-stream.mp4"></video>
+            <!-- Elemen Video Live dari Kamera Perangkat -->
+            <video id="cameraStream" autoplay playsinline muted></video>
             
             <!-- Elemen HUD Taktis -->
             <div class="hud-overlay">
@@ -138,6 +138,22 @@
     </div>
 
     <script>
+        // Fungsi untuk mengaktifkan kamera secara live
+        async function initCamera() {
+            const videoElement = document.getElementById('cameraStream');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
+                    audio: false 
+                });
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error("Gagal mengakses kamera: ", error);
+                alert("Tidak dapat mengakses kamera. Pastikan Anda memberi izin akses kamera.");
+            }
+        }
+
+        // Fungsi mengganti mode sensor
         function setMode(mode) {
             const stream = document.getElementById('cameraStream');
             
@@ -153,6 +169,9 @@
                 stream.classList.add('ultra-sensitive-mode');
             }
         }
+
+        // Jalankan kamera saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', initCamera);
     </script>
 </body>
 </html>
